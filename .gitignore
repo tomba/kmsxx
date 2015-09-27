@@ -1,0 +1,6 @@
+*.swp
+*.a
+*.so
+build
+*.txt.user
+

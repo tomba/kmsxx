@@ -4,7 +4,7 @@
 #include "kms++.h"
 #include "utils/testpat.h"
 
-#include "../test.h"
+#include "test.h"
 
 using namespace std;
 using namespace kms;

@@ -18,8 +18,7 @@ pkg_check_modules(LIBDRM libdrm REQUIRED)
 enable_testing()
 
 add_subdirectory(libkms++)
-add_subdirectory(testpat)
-add_subdirectory(db)
+add_subdirectory(tests)
 add_subdirectory(py)
 add_subdirectory(lua)
 

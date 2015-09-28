@@ -19,17 +19,81 @@ static void main_loop(Card& card);
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-struct Output
+class OutputFlipHandler
 {
-	Connector* connector;
-	Crtc* crtc;
-	Framebuffer* fbs[2];
+public:
+	OutputFlipHandler(Connector* conn, Crtc* crtc, Framebuffer* fb1, Framebuffer* fb2)
+		: m_connector(conn), m_crtc(crtc), m_fbs { fb1, fb2 }, m_front_buf(1), m_bar_xpos(0)
+	{
+	}
 
-	int front_buf;
-	int bar_xpos;
+	~OutputFlipHandler()
+	{
+		delete m_fbs[0];
+		delete m_fbs[1];
+	}
+
+	OutputFlipHandler(const OutputFlipHandler& other) = delete;
+	OutputFlipHandler& operator=(const OutputFlipHandler& other) = delete;
+
+	void set_mode()
+	{
+		auto mode = m_connector->get_default_mode();
+		int r = m_crtc->set_mode(m_connector, *m_fbs[0], mode);
+		ASSERT(r == 0);
+	}
+
+	void handle_event()
+	{
+		m_front_buf = (m_front_buf + 1) % 2;
+
+		const int bar_width = 20;
+		const int bar_speed = 8;
+
+		auto crtc = m_crtc;
+		auto fb = m_fbs[(m_front_buf + 1) % 2];
+
+		ASSERT(crtc);
+		ASSERT(fb);
+
+		int current_xpos = m_bar_xpos;
+		int old_xpos = (current_xpos + (fb->width() - bar_width - bar_speed)) % (fb->width() - bar_width);
+		int new_xpos = (current_xpos + bar_speed) % (fb->width() - bar_width);
+
+		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
+
+		m_bar_xpos = new_xpos;
+
+		auto& card = crtc->card();
+
+		if (card.has_atomic()) {
+			int r;
+
+			AtomicReq ctx(card);
+
+			ctx.add(m_crtc, card.get_prop("FB_ID"), fb->id());
+
+			r = ctx.test();
+			ASSERT(r == 0);
+
+			r = ctx.commit(this);
+			ASSERT(r == 0);
+		} else {
+			int r = drmModePageFlip(card.fd(), m_crtc->id(), fb->id(), DRM_MODE_PAGE_FLIP_EVENT, this);
+			ASSERT(r == 0);
+		}
+	}
+
+	Crtc* crtc() const { return m_crtc; }
+
+private:
+	Connector* m_connector;
+	Crtc* m_crtc;
+	Framebuffer* m_fbs[2];
+
+	int m_front_buf;
+	int m_bar_xpos;
 };
-
-static void do_flip(Output* out);
 
 int main()
 {
@@ -40,7 +104,7 @@ int main()
 
 	//card.print_short();
 
-	vector<Output> outputs;
+	vector<OutputFlipHandler*> outputs;
 
 	for (auto conn : card.get_connectors())
 	{
@@ -52,7 +116,7 @@ int main()
 		Crtc* crtc = conn->get_current_crtc();
 		if (!crtc) {
 			for (auto c : conn->get_possible_crtcs()) {
-				if (find_if(outputs.begin(), outputs.end(), [c](Output o) { return o.crtc == c; }) == outputs.end()) {
+				if (find_if(outputs.begin(), outputs.end(), [c](OutputFlipHandler* o) { return o->crtc() == c; }) == outputs.end()) {
 					crtc = c;
 					break;
 				}
@@ -69,71 +133,20 @@ int main()
 
 		printf("conn %u, crtc %u, fb1 %u, fb2 %u\n", conn->id(), crtc->id(), fb1->id(), fb2->id());
 
-		Output output = { };
-		output.connector = conn;
-		output.crtc = crtc;
-		output.fbs[0] = fb1;
-		output.fbs[1] = fb2;
+		auto output = new OutputFlipHandler(conn, crtc, fb1, fb2);
 		outputs.push_back(output);
 	}
 
-	for(auto& out : outputs) {
-		auto conn = out.connector;
-		auto crtc = out.crtc;
+	for(auto out : outputs)
+		out->set_mode();
 
-		auto mode = conn->get_default_mode();
-		int r = crtc->set_mode(conn, *out.fbs[0], mode);
-		ASSERT(r == 0);
-	}
-
-	for(auto& out : outputs)
-		do_flip(&out);
+	for(auto out : outputs)
+		out->handle_event();
 
 	main_loop(card);
 
-	for(auto& out : outputs) {
-		delete out.fbs[0];
-		delete out.fbs[1];
-	}
-}
-
-static void do_flip(Output* out)
-{
-	const int bar_width = 20;
-	const int bar_speed = 8;
-
-	auto crtc = out->crtc;
-	auto fb = out->fbs[(out->front_buf + 1) % 2];
-
-	ASSERT(crtc);
-	ASSERT(fb);
-
-	int current_xpos = out->bar_xpos;
-	int old_xpos = (current_xpos + (fb->width() - bar_width - bar_speed)) % (fb->width() - bar_width);
-	int new_xpos = (current_xpos + bar_speed) % (fb->width() - bar_width);
-
-	draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
-
-	out->bar_xpos = new_xpos;
-
-	auto& card = crtc->card();
-
-	if (card.has_atomic()) {
-		int r;
-
-		AtomicReq ctx(card);
-
-		ctx.add(crtc, card.get_prop("FB_ID"), fb->id());
-
-		r = ctx.test();
-		ASSERT(r == 0);
-
-		r = ctx.commit(out);
-		ASSERT(r == 0);
-	} else {
-		int r = drmModePageFlip(card.fd(), crtc->id(), fb->id(), DRM_MODE_PAGE_FLIP_EVENT, out);
-		ASSERT(r == 0);
-	}
+	for(auto out : outputs)
+		delete out;
 }
 
 static void page_flip_handler(int fd, unsigned int frame,
@@ -142,11 +155,9 @@ static void page_flip_handler(int fd, unsigned int frame,
 {
 	//printf("flip event %d, %d, %u, %u, %p\n", fd, frame, sec, usec, data);
 
-	auto out = (Output*)data;
+	auto out = (OutputFlipHandler*)data;
 
-	out->front_buf = (out->front_buf + 1) % 2;
-
-	do_flip(out);
+	out->handle_event();
 }
 
 

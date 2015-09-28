@@ -14,6 +14,8 @@
 #define DRM_CLIENT_CAP_ATOMIC 3
 #endif
 
+using namespace std;
+
 namespace kms
 {
 
@@ -23,7 +25,7 @@ Card::Card()
 
 	int fd = open(card, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw std::invalid_argument("foo");
+		throw invalid_argument("foo");
 	m_fd = fd;
 
 	int r;
@@ -33,7 +35,7 @@ Card::Card()
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 	if (r)
-		throw std::invalid_argument("foo");
+		throw invalid_argument("foo");
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
 	m_has_atomic = r == 0;
@@ -41,11 +43,11 @@ Card::Card()
 	uint64_t has_dumb;
 	r = drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
 	if (r || !has_dumb)
-		throw std::invalid_argument("foo");
+		throw invalid_argument("foo");
 
 	auto res = drmModeGetResources(m_fd);
 	if (!res)
-		throw std::invalid_argument("foo");
+		throw invalid_argument("foo");
 
 	for (int i = 0; i < res->count_connectors; ++i) {
 		uint32_t id = res->connectors[i];
@@ -102,7 +104,7 @@ Card::~Card()
 	close(m_fd);
 }
 
-template <class T> static void print_obs(const std::map<uint32_t, DrmObject*>& obmap)
+template <class T> static void print_obs(const map<uint32_t, DrmObject*>& obmap)
 {
 	for (auto pair : obmap) {
 		auto ob = pair.second;
@@ -132,7 +134,7 @@ Property* Card::get_prop(const char *name) const
 			return prop;
 	}
 
-	throw std::invalid_argument("foo");
+	throw invalid_argument("foo");
 }
 
 Connector* Card::get_first_connected_connector() const
@@ -144,7 +146,7 @@ Connector* Card::get_first_connected_connector() const
 			return c;
 	}
 
-	throw std::invalid_argument("no connected connectors");
+	throw invalid_argument("no connected connectors");
 }
 
 DrmObject* Card::get_object(uint32_t id) const
@@ -152,9 +154,9 @@ DrmObject* Card::get_object(uint32_t id) const
 	return m_obmap.at(id);
 }
 
-std::vector<Connector*> Card::get_connectors() const
+vector<Connector*> Card::get_connectors() const
 {
-	std::vector<Connector*> v;
+	vector<Connector*> v;
 	for(auto pair : m_obmap) {
 		auto p = dynamic_cast<Connector*>(pair.second);
 		if (p)
@@ -163,9 +165,9 @@ std::vector<Connector*> Card::get_connectors() const
 	return v;
 }
 
-std::vector<Plane*> Card::get_planes() const
+vector<Plane*> Card::get_planes() const
 {
-	std::vector<Plane*> v;
+	vector<Plane*> v;
 	for(auto pair : m_obmap) {
 		auto p = dynamic_cast<Plane*>(pair.second);
 		if (p)
@@ -174,9 +176,9 @@ std::vector<Plane*> Card::get_planes() const
 	return v;
 }
 
-std::vector<DrmObject*> Card::get_objects() const
+vector<DrmObject*> Card::get_objects() const
 {
-	std::vector<DrmObject*> v;
+	vector<DrmObject*> v;
 	for(auto pair : m_obmap)
 		v.push_back(pair.second);
 	return v;
@@ -189,7 +191,7 @@ Crtc* Card::get_crtc_by_index(uint32_t idx) const
 		if (crtc && crtc->idx() == idx)
 			return crtc;
 	}
-	throw std::invalid_argument("fob");
+	throw invalid_argument("fob");
 }
 
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }

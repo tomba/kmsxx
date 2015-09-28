@@ -157,6 +157,6 @@ void draw_test_pattern(Framebuffer& fb)
 	auto t2 = high_resolution_clock::now();
 	auto time_span = duration_cast<microseconds>(t2 - t1);
 
-	printf("draw took %lu us\n", time_span.count());
+	printf("draw took %u us\n", (unsigned)time_span.count());
 }
 }

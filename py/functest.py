@@ -9,7 +9,7 @@ conn = card.get_first_connected_connector()
 mode = conn.get_default_mode()
 
 fb = pykms.Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
-fb.draw_test_pattern(0);
+pykms.draw_test_pattern(fb);
 
 crtc = conn.get_current_crtc()
 

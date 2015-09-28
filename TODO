@@ -21,3 +21,5 @@ of storing it.
 
 Helpers to easily get common connector-crtc setupts (i.e. get all connected connectors and a crtc for each connector).
 
+Bug: when drawing YUV test pattern, R and B are swapped.
+

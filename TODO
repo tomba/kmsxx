@@ -1,0 +1,23 @@
+
+'kmsprint' tool to print everything about kms objects
+
+port 'capture' test from omapdrm-tests
+
+Wrap the drm event handling (especially for py/lua)
+- how is the void* passed to drm handled, i.e. how to keep py/lua reference to
+  the object
+
+Is it possible to use python coroutines for page flipping, i.e. a separate
+coroutine while-loop for each output?
+
+C++ move semantics for classes (especially for Framebuffers)?
+
+enum class for fourcc formats
+
+Proper error checks and use of exceptions
+
+Free drmModeConnectorPtr (and similar for other drm objects) after use, instead
+of storing it.
+
+Helpers to easily get common connector-crtc setupts (i.e. get all connected connectors and a crtc for each connector).
+

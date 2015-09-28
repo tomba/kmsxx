@@ -8,3 +8,4 @@
 #include "framebuffer.h"
 #include "plane.h"
 #include "property.h"
+#include "pipeline.h"

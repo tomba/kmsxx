@@ -18,31 +18,14 @@ int main()
 
 	//card.print_short();
 
-	auto connectors = card.get_connectors();
+	auto pipes = card.get_connected_pipelines();
 
 	vector<Framebuffer*> fbs;
-	vector<Crtc*> used_crtcs;
 
-	for (auto conn : connectors)
+	for (auto pipe : pipes)
 	{
-		if (conn->connected() == false)
-			continue;
-
-		Crtc* crtc = conn->get_current_crtc();
-		if (!crtc) {
-			vector<Crtc*> list = conn->get_possible_crtcs();
-			for (auto c : list) {
-				if (find(used_crtcs.begin(), used_crtcs.end(), c) == used_crtcs.end()) {
-					crtc = c;
-					break;
-				}
-			}
-		}
-		used_crtcs.push_back(crtc);
-
-		ASSERT(crtc);
-
-		int r;
+		auto conn = pipe.connector;
+		auto crtc = pipe.crtc;
 
 		// RG16 XR24 UYVY YUYV NV12
 
@@ -52,10 +35,15 @@ int main()
 		draw_test_pattern(*fb);
 		fbs.push_back(fb);
 
-		r = crtc->set_mode(conn, *fb, mode);
+		printf("conn %u, crtc %u, fb %u\n", conn->id(), crtc->id(), fb->id());
+
+		int r = crtc->set_mode(conn, *fb, mode);
 		ASSERT(r == 0);
+	}
 
-
+	for (auto pipe: pipes)
+	{
+		auto crtc = pipe.crtc;
 
 		Plane* plane = 0;
 
@@ -71,7 +59,7 @@ int main()
 			draw_test_pattern(*planefb);
 			fbs.push_back(planefb);
 
-			r = crtc->set_plane(plane, *planefb,
+			int r = crtc->set_plane(plane, *planefb,
 					    0, 0, planefb->width(), planefb->height(),
 					    0, 0, planefb->width(), planefb->height());
 

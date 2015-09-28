@@ -84,8 +84,6 @@ public:
 		}
 	}
 
-	Crtc* crtc() const { return m_crtc; }
-
 private:
 	Connector* m_connector;
 	Crtc* m_crtc;
@@ -106,27 +104,12 @@ int main()
 
 	vector<OutputFlipHandler*> outputs;
 
-	for (auto conn : card.get_connectors())
+	for (auto pipe : card.get_connected_pipelines())
 	{
-		if (conn->connected() == false)
-			continue;
+		auto conn = pipe.connector;
+		auto crtc = pipe.crtc;
 
 		auto mode = conn->get_default_mode();
-
-		Crtc* crtc = conn->get_current_crtc();
-		if (!crtc) {
-			for (auto c : conn->get_possible_crtcs()) {
-				if (find_if(outputs.begin(), outputs.end(), [c](OutputFlipHandler* o) { return o->crtc() == c; }) == outputs.end()) {
-					crtc = c;
-					break;
-				}
-			}
-		}
-
-		if (!crtc) {
-			printf("failed to find crtc\n");
-			return -1;
-		}
 
 		auto fb1 = new Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 		auto fb2 = new Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");

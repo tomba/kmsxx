@@ -4,6 +4,7 @@
 #include <utility>
 #include <stdexcept>
 #include <string.h>
+#include <algorithm>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -197,4 +198,34 @@ Crtc* Card::get_crtc_by_index(uint32_t idx) const
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
 Encoder* Card::get_encoder(uint32_t id) const { return dynamic_cast<Encoder*>(get_object(id)); }
 Property* Card::get_prop(uint32_t id) const { return dynamic_cast<Property*>(get_object(id)); }
+
+std::vector<kms::Pipeline> Card::get_connected_pipelines()
+{
+	vector<Pipeline> outputs;
+
+	for (auto conn : get_connectors())
+	{
+		if (conn->connected() == false)
+			continue;
+
+		Crtc* crtc = conn->get_current_crtc();
+
+		if (!crtc) {
+			for (auto possible : conn->get_possible_crtcs()) {
+				if (find_if(outputs.begin(), outputs.end(), [possible](Pipeline out) { return out.crtc == possible; }) == outputs.end()) {
+					crtc = possible;
+					break;
+				}
+			}
+		}
+
+		if (!crtc)
+			throw invalid_argument("fob");
+
+		outputs.push_back(Pipeline { crtc, conn });
+	}
+
+	return outputs;
+}
+
 }

@@ -5,10 +5,10 @@
 #include <map>
 
 #include "decls.h"
+#include "pipeline.h"
 
 namespace kms
 {
-
 class Card
 {
 public:
@@ -37,6 +37,8 @@ public:
 	std::vector<Connector*> get_connectors() const;
 	std::vector<DrmObject*> get_objects() const;
 	std::vector<Plane*> get_planes() const;
+
+	std::vector<Pipeline> get_connected_pipelines();
 
 private:
 	std::map<uint32_t, DrmObject*> m_obmap;

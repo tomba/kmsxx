@@ -123,14 +123,12 @@ static void do_flip(Output* out)
 
 		AtomicReq ctx(card);
 
-		// XXX
-		//ctx.add(plane, card.get_prop("CRTC_X"), 50);
-		//ctx.add(plane, card.get_prop("CRTC_Y"), 50);
+		ctx.add(crtc, card.get_prop("FB_ID"), fb->id());
 
 		r = ctx.test();
 		ASSERT(r == 0);
 
-		r = ctx.commit();
+		r = ctx.commit(out);
 		ASSERT(r == 0);
 	} else {
 		int r = drmModePageFlip(card.fd(), crtc->id(), fb->id(), DRM_MODE_PAGE_FLIP_EVENT, out);

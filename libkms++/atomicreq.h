@@ -21,7 +21,7 @@ public:
 	void add(DrmObject *ob, Property *prop, uint64_t value);
 
 	int test();
-	int commit();
+	int commit(void* data);
 
 private:
 	Card& m_card;

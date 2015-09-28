@@ -54,10 +54,9 @@ int AtomicReq::test()
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, 0);
 }
 
-int AtomicReq::commit()
+int AtomicReq::commit(void* data)
 {
 	uint32_t flags = DRM_MODE_PAGE_FLIP_EVENT;
-	void* data = 0;
 
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, data);
 }

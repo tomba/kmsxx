@@ -26,7 +26,8 @@ Card::Card()
 
 	int fd = open(card, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw invalid_argument("foo");
+		throw invalid_argument((string(strerror(errno)) +
+					" opening " + card).c_str());
 	m_fd = fd;
 
 	int r;
@@ -36,7 +37,7 @@ Card::Card()
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 	if (r)
-		throw invalid_argument("foo");
+		throw invalid_argument("Can't set universal planes");
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
 	m_has_atomic = r == 0;
@@ -44,11 +45,11 @@ Card::Card()
 	uint64_t has_dumb;
 	r = drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
 	if (r || !has_dumb)
-		throw invalid_argument("foo");
+		throw invalid_argument("Dumb buffers not available");
 
 	auto res = drmModeGetResources(m_fd);
 	if (!res)
-		throw invalid_argument("foo");
+		throw invalid_argument("Can't get card resources");
 
 	for (int i = 0; i < res->count_connectors; ++i) {
 		uint32_t id = res->connectors[i];

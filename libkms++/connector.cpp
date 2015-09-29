@@ -89,6 +89,18 @@ Videomode Connector::get_default_mode() const
 	return drm_mode_to_video_mode(drmmode);
 }
 
+Videomode Connector::get_mode(const char *mode) const
+{
+	auto c = m_priv->drm_connector;
+	string sMode(mode);
+
+	for (int i = 0; i < c->count_modes; i++)
+                if (sMode == c->modes[i].name)
+                        return drm_mode_to_video_mode(c->modes[i]);
+
+        throw invalid_argument((sMode + ": mode not found").c_str());
+}
+
 bool Connector::connected()
 {
 	return m_priv->drm_connector->connection == DRM_MODE_CONNECTED;

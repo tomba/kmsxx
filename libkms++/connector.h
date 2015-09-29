@@ -34,6 +34,8 @@ public:
 
 	Videomode get_default_mode() const;
 
+	Videomode get_mode(const char *mode) const;
+
 	Crtc* get_current_crtc() const { return m_current_crtc; }
 	std::vector<Crtc*> get_possible_crtcs() const;
 

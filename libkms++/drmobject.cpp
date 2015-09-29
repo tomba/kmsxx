@@ -64,6 +64,6 @@ uint64_t DrmObject::get_prop_value(const char *name) const
 			return m_prop_values.at(prop->id());
 	}
 
-	throw invalid_argument("foo");
+	throw invalid_argument((string(name) + ": property not found").c_str());
 }
 }

@@ -26,8 +26,8 @@ Card::Card()
 
 	int fd = open(card, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw invalid_argument((string(strerror(errno)) +
-					" opening " + card).c_str());
+		throw invalid_argument(string(strerror(errno)) + " opening " +
+				       card);
 	m_fd = fd;
 
 	int r;
@@ -222,7 +222,7 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 
 		if (!crtc)
 			throw invalid_argument(string("Connector #") +
-					       to_string(conn->idx()) + 
+					       to_string(conn->idx()) +
 					       " has no possible crtcs");
 
 		outputs.push_back(Pipeline { crtc, conn });

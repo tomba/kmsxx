@@ -98,7 +98,7 @@ Videomode Connector::get_mode(const char *mode) const
                 if (sMode == c->modes[i].name)
                         return drm_mode_to_video_mode(c->modes[i]);
 
-        throw invalid_argument((sMode + ": mode not found").c_str());
+        throw invalid_argument(sMode + ": mode not found");
 }
 
 bool Connector::connected() const

@@ -71,4 +71,9 @@ int Crtc::set_plane(Plane* plane, Framebuffer& fb,
 			       dst_x, dst_y, dst_w, dst_h,
 			       conv(src_x), conv(src_y), conv(src_w), conv(src_h));
 }
+
+int Crtc::page_flip(Framebuffer& fb, void *data)
+{
+	return drmModePageFlip(card().fd(), id(), fb.id(), DRM_MODE_PAGE_FLIP_EVENT, data);
+}
 }

@@ -79,7 +79,7 @@ public:
 			r = ctx.commit(this);
 			ASSERT(r == 0);
 		} else {
-			int r = drmModePageFlip(card.fd(), m_crtc->id(), fb->id(), DRM_MODE_PAGE_FLIP_EVENT, this);
+			int r = crtc->page_flip(*fb, this);
 			ASSERT(r == 0);
 		}
 	}

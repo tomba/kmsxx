@@ -39,7 +39,7 @@ public:
 	Crtc* get_current_crtc() const { return m_current_crtc; }
 	std::vector<Crtc*> get_possible_crtcs() const;
 
-	bool connected();
+	bool connected() const;
 
 private:
 	ConnectorPriv* m_priv;

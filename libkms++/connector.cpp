@@ -101,7 +101,7 @@ Videomode Connector::get_mode(const char *mode) const
         throw invalid_argument((sMode + ": mode not found").c_str());
 }
 
-bool Connector::connected()
+bool Connector::connected() const
 {
 	return m_priv->drm_connector->connection == DRM_MODE_CONNECTED;
 }

@@ -7,6 +7,8 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+set(LIBKMS_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
+set(LIBKMS_ENABLE_LUA ON CACHE BOOL "Enable Lua wrappers")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
@@ -22,6 +24,11 @@ enable_testing()
 
 add_subdirectory(libkms++)
 add_subdirectory(tests)
-add_subdirectory(py)
-add_subdirectory(lua)
 
+if(LIBKMS_ENABLE_PYTHON)
+        add_subdirectory(py)
+endif()
+
+if(LIBKMS_ENABLE_LUA)
+        add_subdirectory(lua)
+endif()

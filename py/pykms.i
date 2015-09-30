@@ -5,6 +5,7 @@
 using namespace kms;
 %}
 
+%include "std_string.i"
 %include "stdint.i"
 
 %include "decls.h"

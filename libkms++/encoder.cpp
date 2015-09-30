@@ -42,7 +42,10 @@ void Encoder::print_short() const
 
 Crtc* Encoder::get_crtc() const
 {
-	return card().get_crtc(m_priv->drm_encoder->crtc_id);
+	if (m_priv->drm_encoder->crtc_id)
+		return card().get_crtc(m_priv->drm_encoder->crtc_id);
+	else
+		return 0;
 }
 
 vector<Crtc*> Encoder::get_possible_crtcs() const

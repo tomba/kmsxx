@@ -38,8 +38,12 @@ Card::Card()
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 	m_has_universal_planes = r == 0;
 
-	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
-	m_has_atomic = r == 0;
+	if (getenv("LIBKMSXX_DISABLE_ATOMIC") == 0) {
+		r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+		m_has_atomic = r == 0;
+	} else {
+		m_has_atomic = false;
+	}
 
 	uint64_t has_dumb;
 	r = drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb);

@@ -26,8 +26,8 @@ Card::Card()
 
 	int fd = open(card, O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw invalid_argument((string(strerror(errno)) +
-					" opening " + card).c_str());
+		throw invalid_argument(string(strerror(errno)) + " opening " +
+				       card);
 	m_fd = fd;
 
 	int r;
@@ -136,7 +136,7 @@ Property* Card::get_prop(const char *name) const
 			return prop;
 	}
 
-	throw invalid_argument("foo");
+	throw invalid_argument(string("Card property ") + name + " not found");
 }
 
 Connector* Card::get_first_connected_connector() const
@@ -193,7 +193,7 @@ Crtc* Card::get_crtc_by_index(uint32_t idx) const
 		if (crtc && crtc->idx() == idx)
 			return crtc;
 	}
-	throw invalid_argument("fob");
+	throw invalid_argument(string("Crtc #") + to_string(idx) + "not found");
 }
 
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
@@ -221,7 +221,9 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 		}
 
 		if (!crtc)
-			throw invalid_argument("fob");
+			throw invalid_argument(string("Connector #") +
+					       to_string(conn->idx()) +
+					       " has no possible crtcs");
 
 		outputs.push_back(Pipeline { crtc, conn });
 	}

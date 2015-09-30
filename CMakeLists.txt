@@ -12,6 +12,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
+# static link libc
+# set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDRM libdrm REQUIRED)
 

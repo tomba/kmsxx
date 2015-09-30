@@ -23,3 +23,9 @@ Helpers to easily get common connector-crtc setupts (i.e. get all connected conn
 
 Bug: when drawing YUV test pattern, R and B are swapped.
 
+Add env variables to control libkms++ (LIBKMS_DISABLE_ATOMIC_MODESET etc)
+
+Add double-buffering test app that uses crtc+planes simultaneously.
+
+Add triple buffering support for db.
+

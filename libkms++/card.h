@@ -31,6 +31,7 @@ public:
 
 	bool master() const { return m_master; }
 	bool has_atomic() const { return m_has_atomic; }
+	bool has_has_universal_planes() const { return m_has_universal_planes; }
 
 	void print_short() const;
 
@@ -47,5 +48,6 @@ private:
 	bool m_master;
 
 	bool m_has_atomic;
+	bool m_has_universal_planes;
 };
 }

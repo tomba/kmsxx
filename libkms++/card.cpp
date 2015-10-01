@@ -36,8 +36,7 @@ Card::Card()
 	m_master = r == 0;
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
-	if (r)
-		throw invalid_argument("Can't set universal planes");
+	m_has_universal_planes = r == 0;
 
 	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
 	m_has_atomic = r == 0;

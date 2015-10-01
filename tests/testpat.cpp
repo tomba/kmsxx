@@ -2,7 +2,6 @@
 #include <algorithm>
 
 #include "kms++.h"
-#include "testpat.h"
 
 #include "test.h"
 

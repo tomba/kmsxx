@@ -6,7 +6,6 @@
 #include <drm_fourcc.h>
 
 #include "kms++.h"
-#include "color.h"
 
 #include "test.h"
 
@@ -16,8 +15,6 @@ using namespace kms;
 static void draw_color_bar(Framebuffer& buf, int old_xpos, int xpos, int width);
 
 static void main_loop(Card& card);
-
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 class OutputFlipHandler
 {

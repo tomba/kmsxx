@@ -9,7 +9,6 @@
 #include <drm_mode.h>
 
 #include "kms++.h"
-#include "utils/testpat.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

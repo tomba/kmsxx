@@ -8,15 +8,14 @@ link_directories(${LIBDRM_LIBRARY_DIRS})
 pkg_check_modules(PYTHON python-3.4 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-#include_directories(libkms)
-#XXX
-include_directories(../libkms++)
+# XXX how to add these inc dirs in a proper way?
+include_directories(../libkms++ ../libkmstest)
 
 #set(CMAKE_SWIG_FLAGS "-I../../libkms")
 
 set_source_files_properties(pykms.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(pykms python pykms.i)
-swig_link_libraries(pykms kms++ ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
+swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
 
 add_custom_target(pyextras SOURCES test.py functest.py)
 

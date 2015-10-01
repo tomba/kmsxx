@@ -9,12 +9,11 @@ pkg_search_module(LUA REQUIRED lua5.2 lua)
 include_directories(${LUA_INCLUDE_DIRS})
 link_directories(${LUA_LIBRARY_DIRS})
 
-#include_directories(libkms)
-#XXX
-include_directories(../libkms++)
+# XXX how to add these inc dirs in a proper way?
+include_directories(../libkms++ ../libkmstest)
 
 set_source_files_properties(luakms.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(luakms lua luakms.i)
-swig_link_libraries(luakms kms++ ${LIBDRM_LIBRARIES} ${LUA_LIBRARIES})
+swig_link_libraries(luakms kms++ kmstest ${LIBDRM_LIBRARIES} ${LUA_LIBRARIES})
 
 add_custom_target(luaextras SOURCES test.lua)

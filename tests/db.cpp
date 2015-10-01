@@ -6,7 +6,7 @@
 #include <drm_fourcc.h>
 
 #include "kms++.h"
-#include "utils/color.h"
+#include "color.h"
 
 #include "test.h"
 

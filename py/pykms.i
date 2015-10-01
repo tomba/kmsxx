@@ -1,7 +1,9 @@
 %module pykms
 %{
 #include "kms++.h"
-#include "utils/testpat.h"
+
+#include "testpat.h"
+
 using namespace kms;
 %}
 
@@ -18,4 +20,5 @@ using namespace kms;
 %include "plane.h"
 %include "connector.h"
 %include "encoder.h"
-%include "utils/testpat.h"
+
+%include "testpat.h"

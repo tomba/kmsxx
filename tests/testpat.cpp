@@ -2,7 +2,7 @@
 #include <algorithm>
 
 #include "kms++.h"
-#include "utils/testpat.h"
+#include "testpat.h"
 
 #include "test.h"
 

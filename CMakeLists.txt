@@ -23,6 +23,7 @@ pkg_check_modules(LIBDRM libdrm REQUIRED)
 enable_testing()
 
 add_subdirectory(libkms++)
+add_subdirectory(libkmstest)
 add_subdirectory(tests)
 
 if(LIBKMS_ENABLE_PYTHON)

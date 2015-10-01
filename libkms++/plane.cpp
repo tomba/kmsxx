@@ -59,6 +59,9 @@ bool Plane::supports_crtc(Crtc* crtc) const
 
 PlaneType Plane::plane_type() const
 {
-	return (PlaneType)get_prop_value("type");
+	if (card().has_has_universal_planes())
+		return (PlaneType)get_prop_value("type");
+	else
+		return PlaneType::Overlay;
 }
 }

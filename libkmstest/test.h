@@ -3,6 +3,7 @@
 #include "color.h"
 #include "conv.h"
 #include "testpat.h"
+#include "colorbar.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

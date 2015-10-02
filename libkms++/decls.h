@@ -8,6 +8,7 @@ class Connector;
 class Crtc;
 class Encoder;
 class Framebuffer;
+class DumbFramebuffer;
 class DrmObject;
 class Plane;
 class Property;

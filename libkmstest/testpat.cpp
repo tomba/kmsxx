@@ -10,7 +10,7 @@
 #include <drm_mode.h>
 
 #include "card.h"
-#include "framebuffer.h"
+#include "dumbframebuffer.h"
 #include "testpat.h"
 #include "color.h"
 
@@ -18,7 +18,7 @@
 
 namespace kms
 {
-static void draw_pixel(Framebuffer& buf, unsigned x, unsigned y, RGB color)
+static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	static RGB c1;
 
@@ -74,7 +74,7 @@ static void draw_pixel(Framebuffer& buf, unsigned x, unsigned y, RGB color)
 	}
 }
 
-static void draw_rgb_test_pattern(Framebuffer& fb)
+static void draw_rgb_test_pattern(DumbFramebuffer& fb)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
@@ -146,7 +146,7 @@ static void draw_rgb_test_pattern(Framebuffer& fb)
 	}
 }
 
-void draw_test_pattern(Framebuffer& fb)
+void draw_test_pattern(DumbFramebuffer& fb)
 {
 	using namespace std::chrono;
 

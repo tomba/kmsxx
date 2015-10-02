@@ -10,7 +10,7 @@ conn = card:get_first_connected_connector()
 
 mode = conn:get_default_mode()
 
-fb = libluakms.Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+fb = libluakms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 libluakms.draw_test_pattern(fb);
 
 crtc = conn:get_current_crtc()

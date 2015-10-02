@@ -2,7 +2,7 @@
 
 namespace kms
 {
-class Framebuffer;
+class DumbFramebuffer;
 
-void color_convert(Framebuffer& dst, const Framebuffer &src);
+void color_convert(DumbFramebuffer& dst, const DumbFramebuffer &src);
 }

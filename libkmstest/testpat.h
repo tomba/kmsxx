@@ -2,5 +2,5 @@
 
 namespace kms
 {
-void draw_test_pattern(Framebuffer& fb);
+void draw_test_pattern(DumbFramebuffer& fb);
 }

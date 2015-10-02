@@ -6,6 +6,7 @@
 #include "crtc.h"
 #include "encoder.h"
 #include "framebuffer.h"
+#include "dumbframebuffer.h"
 #include "plane.h"
 #include "property.h"
 #include "pipeline.h"

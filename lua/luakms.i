@@ -17,6 +17,7 @@ using namespace kms;
 %include "card.h"
 %include "property.h"
 %include "framebuffer.h"
+%include "dumbframebuffer.h"
 %include "plane.h"
 %include "connector.h"
 %include "encoder.h"

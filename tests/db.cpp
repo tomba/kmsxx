@@ -12,14 +12,14 @@
 using namespace std;
 using namespace kms;
 
-static void draw_color_bar(Framebuffer& buf, int old_xpos, int xpos, int width);
+static void draw_color_bar(DumbFramebuffer& buf, int old_xpos, int xpos, int width);
 
 static void main_loop(Card& card);
 
 class OutputFlipHandler
 {
 public:
-	OutputFlipHandler(Connector* conn, Crtc* crtc, Framebuffer* fb1, Framebuffer* fb2)
+	OutputFlipHandler(Connector* conn, Crtc* crtc, DumbFramebuffer* fb1, DumbFramebuffer* fb2)
 		: m_connector(conn), m_crtc(crtc), m_fbs { fb1, fb2 }, m_front_buf(1), m_bar_xpos(0)
 	{
 	}
@@ -84,7 +84,7 @@ public:
 private:
 	Connector* m_connector;
 	Crtc* m_crtc;
-	Framebuffer* m_fbs[2];
+	DumbFramebuffer* m_fbs[2];
 
 	int m_front_buf;
 	int m_bar_xpos;
@@ -108,8 +108,8 @@ int main()
 
 		auto mode = conn->get_default_mode();
 
-		auto fb1 = new Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
-		auto fb2 = new Framebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+		auto fb1 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+		auto fb2 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 
 		printf("conn %u, crtc %u, fb1 %u, fb2 %u\n", conn->id(), crtc->id(), fb1->id(), fb2->id());
 
@@ -207,7 +207,7 @@ static const uint16_t colors16[] = {
 	colors32[11].rgb565(),
 };
 
-static void drm_draw_color_bar_rgb888(Framebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_rgb888(DumbFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	for (unsigned y = 0; y < buf.height(); ++y) {
 		RGB bcol = colors32[y * ARRAY_SIZE(colors32) / buf.height()];
@@ -223,7 +223,7 @@ static void drm_draw_color_bar_rgb888(Framebuffer& buf, int old_xpos, int xpos, 
 	}
 }
 
-static void drm_draw_color_bar_rgb565(Framebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_rgb565(DumbFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	static_assert(ARRAY_SIZE(colors32) == ARRAY_SIZE(colors16), "bad colors arrays");
 
@@ -241,7 +241,7 @@ static void drm_draw_color_bar_rgb565(Framebuffer& buf, int old_xpos, int xpos, 
 	}
 }
 
-static void drm_draw_color_bar_semiplanar_yuv(Framebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_semiplanar_yuv(DumbFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	const uint8_t colors[] = {
 		0xff,
@@ -269,7 +269,7 @@ static void drm_draw_color_bar_semiplanar_yuv(Framebuffer& buf, int old_xpos, in
 	}
 }
 
-static void draw_color_bar(Framebuffer& buf, int old_xpos, int xpos, int width)
+static void draw_color_bar(DumbFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	switch (buf.format()) {
 	case DRM_FORMAT_NV12:

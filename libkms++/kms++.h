@@ -7,6 +7,7 @@
 #include "encoder.h"
 #include "framebuffer.h"
 #include "dumbframebuffer.h"
+#include "extframebuffer.h"
 #include "plane.h"
 #include "property.h"
 #include "pipeline.h"

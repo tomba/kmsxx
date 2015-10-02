@@ -208,7 +208,7 @@ Crtc* Card::get_crtc_by_index(uint32_t idx) const
 		if (crtc && crtc->idx() == idx)
 			return crtc;
 	}
-	throw invalid_argument(string("Crtc #") + to_string(idx) + "not found");
+	throw invalid_argument(string("Crtc #") + to_string(idx) + " not found");
 }
 
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }

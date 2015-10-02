@@ -39,6 +39,17 @@ void Crtc::setup()
 	}
 }
 
+void Crtc::restore_mode(Connector* conn)
+{
+	auto c = m_priv->drm_crtc;
+
+	uint32_t conns[] = { conn->id() };
+
+	drmModeSetCrtc(card().fd(), id(), c->buffer_id,
+		       c->x, c->y,
+		       conns, 1, &c->mode);
+}
+
 void Crtc::print_short() const
 {
 	auto c  = m_priv->drm_crtc;

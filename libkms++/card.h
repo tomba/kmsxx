@@ -42,6 +42,8 @@ public:
 	std::vector<Pipeline> get_connected_pipelines();
 
 private:
+	void restore_modes();
+
 	std::map<uint32_t, DrmObject*> m_obmap;
 
 	int m_fd;

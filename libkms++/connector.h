@@ -42,11 +42,14 @@ private:
 	~Connector();
 
 	void setup();
+	void restore_mode();
 
 	ConnectorPriv* m_priv;
 
 	std::string m_fullname;
 
 	Crtc* m_current_crtc;
+
+	Crtc* m_saved_crtc;
 };
 }

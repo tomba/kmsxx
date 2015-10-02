@@ -12,6 +12,7 @@ struct CrtcPriv;
 class Crtc : public DrmObject
 {
 	friend class Card;
+	friend class Connector;
 public:
 	void print_short() const;
 
@@ -30,6 +31,7 @@ private:
 	~Crtc();
 
 	void setup();
+	void restore_mode(Connector *conn);
 
 	CrtcPriv* m_priv;
 

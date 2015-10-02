@@ -107,10 +107,18 @@ Card::Card()
 
 Card::~Card()
 {
+	restore_modes();
+
 	for (auto pair : m_obmap)
 		delete pair.second;
 
 	close(m_fd);
+}
+
+void Card::restore_modes()
+{
+	for (auto conn : get_connectors())
+		conn->restore_mode();
 }
 
 template <class T> static void print_obs(const map<uint32_t, DrmObject*>& obmap)

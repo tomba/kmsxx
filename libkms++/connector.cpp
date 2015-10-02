@@ -72,6 +72,14 @@ void Connector::setup()
 		if (enc)
 			m_current_crtc = enc->get_crtc();
 	}
+
+	m_saved_crtc = m_current_crtc;
+}
+
+void Connector::restore_mode()
+{
+	if (m_saved_crtc)
+		m_saved_crtc->restore_mode(this);
 }
 
 void Connector::print_short() const

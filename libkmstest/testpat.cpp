@@ -9,9 +9,7 @@
 #include <drm.h>
 #include <drm_mode.h>
 
-#include "card.h"
-#include "dumbframebuffer.h"
-#include "testpat.h"
+#include "kms++.h"
 #include "color.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

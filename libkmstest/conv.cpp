@@ -1,9 +1,8 @@
 #include <drm_fourcc.h>
 #include <stdexcept>
 
-#include "dumbframebuffer.h"
+#include "kms++.h"
 #include "color.h"
-#include "conv.h"
 
 namespace kms
 {

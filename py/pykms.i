@@ -2,7 +2,7 @@
 %{
 #include "kms++.h"
 
-#include "testpat.h"
+#include "kmstest.h"
 
 using namespace kms;
 %}
@@ -22,4 +22,4 @@ using namespace kms;
 %include "connector.h"
 %include "encoder.h"
 
-%include "testpat.h"
+%include "kmstest.h"

@@ -13,12 +13,13 @@ class Property : public DrmObject
 public:
 	void print_short() const;
 
-	const char *name() const;
+	const std::string& name() const;
 
 private:
 	Property(Card& card, uint32_t id);
 	~Property();
 
 	PropertyPriv* m_priv;
+	std::string m_name;
 };
 }

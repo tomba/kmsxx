@@ -17,7 +17,7 @@ using namespace std;
 namespace kms
 {
 
-DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, const char* fourcc)
+DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, const string& fourcc)
 	:Framebuffer(card, width, height)
 {
 	uint32_t a, b, c, d;

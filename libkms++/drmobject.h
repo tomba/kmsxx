@@ -25,7 +25,7 @@ public:
 
 	void refresh_props();
 	uint64_t get_prop_value(uint32_t id) const;
-	uint64_t get_prop_value(const char *name) const;
+	uint64_t get_prop_value(const std::string& name) const;
 
 protected:
 	DrmObject(Card& card, uint32_t object_type);

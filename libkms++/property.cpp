@@ -3,6 +3,8 @@
 
 #include "kms++.h"
 
+using namespace std;
+
 namespace kms
 {
 
@@ -16,6 +18,7 @@ Property::Property(Card& card, uint32_t id)
 {
 	m_priv = new PropertyPriv();
 	m_priv->drm_prop = drmModeGetProperty(card.fd(), id);
+	m_name = m_priv->drm_prop->name;
 }
 
 Property::~Property()
@@ -26,11 +29,11 @@ Property::~Property()
 
 void Property::print_short() const
 {
-	printf("Property %d, %s\n", id(), name());
+	printf("Property %d, %s\n", id(), name().c_str());
 }
 
-const char *Property::name() const
+const string& Property::name() const
 {
-	return m_priv->drm_prop->name;
+	return m_name;
 }
 }

@@ -56,11 +56,11 @@ uint64_t DrmObject::get_prop_value(uint32_t id) const
 	return m_prop_values.at(id);
 }
 
-uint64_t DrmObject::get_prop_value(const char *name) const
+uint64_t DrmObject::get_prop_value(const string& name) const
 {
 	for (auto pair : m_prop_values) {
 		auto prop = card().get_prop(pair.first);
-		if (strcmp(name, prop->name()) == 0)
+		if (name == prop->name())
 			return m_prop_values.at(prop->id());
 	}
 

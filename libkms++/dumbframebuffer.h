@@ -7,7 +7,7 @@ namespace kms
 class DumbFramebuffer : public Framebuffer
 {
 public:
-	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const char* fourcc);
+	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const std::string& fourcc);
 	virtual ~DumbFramebuffer();
 
 	void print_short() const;

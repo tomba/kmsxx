@@ -47,38 +47,27 @@ struct FormatPlaneInfo
 
 struct FormatInfo
 {
-	PixelFormat format;
 	uint8_t num_planes;
 	struct FormatPlaneInfo planes[4];
 };
 
-static const FormatInfo format_info_array[] = {
+static const map<PixelFormat, FormatInfo> format_info_array = {
 	/* YUV packed */
-	{ PixelFormat::UYVY, 1, { { 32, 2, 1 } }, },
-	{ PixelFormat::YUYV, 1, { { 32, 2, 1 } }, },
+	{ PixelFormat::UYVY, { 1, { { 32, 2, 1 } }, } },
+	{ PixelFormat::YUYV, { 1, { { 32, 2, 1 } }, } },
 	/* YUV semi-planar */
-	{ PixelFormat::NV12, 2, { { 8, 1, 1, }, { 16, 2, 2 } }, },
+	{ PixelFormat::NV12, { 2, { { 8, 1, 1, }, { 16, 2, 2 } }, } },
 	/* RGB16 */
-	{ PixelFormat::RGB565, 1, { { 16, 1, 1 } }, },
+	{ PixelFormat::RGB565, { 1, { { 16, 1, 1 } }, } },
 	/* RGB32 */
-	{ PixelFormat::XRGB8888, 1, { { 32, 1, 1 } }, },
+	{ PixelFormat::XRGB8888, { 1, { { 32, 1, 1 } }, } },
 };
-
-static const FormatInfo& find_format(PixelFormat format)
-{
-	for (uint i = 0; i < ARRAY_SIZE(format_info_array); ++i) {
-		if (format == format_info_array[i].format)
-			return format_info_array[i];
-	}
-
-	throw std::invalid_argument("foo");
-}
 
 void DumbFramebuffer::Create()
 {
 	int r;
 
-	const FormatInfo& format_info = find_format(m_format);
+	const FormatInfo& format_info = format_info_array.at(m_format);
 
 	m_num_planes = format_info.num_planes;
 

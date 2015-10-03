@@ -33,12 +33,15 @@ public:
 	uint64_t get_prop_value(const char *name) const;
 
 protected:
-	uint32_t m_id;	// protected for Framebuffer...
+	virtual void set_id(uint32_t id);
 
 private:
 	Card& m_card;
-	std::map<uint32_t, uint64_t> m_prop_values;
+
+	uint32_t m_id;
 	uint32_t m_object_type;
 	uint32_t m_idx;
+
+	std::map<uint32_t, uint64_t> m_prop_values;
 };
 }

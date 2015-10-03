@@ -19,7 +19,8 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, uint
 	int r = drmModeAddFB(card.fd(), width, height, depth, bpp, stride, handle, &id);
 	if (r)
 		throw invalid_argument("fob");
-	m_id = id;
+
+	set_id(id);
 }
 
 ExtFramebuffer::~ExtFramebuffer()

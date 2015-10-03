@@ -136,7 +136,7 @@ void DumbFramebuffer::Create(uint32_t width, uint32_t height, uint32_t format)
 	if (r)
 		throw std::invalid_argument("foo");
 
-	m_id = id;
+	set_id(id);
 }
 
 void DumbFramebuffer::Destroy()

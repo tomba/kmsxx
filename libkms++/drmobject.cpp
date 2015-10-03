@@ -11,12 +11,12 @@ namespace kms
 {
 
 DrmObject::DrmObject(Card& card, uint32_t object_type)
-	:m_id(-1), m_card(card), m_object_type(object_type)
+	:m_card(card), m_id(-1), m_object_type(object_type)
 {
 }
 
 DrmObject::DrmObject(Card& card, uint32_t id, uint32_t object_type, uint32_t idx)
-	:m_id(id), m_card(card), m_object_type(object_type), m_idx(idx)
+	:m_card(card), m_id(id), m_object_type(object_type), m_idx(idx)
 {
 	refresh_props();
 }
@@ -65,5 +65,10 @@ uint64_t DrmObject::get_prop_value(const char *name) const
 	}
 
 	throw invalid_argument(string(name) + ": property not found");
+}
+
+void DrmObject::set_id(uint32_t id)
+{
+	m_id = id;
 }
 }

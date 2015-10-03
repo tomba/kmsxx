@@ -9,12 +9,12 @@
 
 using namespace std;
 
-#define DEF_CONN(c) [DRM_MODE_CONNECTOR_##c] = #c
-
 namespace kms
 {
 
-static const char * connector_names[] = {
+
+static const map<int, string> connector_names = {
+#define DEF_CONN(c) { DRM_MODE_CONNECTOR_##c, #c }
 	DEF_CONN(Unknown),
 	DEF_CONN(VGA),
 	DEF_CONN(DVII),
@@ -32,13 +32,14 @@ static const char * connector_names[] = {
 	DEF_CONN(eDP),
 	DEF_CONN(VIRTUAL),
 	DEF_CONN(DSI),
+#undef DEF_CONN
 };
 
-static const char *connection_str[] = {
-	[0] = "<unknown>",
-	[DRM_MODE_CONNECTED] = "Connected",
-	[DRM_MODE_DISCONNECTED] = "Disconnected",
-	[DRM_MODE_UNKNOWNCONNECTION] = "Unknown",
+static const map<int, string> connection_str = {
+	{ 0, "<unknown>" },
+	{ DRM_MODE_CONNECTED, "Connected" },
+	{ DRM_MODE_DISCONNECTED, "Disconnected" },
+	{ DRM_MODE_UNKNOWNCONNECTION, "Unknown" },
 };
 
 struct ConnectorPriv
@@ -54,8 +55,8 @@ Connector::Connector(Card &card, uint32_t id, uint32_t idx)
 	m_priv->drm_connector = drmModeGetConnector(this->card().fd(), this->id());
 	assert(m_priv->drm_connector);
 
-	auto name = connector_names[m_priv->drm_connector->connector_type];
-	m_fullname = std::string(string(name) + std::to_string(m_priv->drm_connector->connector_type_id));
+	const auto& name = connector_names.at(m_priv->drm_connector->connector_type);
+	m_fullname = name + to_string(m_priv->drm_connector->connector_type_id);
 }
 
 
@@ -89,7 +90,7 @@ void Connector::print_short() const
 	auto c = m_priv->drm_connector;
 
 	printf("Connector %d, %s, %dx%dmm, %s\n", id(), m_fullname.c_str(),
-	       c->mmWidth, c->mmHeight, connection_str[c->connection]);
+	       c->mmWidth, c->mmHeight, connection_str.at(c->connection).c_str());
 }
 
 Videomode Connector::get_default_mode() const

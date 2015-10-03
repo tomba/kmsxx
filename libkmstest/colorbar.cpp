@@ -102,23 +102,23 @@ static void drm_draw_color_bar_semiplanar_yuv(DumbFramebuffer& buf, int old_xpos
 void draw_color_bar(DumbFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	switch (buf.format()) {
-	case DRM_FORMAT_NV12:
-	case DRM_FORMAT_NV21:
+	case PixelFormat::NV12:
+	case PixelFormat::NV21:
 		// XXX not right but gets something on the screen
 		drm_draw_color_bar_semiplanar_yuv(buf, old_xpos, xpos, width);
 		break;
 
-	case DRM_FORMAT_YUYV:
-	case DRM_FORMAT_UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::UYVY:
 		// XXX not right but gets something on the screen
 		drm_draw_color_bar_rgb565(buf, old_xpos, xpos, width);
 		break;
 
-	case DRM_FORMAT_RGB565:
+	case PixelFormat::RGB565:
 		drm_draw_color_bar_rgb565(buf, old_xpos, xpos, width);
 		break;
 
-	case DRM_FORMAT_XRGB8888:
+	case PixelFormat::XRGB8888:
 		drm_draw_color_bar_rgb888(buf, old_xpos, xpos, width);
 		break;
 

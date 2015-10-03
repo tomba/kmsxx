@@ -106,8 +106,8 @@ int main()
 
 		auto mode = conn->get_default_mode();
 
-		auto fb1 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
-		auto fb2 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+		auto fb1 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, PixelFormat::XRGB8888);
+		auto fb2 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, PixelFormat::XRGB8888);
 
 		printf("conn %u, crtc %u, fb1 %u, fb2 %u\n", conn->id(), crtc->id(), fb1->id(), fb2->id());
 

@@ -30,7 +30,7 @@ int main()
 
 		auto mode = conn->get_default_mode();
 
-		auto fb = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+		auto fb = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, PixelFormat::XRGB8888);
 		draw_test_pattern(*fb);
 		fbs.push_back(fb);
 
@@ -54,7 +54,7 @@ int main()
 		}
 
 		if (plane) {
-			auto planefb = new DumbFramebuffer(card, 400, 400, "YUYV");
+			auto planefb = new DumbFramebuffer(card, 400, 400, PixelFormat::YUYV);
 			draw_test_pattern(*planefb);
 			fbs.push_back(planefb);
 

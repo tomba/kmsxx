@@ -34,13 +34,13 @@ static void fb_rgb_to_packed_yuv(DumbFramebuffer& dst_fb, const DumbFramebuffer&
 			YUV yuv2 = read_rgb_as_yuv(src_fb, x + 1, y);
 
 			switch (dst_fb.format()) {
-			case DRM_FORMAT_UYVY:
+			case PixelFormat::UYVY:
 				dst[x * 2 + 0] = (yuv1.u + yuv2.u) / 2;
 				dst[x * 2 + 1] = yuv1.y;
 				dst[x * 2 + 2] = (yuv1.v + yuv2.v) / 2;
 				dst[x * 2 + 3] = yuv2.y;
 				break;
-			case DRM_FORMAT_YUYV:
+			case PixelFormat::YUYV:
 				dst[x * 2 + 0] = yuv1.y;
 				dst[x * 2 + 1] = (yuv1.u + yuv2.u) / 2;
 				dst[x * 2 + 2] = yuv2.y;
@@ -116,17 +116,17 @@ static void fb_rgb_to_rgb565(DumbFramebuffer& dst_fb, const DumbFramebuffer& src
 void color_convert(DumbFramebuffer& dst, const DumbFramebuffer &src)
 {
 	switch (dst.format()) {
-	case DRM_FORMAT_NV12:
-	case DRM_FORMAT_NV21:
+	case PixelFormat::NV12:
+	case PixelFormat::NV21:
 		fb_rgb_to_semiplanar_yuv(dst, src);
 		break;
 
-	case DRM_FORMAT_YUYV:
-	case DRM_FORMAT_UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::UYVY:
 		fb_rgb_to_packed_yuv(dst, src);
 		break;
 
-	case DRM_FORMAT_RGB565:
+	case PixelFormat::RGB565:
 		fb_rgb_to_rgb565(dst, src);
 		break;
 

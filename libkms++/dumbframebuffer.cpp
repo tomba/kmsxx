@@ -23,9 +23,9 @@ DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, co
 }
 
 DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format)
-	:Framebuffer(card, width, height)
+	:Framebuffer(card, width, height), m_format(format)
 {
-	Create(width, height, (uint32_t)format);
+	Create();
 }
 
 DumbFramebuffer::~DumbFramebuffer()
@@ -47,24 +47,24 @@ struct FormatPlaneInfo
 
 struct FormatInfo
 {
-	uint32_t format;
+	PixelFormat format;
 	uint8_t num_planes;
 	struct FormatPlaneInfo planes[4];
 };
 
 static const FormatInfo format_info_array[] = {
 	/* YUV packed */
-	{ DRM_FORMAT_UYVY, 1, { { 32, 2, 1 } }, },
-	{ DRM_FORMAT_YUYV, 1, { { 32, 2, 1 } }, },
+	{ PixelFormat::UYVY, 1, { { 32, 2, 1 } }, },
+	{ PixelFormat::YUYV, 1, { { 32, 2, 1 } }, },
 	/* YUV semi-planar */
-	{ DRM_FORMAT_NV12, 2, { { 8, 1, 1, }, { 16, 2, 2 } }, },
+	{ PixelFormat::NV12, 2, { { 8, 1, 1, }, { 16, 2, 2 } }, },
 	/* RGB16 */
-	{ DRM_FORMAT_RGB565, 1, { { 16, 1, 1 } }, },
+	{ PixelFormat::RGB565, 1, { { 16, 1, 1 } }, },
 	/* RGB32 */
-	{ DRM_FORMAT_XRGB8888, 1, { { 32, 1, 1 } }, },
+	{ PixelFormat::XRGB8888, 1, { { 32, 1, 1 } }, },
 };
 
-static const FormatInfo& find_format(uint32_t format)
+static const FormatInfo& find_format(PixelFormat format)
 {
 	for (uint i = 0; i < ARRAY_SIZE(format_info_array); ++i) {
 		if (format == format_info_array[i].format)
@@ -74,13 +74,11 @@ static const FormatInfo& find_format(uint32_t format)
 	throw std::invalid_argument("foo");
 }
 
-void DumbFramebuffer::Create(uint32_t width, uint32_t height, uint32_t format)
+void DumbFramebuffer::Create()
 {
 	int r;
 
-	m_format = format;
-
-	const FormatInfo& format_info = find_format(format);
+	const FormatInfo& format_info = find_format(m_format);
 
 	m_num_planes = format_info.num_planes;
 
@@ -90,8 +88,8 @@ void DumbFramebuffer::Create(uint32_t width, uint32_t height, uint32_t format)
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
-		creq.width = width / pi.xsub;
-		creq.height = height / pi.ysub;
+		creq.width = width() / pi.xsub;
+		creq.height = height() / pi.ysub;
 		creq.bpp = pi.bitspp;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
@@ -128,7 +126,7 @@ void DumbFramebuffer::Create(uint32_t width, uint32_t height, uint32_t format)
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
 	uint32_t offsets[4] = { 0 };
 	uint32_t id;
-	r = drmModeAddFB2(card().fd(), width, height, format,
+	r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw std::invalid_argument("foo");

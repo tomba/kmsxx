@@ -14,7 +14,7 @@ public:
 
 	void print_short() const;
 
-	uint32_t format() const { return m_format; }
+	PixelFormat format() const { return m_format; }
 
 	uint8_t* map(unsigned plane) const { return m_planes[plane].map; }
 	uint32_t stride(unsigned plane) const { return m_planes[plane].stride; }
@@ -30,12 +30,12 @@ private:
 		uint8_t *map;
 	};
 
-	void Create(uint32_t width, uint32_t height, uint32_t format);
+	void Create();
 	void Destroy();
 
 	unsigned m_num_planes;
 	struct FramebufferPlane m_planes[4];
 
-	uint32_t m_format;
+	PixelFormat m_format;
 };
 }

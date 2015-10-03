@@ -21,19 +21,19 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	static RGB c1;
 
 	switch (buf.format()) {
-	case DRM_FORMAT_XRGB8888:
+	case PixelFormat::XRGB8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.raw;
 		break;
 	}
-	case DRM_FORMAT_RGB565:
+	case PixelFormat::RGB565:
 	{
 		uint16_t *p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.rgb565();
 		break;
 	}
-	case DRM_FORMAT_UYVY:
+	case PixelFormat::UYVY:
 	{
 		if ((x & 1) == 0) {
 			c1 = color;
@@ -51,7 +51,7 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		p[3] = yuv2.y;
 		break;
 	}
-	case DRM_FORMAT_YUYV:
+	case PixelFormat::YUYV:
 	{
 		if ((x & 1) == 0) {
 			c1 = color;
@@ -69,6 +69,8 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		p[3] = (yuv1.v + yuv2.v) / 2;
 		break;
 	}
+	default:
+		throw std::invalid_argument("unknown pixelformat");
 	}
 }
 

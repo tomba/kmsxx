@@ -1,4 +1,4 @@
-%module pykms
+%module(directors="1") pykms
 %{
 #include "kms++.h"
 
@@ -9,6 +9,8 @@ using namespace kms;
 
 %include "std_string.i"
 %include "stdint.i"
+
+%feature("director") PageFlipHandlerBase;
 
 %include "decls.h"
 %include "drmobject.h"
@@ -21,5 +23,6 @@ using namespace kms;
 %include "plane.h"
 %include "connector.h"
 %include "encoder.h"
+%include "pagefliphandler.h"
 
 %include "kmstest.h"

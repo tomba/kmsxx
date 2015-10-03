@@ -17,7 +17,7 @@ set_source_files_properties(pykms.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(pykms python pykms.i)
 swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
 
-add_custom_target(pyextras SOURCES test.py functest.py)
+add_custom_target(pyextras SOURCES test.py functest.py db.py)
 
 add_test(NAME pytest COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/functest.py")
 set_property(TEST pytest PROPERTY

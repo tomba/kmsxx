@@ -14,7 +14,7 @@ using namespace kms;
 
 static void main_loop(Card& card);
 
-class OutputFlipHandler
+class OutputFlipHandler : PageFlipHandlerBase
 {
 public:
 	OutputFlipHandler(Connector* conn, Crtc* crtc, DumbFramebuffer* fb1, DumbFramebuffer* fb2)
@@ -38,7 +38,7 @@ public:
 		ASSERT(r == 0);
 	}
 
-	void handle_event()
+	void handle_page_flip(uint32_t frame, double time)
 	{
 		m_front_buf = (m_front_buf + 1) % 2;
 
@@ -119,7 +119,7 @@ int main()
 		out->set_mode();
 
 	for(auto out : outputs)
-		out->handle_event();
+		out->handle_page_flip(0, 0);
 
 	main_loop(card);
 
@@ -127,26 +127,8 @@ int main()
 		delete out;
 }
 
-static void page_flip_handler(int fd, unsigned int frame,
-			      unsigned int sec, unsigned int usec,
-			      void *data)
-{
-	//printf("flip event %d, %d, %u, %u, %p\n", fd, frame, sec, usec, data);
-
-	auto out = (OutputFlipHandler*)data;
-
-	out->handle_event();
-}
-
-
 static void main_loop(Card& card)
 {
-	drmEventContext ev = {
-		.version = DRM_EVENT_CONTEXT_VERSION,
-		.vblank_handler = 0,
-		.page_flip_handler = page_flip_handler,
-	};
-
 	fd_set fds;
 
 	FD_ZERO(&fds);
@@ -169,7 +151,7 @@ static void main_loop(Card& card)
 			fprintf(stderr, "exit due to user-input\n");
 			break;
 		} else if (FD_ISSET(fd, &fds)) {
-			drmHandleEvent(fd, &ev);
+			card.call_page_flip_handlers();
 		}
 	}
 }

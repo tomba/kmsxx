@@ -1,6 +1,7 @@
 #pragma once
 
 #include "framebuffer.h"
+#include "pixelformats.h"
 
 namespace kms
 {
@@ -8,6 +9,7 @@ class DumbFramebuffer : public Framebuffer
 {
 public:
 	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const std::string& fourcc);
+	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format);
 	virtual ~DumbFramebuffer();
 
 	void print_short() const;

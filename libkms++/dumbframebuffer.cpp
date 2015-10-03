@@ -18,17 +18,14 @@ namespace kms
 {
 
 DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, const string& fourcc)
+	:DumbFramebuffer(card, width, height, FourCCToPixelFormat(fourcc))
+{
+}
+
+DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format)
 	:Framebuffer(card, width, height)
 {
-	uint32_t a, b, c, d;
-	a = fourcc[0];
-	b = fourcc[1];
-	c = fourcc[2];
-	d = fourcc[3];
-
-	uint32_t code = ((uint32_t)(a) | ((uint32_t)(b) << 8) | ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24));
-
-	Create(width, height, code);
+	Create(width, height, (uint32_t)format);
 }
 
 DumbFramebuffer::~DumbFramebuffer()

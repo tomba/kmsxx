@@ -11,12 +11,8 @@ struct CrtcPriv;
 
 class Crtc : public DrmObject
 {
+	friend class Card;
 public:
-	Crtc(Card& card, uint32_t id, uint32_t idx);
-	~Crtc();
-
-	void setup();
-
 	void print_short() const;
 
 	const std::vector<Plane*>& get_possible_planes() const { return m_possible_planes; }
@@ -30,6 +26,11 @@ public:
 	int page_flip(Framebuffer& fb, void *data);
 
 private:
+	Crtc(Card& card, uint32_t id, uint32_t idx);
+	~Crtc();
+
+	void setup();
+
 	CrtcPriv* m_priv;
 
 	std::vector<Plane*> m_possible_planes;

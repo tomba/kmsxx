@@ -9,15 +9,10 @@ namespace kms
 
 class DrmObject
 {
+	friend class Card;
 public:
-	DrmObject(Card& card, uint32_t object_type);
-	DrmObject(Card& card, uint32_t id, uint32_t object_type, uint32_t idx = 0);
-	virtual ~DrmObject();
-
 	DrmObject(const DrmObject& other) = delete;
 	DrmObject& operator=(const DrmObject& other) = delete;
-
-	virtual void setup() { };
 
 	virtual void print_short() const = 0;
 	void print_props() const;
@@ -33,6 +28,13 @@ public:
 	uint64_t get_prop_value(const char *name) const;
 
 protected:
+	DrmObject(Card& card, uint32_t object_type);
+	DrmObject(Card& card, uint32_t id, uint32_t object_type, uint32_t idx = 0);
+
+	virtual ~DrmObject();
+
+	virtual void setup() { }
+
 	virtual void set_id(uint32_t id);
 
 private:

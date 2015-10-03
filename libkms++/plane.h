@@ -16,10 +16,8 @@ struct PlanePriv;
 
 class Plane : public DrmObject
 {
+	friend class Card;
 public:
-	Plane(Card& card, uint32_t id);
-	~Plane();
-
 	void print_short() const;
 
 	bool supports_crtc(Crtc* crtc) const;
@@ -27,6 +25,9 @@ public:
 	PlaneType plane_type() const;
 
 private:
+	Plane(Card& card, uint32_t id);
+	~Plane();
+
 	PlanePriv* m_priv;
 };
 }

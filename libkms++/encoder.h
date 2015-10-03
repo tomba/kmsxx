@@ -10,16 +10,17 @@ struct EncoderPriv;
 
 class Encoder : public DrmObject
 {
+	friend class Card;
 public:
-	Encoder(Card& card, uint32_t id);
-	~Encoder();
-
 	void print_short() const;
 
 	Crtc* get_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;
 
 private:
+	Encoder(Card& card, uint32_t id);
+	~Encoder();
+
 	EncoderPriv* m_priv;
 };
 }

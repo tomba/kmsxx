@@ -24,12 +24,8 @@ struct Videomode
 
 class Connector : public DrmObject
 {
+	friend class Card;
 public:
-	Connector(Card& card, uint32_t id, uint32_t idx);
-	~Connector();
-
-	void setup();
-
 	void print_short() const;
 
 	Videomode get_default_mode() const;
@@ -42,6 +38,11 @@ public:
 	bool connected() const;
 
 private:
+	Connector(Card& card, uint32_t id, uint32_t idx);
+	~Connector();
+
+	void setup();
+
 	ConnectorPriv* m_priv;
 
 	std::string m_fullname;

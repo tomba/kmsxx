@@ -25,7 +25,7 @@ public:
 		      float src_x, float src_y, float src_w, float src_h);
 
 	int page_flip(Framebuffer& fb, void *data);
-
+	int page_flip(Framebuffer& fb, PageFlipHandlerBase* data) { return page_flip(fb, (void*)data); }
 private:
 	Crtc(Card& card, uint32_t id, uint32_t idx);
 	~Crtc();

@@ -11,6 +11,7 @@ class Framebuffer;
 class DumbFramebuffer;
 class ExtFramebuffer;
 class DrmObject;
+class PageFlipHandlerBase;
 class Plane;
 class Property;
 class Videomode;

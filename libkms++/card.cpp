@@ -246,4 +246,24 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 	return outputs;
 }
 
+static void page_flip_handler(int fd, unsigned int frame,
+			      unsigned int sec, unsigned int usec,
+			      void *data)
+{
+	auto handler = (PageFlipHandlerBase*)data;
+	double time = sec + usec / 1000000.0;
+	handler->handle_page_flip(frame, time);
+}
+
+void Card::call_page_flip_handlers()
+{
+	drmEventContext ev = {
+		.version = DRM_EVENT_CONTEXT_VERSION,
+		.vblank_handler = 0,
+		.page_flip_handler = page_flip_handler,
+	};
+
+	drmHandleEvent(fd(), &ev);
+}
+
 }

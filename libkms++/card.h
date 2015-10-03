@@ -41,6 +41,8 @@ public:
 
 	std::vector<Pipeline> get_connected_pipelines();
 
+	void call_page_flip_handlers();
+
 private:
 	void restore_modes();
 

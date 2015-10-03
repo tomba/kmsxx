@@ -24,6 +24,7 @@ public:
 
 	int test();
 	int commit(void* data);
+	int commit(PageFlipHandlerBase* data) { return commit((void*)data); }
 
 private:
 	Card& m_card;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 
 struct _drmModeAtomicReq;
 
@@ -19,6 +20,7 @@ public:
 
 	void add(uint32_t ob_id, uint32_t prop_id, uint64_t value);
 	void add(DrmObject *ob, Property *prop, uint64_t value);
+	void add(DrmObject *ob, const std::string& prop, uint64_t value);
 
 	int test();
 	int commit(void* data);

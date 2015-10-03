@@ -67,13 +67,15 @@ Connector::~Connector()
 
 void Connector::setup()
 {
-	if (m_priv->drm_connector->encoder_id != 0) {
-		auto enc = card().get_encoder(m_priv->drm_connector->encoder_id);
-		if (enc)
-			m_current_crtc = enc->get_crtc();
-	}
+	if (m_priv->drm_connector->encoder_id != 0)
+		m_current_encoder = card().get_encoder(m_priv->drm_connector->encoder_id);
+	else
+		m_current_encoder = 0;
 
-	m_saved_crtc = m_current_crtc;
+	if (m_current_encoder)
+		m_saved_crtc = m_current_encoder->get_crtc();
+	else
+		m_saved_crtc = 0;
 }
 
 void Connector::restore_mode()
@@ -127,4 +129,13 @@ vector<Crtc*> Connector::get_possible_crtcs() const
 
 	return crtcs;
 }
+
+Crtc* Connector::get_current_crtc() const
+{
+	if (m_current_encoder)
+		return m_current_encoder->get_crtc();
+	else
+		return 0;
+}
+
 }

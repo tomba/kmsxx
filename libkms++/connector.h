@@ -32,7 +32,7 @@ public:
 
 	Videomode get_mode(const std::string& mode) const;
 
-	Crtc* get_current_crtc() const { return m_current_crtc; }
+	Crtc* get_current_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;
 
 	bool connected() const;
@@ -48,7 +48,7 @@ private:
 
 	std::string m_fullname;
 
-	Crtc* m_current_crtc;
+	Encoder* m_current_encoder;
 
 	Crtc* m_saved_crtc;
 };

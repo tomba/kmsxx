@@ -140,14 +140,14 @@ void Card::print_short() const
 	print_obs<Plane>(m_obmap);
 }
 
-Property* Card::get_prop(const char *name) const
+Property* Card::get_prop(const string& name) const
 {
 	for (auto pair : m_obmap) {
 		auto prop = dynamic_cast<Property*>(pair.second);
 		if (!prop)
 			continue;
 
-		if (strcmp(name, prop->name()) == 0)
+		if (name == prop->name())
 			return prop;
 	}
 

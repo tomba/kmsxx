@@ -64,14 +64,14 @@ public:
 		if (card.has_atomic()) {
 			int r;
 
-			AtomicReq ctx(card);
+			AtomicReq req(card);
 
-			ctx.add(m_crtc, card.get_prop("FB_ID"), fb->id());
+			req.add(m_crtc, "FB_ID", fb->id());
 
-			r = ctx.test();
+			r = req.test();
 			ASSERT(r == 0);
 
-			r = ctx.commit(this);
+			r = req.commit(this);
 			ASSERT(r == 0);
 		} else {
 			int r = crtc->page_flip(*fb, this);

@@ -15,12 +15,19 @@ RGB::RGB(uint8_t r, uint8_t g, uint8_t b)
 	this->a = 0;
 }
 
+uint32_t RGB::rgb888() const
+{
+	return (r << 16) | (g << 8) | (b << 0);
+}
+
+uint32_t RGB::bgr888() const
+{
+	return (b << 16) | (g << 8) | (r << 0);
+}
+
 uint16_t RGB::rgb565() const
 {
-	uint16_t r = (this->r >> 3) << 11;
-	uint16_t g = (this->g >> 2) << 5;
-	uint16_t b = (this->b >> 3) << 0;
-	return r | g | b;
+	return ((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3) << 0);
 }
 
 YUV RGB::yuv() const

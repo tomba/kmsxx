@@ -24,7 +24,13 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	case PixelFormat::XRGB8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
-		*p = color.raw;
+		*p = color.rgb888();
+		break;
+	}
+	case PixelFormat::XBGR8888:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.bgr888();
 		break;
 	}
 	case PixelFormat::RGB565:

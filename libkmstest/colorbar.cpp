@@ -49,7 +49,7 @@ static void drm_draw_color_bar_rgb888(DumbFramebuffer& buf, int old_xpos, int xp
 		}
 
 		for (int x = xpos; x < xpos + width; ++x)
-			line[x] = bcol.raw;
+			line[x] = bcol.rgb888();
 	}
 }
 

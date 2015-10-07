@@ -14,6 +14,7 @@ enum class PixelFormat : uint32_t
 	UYVY = MakeFourCC("UYVY"),
 	YUYV = MakeFourCC("YUYV"),
 	XRGB8888 = MakeFourCC("XR24"),
+	XBGR8888 = MakeFourCC("XB24"),
 	RGB565 = MakeFourCC("RG16"),
 };
 

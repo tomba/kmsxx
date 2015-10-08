@@ -10,13 +10,13 @@
 #include <drm_mode.h>
 
 #include "kms++.h"
-#include "color.h"
+#include "test.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 namespace kms
 {
-static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
+static void draw_rgb_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
@@ -37,75 +37,58 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		*p = color.rgb565();
 		break;
 	}
-	case PixelFormat::UYVY:
-	case PixelFormat::YUYV:
-	case PixelFormat::YVYU:
-	case PixelFormat::VYUY:
-	{
-		// HACK. we store the even pixels to c1, and only draw when at the odd pixel.
-
-		static RGB c1;
-
-		if ((x & 1) == 0) {
-			c1 = color;
-			return;
-		}
-
-		// adjust X back to the even pixel
-		x--;
-
-		uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
-
-		YUV yuv1 = c1.yuv();
-		YUV yuv2 = color.yuv();
-
-		uint8_t y0 = yuv1.y;
-		uint8_t y1 = yuv2.y;
-		uint8_t u = (yuv1.u + yuv2.u) / 2;
-		uint8_t v = (yuv1.v + yuv2.v) / 2;
-
-		switch (buf.format()) {
-		case PixelFormat::UYVY:
-			p[0] = u;
-			p[1] = y0;
-			p[2] = v;
-			p[3] = y1;
-			break;
-
-		case PixelFormat::YUYV:
-			p[0] = y0;
-			p[1] = u;
-			p[2] = y1;
-			p[3] = v;
-			break;
-
-		case PixelFormat::YVYU:
-			p[0] = y0;
-			p[1] = v;
-			p[2] = y1;
-			p[3] = u;
-			break;
-
-		case PixelFormat::VYUY:
-			p[0] = v;
-			p[1] = y0;
-			p[2] = u;
-			p[3] = y1;
-			break;
-		default:
-			break;
-		}
-
-		break;
-	}
 	default:
-		throw std::invalid_argument("unknown pixelformat");
+		throw std::invalid_argument("invalid pixelformat");
 	}
 }
 
-static void draw_rgb_test_pattern(DumbFramebuffer& fb)
+static void draw_yuv422_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
-	unsigned x, y;
+	ASSERT((x & 1) == 0);
+
+	uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+
+	uint8_t y0 = yuv1.y;
+	uint8_t y1 = yuv2.y;
+	uint8_t u = (yuv1.u + yuv2.u) / 2;
+	uint8_t v = (yuv1.v + yuv2.v) / 2;
+
+	switch (buf.format()) {
+	case PixelFormat::UYVY:
+		p[0] = u;
+		p[1] = y0;
+		p[2] = v;
+		p[3] = y1;
+		break;
+
+	case PixelFormat::YUYV:
+		p[0] = y0;
+		p[1] = u;
+		p[2] = y1;
+		p[3] = v;
+		break;
+
+	case PixelFormat::YVYU:
+		p[0] = y0;
+		p[1] = v;
+		p[2] = y1;
+		p[3] = u;
+		break;
+
+	case PixelFormat::VYUY:
+		p[0] = v;
+		p[1] = y0;
+		p[2] = u;
+		p[3] = y1;
+		break;
+
+	default:
+		throw std::invalid_argument("invalid pixelformat");
+	}
+}
+
+static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
+{
 	unsigned w = fb.width();
 	unsigned h = fb.height();
 
@@ -116,62 +99,93 @@ static void draw_rgb_test_pattern(DumbFramebuffer& fb)
 	const unsigned ym1 = mw;
 	const unsigned ym2 = h - mw - 1;
 
-	for (y = 0; y < h; y++) {
-		for (x = 0; x < w; x++) {
-			// white margin lines
-			if (x == xm1 || x == xm2 || y == ym1 || y == ym2)
-				draw_pixel(fb, x, y, RGB(255, 255, 255));
-			// white box outlines to corners
-			else if ((x == 0 || x == w - 1) && (y < ym1 || y > ym2))
-				draw_pixel(fb, x, y, RGB(255, 255, 255));
-			// white box outlines to corners
-			else if ((y == 0 || y == h - 1) && (x < xm1 || x > xm2))
-				draw_pixel(fb, x, y, RGB(255, 255, 255));
-			// blue bar on the left
-			else if (x < xm1 && (y > ym1 && y < ym2))
-				draw_pixel(fb, x, y, RGB(0, 0, 255));
-			// blue bar on the top
-			else if (y < ym1 && (x > xm1 && x < xm2))
-				draw_pixel(fb, x, y, RGB(0, 0, 255));
-			// red bar on the right
-			else if (x > xm2 && (y > ym1 && y < ym2))
-				draw_pixel(fb, x, y, RGB(255, 0, 0));
-			// red bar on the bottom
-			else if (y > ym2 && (x > xm1 && x < xm2))
-				draw_pixel(fb, x, y, RGB(255, 0, 0));
-			// inside the margins
-			else if (x > xm1 && x < xm2 && y > ym1 && y < ym2) {
-				// diagonal line
-				if (x == y || w - x == h - y)
-					draw_pixel(fb, x, y, RGB(255, 255, 255));
-				// diagonal line
-				else if (w - x == y || x == h - y)
-					draw_pixel(fb, x, y, RGB(255, 255, 255));
-				else {
-					int t = (x - xm1 - 1) * 3 / (xm2 - xm1 - 1);
-					unsigned r = 0, g = 0, b = 0;
+	// white margin lines
+	if (x == xm1 || x == xm2 || y == ym1 || y == ym2)
+		return RGB(255, 255, 255);
+	// white box outlines to corners
+	else if ((x == 0 || x == w - 1) && (y < ym1 || y > ym2))
+		return RGB(255, 255, 255);
+	// white box outlines to corners
+	else if ((y == 0 || y == h - 1) && (x < xm1 || x > xm2))
+		return RGB(255, 255, 255);
+	// blue bar on the left
+	else if (x < xm1 && (y > ym1 && y < ym2))
+		return RGB(0, 0, 255);
+	// blue bar on the top
+	else if (y < ym1 && (x > xm1 && x < xm2))
+		return RGB(0, 0, 255);
+	// red bar on the right
+	else if (x > xm2 && (y > ym1 && y < ym2))
+		return RGB(255, 0, 0);
+	// red bar on the bottom
+	else if (y > ym2 && (x > xm1 && x < xm2))
+		return RGB(255, 0, 0);
+	// inside the margins
+	else if (x > xm1 && x < xm2 && y > ym1 && y < ym2) {
+		// diagonal line
+		if (x == y || w - x == h - y)
+			return RGB(255, 255, 255);
+		// diagonal line
+		else if (w - x == y || x == h - y)
+			return RGB(255, 255, 255);
+		else {
+			int t = (x - xm1 - 1) * 3 / (xm2 - xm1 - 1);
+			unsigned r = 0, g = 0, b = 0;
 
-					unsigned c = (y - ym1 - 1) % 256;
+			unsigned c = (y - ym1 - 1) % 256;
 
-					switch (t) {
-					case 0:
-						r = c;
-						break;
-					case 1:
-						g = c;
-						break;
-					case 2:
-						b = c;
-						break;
-					}
+			switch (t) {
+			case 0:
+				r = c;
+				break;
+			case 1:
+				g = c;
+				break;
+			case 2:
+				b = c;
+				break;
+			}
 
-					draw_pixel(fb, x, y, RGB(r, g, b));
-				}
-				// black corners
-			} else {
-				draw_pixel(fb, x, y, RGB(0, 0, 0));
+			return RGB(r, g, b);
+		}
+	} else {
+		// black corners
+		return RGB(0, 0, 0);
+	}
+}
+
+static void draw_test_pattern_impl(DumbFramebuffer& fb)
+{
+	unsigned x, y;
+	unsigned w = fb.width();
+	unsigned h = fb.height();
+
+	switch (fb.format()) {
+	case PixelFormat::XRGB8888:
+	case PixelFormat::XBGR8888:
+	case PixelFormat::RGB565:
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x++) {
+				RGB pixel = get_test_pattern_pixel(fb, x, y);
+				draw_rgb_pixel(fb, x, y, pixel);
 			}
 		}
+		break;
+
+	case PixelFormat::UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::YVYU:
+	case PixelFormat::VYUY:
+		for (y = 0; y < h; y++) {
+			for (x = 0; x < w; x += 2) {
+				RGB pixel1 = get_test_pattern_pixel(fb, x, y);
+				RGB pixel2 = get_test_pattern_pixel(fb, x + 1, y);
+				draw_yuv422_macropixel(fb, x, y, pixel1.yuv(), pixel2.yuv());
+			}
+		}
+		break;
+	default:
+		throw std::invalid_argument("unknown pixelformat");
 	}
 }
 
@@ -181,7 +195,7 @@ void draw_test_pattern(DumbFramebuffer& fb)
 
 	auto t1 = high_resolution_clock::now();
 
-	draw_rgb_test_pattern(fb);
+	draw_test_pattern_impl(fb);
 
 	auto t2 = high_resolution_clock::now();
 	auto time_span = duration_cast<microseconds>(t2 - t1);

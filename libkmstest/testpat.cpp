@@ -18,8 +18,6 @@ namespace kms
 {
 static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
-	static RGB c1;
-
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
 	{
@@ -44,43 +42,55 @@ static void draw_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	case PixelFormat::YVYU:
 	case PixelFormat::VYUY:
 	{
+		// HACK. we store the even pixels to c1, and only draw when at the odd pixel.
+
+		static RGB c1;
+
 		if ((x & 1) == 0) {
 			c1 = color;
 			return;
 		}
+
+		// adjust X back to the even pixel
+		x--;
 
 		uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
 
 		YUV yuv1 = c1.yuv();
 		YUV yuv2 = color.yuv();
 
+		uint8_t y0 = yuv1.y;
+		uint8_t y1 = yuv2.y;
+		uint8_t u = (yuv1.u + yuv2.u) / 2;
+		uint8_t v = (yuv1.v + yuv2.v) / 2;
+
 		switch (buf.format()) {
 		case PixelFormat::UYVY:
-			p[0] = (yuv1.u + yuv2.u) / 2;
-			p[1] = yuv1.y;
-			p[2] = (yuv1.v + yuv2.v) / 2;
-			p[3] = yuv2.y;
+			p[0] = u;
+			p[1] = y0;
+			p[2] = v;
+			p[3] = y1;
 			break;
 
 		case PixelFormat::YUYV:
-			p[0] = yuv1.y;
-			p[1] = (yuv1.u + yuv2.u) / 2;
-			p[2] = yuv2.y;
-			p[3] = (yuv1.v + yuv2.v) / 2;
+			p[0] = y0;
+			p[1] = u;
+			p[2] = y1;
+			p[3] = v;
 			break;
 
 		case PixelFormat::YVYU:
-			p[0] = yuv1.y;
-			p[1] = (yuv1.v + yuv2.v) / 2;
-			p[2] = yuv2.y;
-			p[3] = (yuv1.u + yuv2.u) / 2;
+			p[0] = y0;
+			p[1] = v;
+			p[2] = y1;
+			p[3] = u;
 			break;
 
 		case PixelFormat::VYUY:
-			p[0] = (yuv1.v + yuv2.v) / 2;
-			p[1] = yuv1.y;
-			p[2] = (yuv1.u + yuv2.u) / 2;
-			p[3] = yuv2.y;
+			p[0] = v;
+			p[1] = y0;
+			p[2] = u;
+			p[3] = y1;
 			break;
 		default:
 			break;

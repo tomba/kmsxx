@@ -87,6 +87,48 @@ static void draw_yuv422_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
 	}
 }
 
+static void draw_yuv420_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
+				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
+{
+	ASSERT((x & 1) == 0);
+	ASSERT((y & 1) == 0);
+
+	uint8_t *py1 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 0) + x);
+	uint8_t *py2 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 1) + x);
+
+	uint8_t *puv = (uint8_t*)(buf.map(1) + buf.stride(1) * (y / 2) + x);
+
+	uint8_t y0 = yuv1.y;
+	uint8_t y1 = yuv2.y;
+	uint8_t y2 = yuv3.y;
+	uint8_t y3 = yuv4.y;
+	uint8_t u = (yuv1.u + yuv2.u + yuv3.u + yuv4.u) / 4;
+	uint8_t v = (yuv1.v + yuv2.v + yuv3.v + yuv4.v) / 4;
+
+	switch (buf.format()) {
+	case PixelFormat::NV12:
+		py1[0] = y0;
+		py1[1] = y1;
+		py2[0] = y2;
+		py2[1] = y3;
+		puv[0] = u;
+		puv[1] = v;
+		break;
+
+	case PixelFormat::NV21:
+		py1[0] = y0;
+		py1[1] = y1;
+		py2[0] = y2;
+		py2[1] = y3;
+		puv[0] = v;
+		puv[1] = u;
+		break;
+
+	default:
+		throw std::invalid_argument("invalid pixelformat");
+	}
+}
+
 static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
 {
 	unsigned w = fb.width();
@@ -181,6 +223,21 @@ static void draw_test_pattern_impl(DumbFramebuffer& fb)
 				RGB pixel1 = get_test_pattern_pixel(fb, x, y);
 				RGB pixel2 = get_test_pattern_pixel(fb, x + 1, y);
 				draw_yuv422_macropixel(fb, x, y, pixel1.yuv(), pixel2.yuv());
+			}
+		}
+		break;
+
+	case PixelFormat::NV12:
+	case PixelFormat::NV21:
+		for (y = 0; y < h; y += 2) {
+			for (x = 0; x < w; x += 2) {
+				RGB pixel00 = get_test_pattern_pixel(fb, x, y);
+				RGB pixel10 = get_test_pattern_pixel(fb, x + 1, y);
+				RGB pixel01 = get_test_pattern_pixel(fb, x, y + 1);
+				RGB pixel11 = get_test_pattern_pixel(fb, x + 1, y + 1);
+				draw_yuv420_macropixel(fb, x, y,
+						       pixel00.yuv(), pixel10.yuv(),
+						       pixel01.yuv(), pixel11.yuv());
 			}
 		}
 		break;

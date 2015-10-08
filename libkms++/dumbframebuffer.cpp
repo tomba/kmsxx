@@ -59,6 +59,7 @@ static const map<PixelFormat, FormatInfo> format_info_array = {
 	{ PixelFormat::VYUY, { 1, { { 32, 2, 1 } }, } },
 	/* YUV semi-planar */
 	{ PixelFormat::NV12, { 2, { { 8, 1, 1, }, { 16, 2, 2 } }, } },
+	{ PixelFormat::NV21, { 2, { { 8, 1, 1, }, { 16, 2, 2 } }, } },
 	/* RGB16 */
 	{ PixelFormat::RGB565, { 1, { { 16, 1, 1 } }, } },
 	/* RGB32 */

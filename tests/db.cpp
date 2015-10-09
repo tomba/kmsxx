@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <algorithm>
+#include <chrono>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -14,7 +15,7 @@ using namespace kms;
 
 static void main_loop(Card& card);
 
-class OutputFlipHandler : PageFlipHandlerBase
+class OutputFlipHandler : private PageFlipHandlerBase
 {
 public:
 	OutputFlipHandler(Connector* conn, Crtc* crtc, DumbFramebuffer* fb1, DumbFramebuffer* fb2)
@@ -38,7 +39,29 @@ public:
 		ASSERT(r == 0);
 	}
 
+	void start_flipping()
+	{
+		m_t1 = std::chrono::steady_clock::now();
+		m_frame_num = 0;
+		queue_next();
+	}
+
+private:
 	void handle_page_flip(uint32_t frame, double time)
+	{
+		++m_frame_num;
+
+		if (m_frame_num  % 100 == 0) {
+			auto t2 = std::chrono::steady_clock::now();
+			std::chrono::duration<float> fsec = t2 - m_t1;
+			printf("Output %d: fps %f\n", m_connector->idx(), 100.0 / fsec.count());
+			m_t1 = t2;
+		}
+
+		queue_next();
+	}
+
+	void queue_next()
 	{
 		m_front_buf = (m_front_buf + 1) % 2;
 
@@ -86,6 +109,9 @@ private:
 
 	int m_front_buf;
 	int m_bar_xpos;
+
+	int m_frame_num;
+	chrono::steady_clock::time_point m_t1;
 };
 
 int main()
@@ -119,7 +145,7 @@ int main()
 		out->set_mode();
 
 	for(auto out : outputs)
-		out->handle_page_flip(0, 0);
+		out->start_flipping();
 
 	main_loop(card);
 

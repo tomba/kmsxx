@@ -21,6 +21,7 @@ public:
 	void print_short() const;
 
 	bool supports_crtc(Crtc* crtc) const;
+	bool supports_format(PixelFormat fmt) const;
 
 	PlaneType plane_type() const;
 

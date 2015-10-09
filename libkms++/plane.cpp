@@ -57,6 +57,17 @@ bool Plane::supports_crtc(Crtc* crtc) const
 	return m_priv->drm_plane->possible_crtcs & (1 << crtc->idx());
 }
 
+bool Plane::supports_format(PixelFormat fmt) const
+{
+	auto p = m_priv->drm_plane;
+
+	for (unsigned i = 0; i < p->count_formats; ++i)
+		if ((uint32_t)fmt == p->formats[i])
+			return true;
+
+	return false;
+}
+
 PlaneType Plane::plane_type() const
 {
 	if (card().has_has_universal_planes())

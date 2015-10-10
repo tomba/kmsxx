@@ -131,8 +131,8 @@ static void draw_yuv420_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
 
 static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
 {
-	unsigned w = fb.width();
-	unsigned h = fb.height();
+	const unsigned w = fb.width();
+	const unsigned h = fb.height();
 
 	const unsigned mw = 20;
 
@@ -171,7 +171,7 @@ static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
 		else if (w - x == y || x == h - y)
 			return RGB(255, 255, 255);
 		else {
-			int t = (x - xm1 - 1) * 3 / (xm2 - xm1 - 1);
+			int t = (x - xm1 - 1) * 8 / (xm2 - xm1 - 1);
 			unsigned r = 0, g = 0, b = 0;
 
 			unsigned c = (y - ym1 - 1) % 256;
@@ -185,6 +185,20 @@ static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
 				break;
 			case 2:
 				b = c;
+				break;
+			case 3:
+				g = b = c;
+				break;
+			case 4:
+				r = b = c;
+				break;
+			case 5:
+				r = g = c;
+				break;
+			case 6:
+				r = g = b = c;
+				break;
+			case 7:
 				break;
 			}
 

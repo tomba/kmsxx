@@ -15,18 +15,57 @@ using namespace kms;
 
 static void main_loop(Card& card);
 
-class OutputFlipHandler : private PageFlipHandlerBase
+class Flipper
 {
 public:
-	OutputFlipHandler(Connector* conn, Crtc* crtc, DumbFramebuffer* fb1, DumbFramebuffer* fb2)
-		: m_connector(conn), m_crtc(crtc), m_fbs { fb1, fb2 }, m_front_buf(1), m_bar_xpos(0)
+	Flipper(Card& card, unsigned width, unsigned height)
+		: m_current(0), m_bar_xpos(0)
 	{
+		auto format = PixelFormat::XRGB8888;
+		m_fbs[0] = new DumbFramebuffer(card, width, height, format);
+		m_fbs[1] = new DumbFramebuffer(card, width, height, format);
 	}
 
-	~OutputFlipHandler()
+	~Flipper()
 	{
 		delete m_fbs[0];
 		delete m_fbs[1];
+	}
+
+	Framebuffer* get_next()
+	{
+		m_current ^= 1;
+
+		const int bar_width = 20;
+		const int bar_speed = 8;
+
+		auto fb = m_fbs[m_current];
+
+		int current_xpos = m_bar_xpos;
+		int old_xpos = (current_xpos + (fb->width() - bar_width - bar_speed)) % (fb->width() - bar_width);
+		int new_xpos = (current_xpos + bar_speed) % (fb->width() - bar_width);
+
+		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
+
+		m_bar_xpos = new_xpos;
+
+		return fb;
+	}
+
+private:
+	DumbFramebuffer* m_fbs[2];
+
+	int m_current;
+	int m_bar_xpos;
+};
+
+class OutputFlipHandler : private PageFlipHandlerBase
+{
+public:
+	OutputFlipHandler(Connector* conn, Crtc* crtc, const Videomode& mode)
+		: m_connector(conn), m_crtc(crtc), m_mode(mode),
+		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay)
+	{
 	}
 
 	OutputFlipHandler(const OutputFlipHandler& other) = delete;
@@ -35,7 +74,8 @@ public:
 	void set_mode()
 	{
 		auto mode = m_connector->get_default_mode();
-		int r = m_crtc->set_mode(m_connector, *m_fbs[0], mode);
+		auto fb = m_flipper.get_next();
+		int r = m_crtc->set_mode(m_connector, *fb, mode);
 		ASSERT(r == 0);
 	}
 
@@ -63,26 +103,10 @@ private:
 
 	void queue_next()
 	{
-		m_front_buf = (m_front_buf + 1) % 2;
-
-		const int bar_width = 20;
-		const int bar_speed = 8;
-
 		auto crtc = m_crtc;
-		auto fb = m_fbs[(m_front_buf + 1) % 2];
-
-		ASSERT(crtc);
-		ASSERT(fb);
-
-		int current_xpos = m_bar_xpos;
-		int old_xpos = (current_xpos + (fb->width() - bar_width - bar_speed)) % (fb->width() - bar_width);
-		int new_xpos = (current_xpos + bar_speed) % (fb->width() - bar_width);
-
-		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
-
-		m_bar_xpos = new_xpos;
-
 		auto& card = crtc->card();
+
+		auto fb = m_flipper.get_next();
 
 		if (card.has_atomic()) {
 			int r;
@@ -105,13 +129,12 @@ private:
 private:
 	Connector* m_connector;
 	Crtc* m_crtc;
-	DumbFramebuffer* m_fbs[2];
-
-	int m_front_buf;
-	int m_bar_xpos;
+	Videomode m_mode;
 
 	int m_frame_num;
 	chrono::steady_clock::time_point m_t1;
+
+	Flipper m_flipper;
 };
 
 int main()
@@ -132,12 +155,7 @@ int main()
 
 		auto mode = conn->get_default_mode();
 
-		auto fb1 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, PixelFormat::XRGB8888);
-		auto fb2 = new DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, PixelFormat::XRGB8888);
-
-		printf("conn %u, crtc %u, fb1 %u, fb2 %u\n", conn->id(), crtc->id(), fb1->id(), fb2->id());
-
-		auto output = new OutputFlipHandler(conn, crtc, fb1, fb2);
+		auto output = new OutputFlipHandler(conn, crtc, mode);
 		outputs.push_back(output);
 	}
 

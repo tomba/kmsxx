@@ -64,8 +64,24 @@ class OutputFlipHandler : private PageFlipHandlerBase
 public:
 	OutputFlipHandler(Connector* conn, Crtc* crtc, const Videomode& mode)
 		: m_connector(conn), m_crtc(crtc), m_mode(mode),
-		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay)
+		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay),
+		  m_plane(0), m_plane_flipper(0)
 	{
+	}
+
+	OutputFlipHandler(Connector* conn, Crtc* crtc, const Videomode& mode,
+			  Plane* plane, unsigned pwidth, unsigned pheight)
+		: m_connector(conn), m_crtc(crtc), m_mode(mode),
+		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay),
+		  m_plane(plane)
+	{
+		m_plane_flipper = new Flipper(conn->card(), pwidth, pheight);
+	}
+
+	~OutputFlipHandler()
+	{
+		if (m_plane_flipper)
+			delete m_plane_flipper;
 	}
 
 	OutputFlipHandler(const OutputFlipHandler& other) = delete;
@@ -77,6 +93,14 @@ public:
 		auto fb = m_flipper.get_next();
 		int r = m_crtc->set_mode(m_connector, *fb, mode);
 		ASSERT(r == 0);
+
+		if (m_plane) {
+			auto planefb = m_plane_flipper->get_next();
+			r = m_crtc->set_plane(m_plane, *planefb,
+					      0, 0, planefb->width(), planefb->height(),
+					      0, 0, planefb->width(), planefb->height());
+			ASSERT(r == 0);
+		}
 	}
 
 	void start_flipping()
@@ -107,6 +131,7 @@ private:
 		auto& card = crtc->card();
 
 		auto fb = m_flipper.get_next();
+		Framebuffer* planefb = m_plane ? m_plane_flipper->get_next() : 0;
 
 		if (card.has_atomic()) {
 			int r;
@@ -114,6 +139,8 @@ private:
 			AtomicReq req(card);
 
 			req.add(m_crtc, "FB_ID", fb->id());
+			if (m_plane)
+				req.add(m_plane, "FB_ID", planefb->id());
 
 			r = req.test();
 			ASSERT(r == 0);
@@ -123,6 +150,13 @@ private:
 		} else {
 			int r = crtc->page_flip(*fb, this);
 			ASSERT(r == 0);
+
+			if (m_plane) {
+				r = m_crtc->set_plane(m_plane, *planefb,
+						      0, 0, planefb->width(), planefb->height(),
+						      0, 0, planefb->width(), planefb->height());
+				ASSERT(r == 0);
+			}
 		}
 	}
 
@@ -135,6 +169,9 @@ private:
 	chrono::steady_clock::time_point m_t1;
 
 	Flipper m_flipper;
+
+	Plane* m_plane;
+	Flipper* m_plane_flipper;
 };
 
 int main()
@@ -152,10 +189,23 @@ int main()
 	{
 		auto conn = pipe.connector;
 		auto crtc = pipe.crtc;
-
 		auto mode = conn->get_default_mode();
 
-		auto output = new OutputFlipHandler(conn, crtc, mode);
+
+		Plane* plane = 0;
+
+		for (Plane* p : crtc->get_possible_planes()) {
+			if (p->plane_type() == PlaneType::Overlay) {
+				plane = p;
+				break;
+			}
+		}
+
+		OutputFlipHandler* output;
+		if (plane)
+			output = new OutputFlipHandler(conn, crtc, mode, plane, 500, 400);
+		else
+			output = new OutputFlipHandler(conn, crtc, mode);
 		outputs.push_back(output);
 	}
 

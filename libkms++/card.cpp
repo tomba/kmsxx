@@ -211,6 +211,7 @@ Crtc* Card::get_crtc_by_index(uint32_t idx) const
 	throw invalid_argument(string("Crtc #") + to_string(idx) + " not found");
 }
 
+Connector* Card::get_connector(uint32_t id) const { return dynamic_cast<Connector*>(get_object(id)); }
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
 Encoder* Card::get_encoder(uint32_t id) const { return dynamic_cast<Encoder*>(get_object(id)); }
 Property* Card::get_prop(uint32_t id) const { return dynamic_cast<Property*>(get_object(id)); }

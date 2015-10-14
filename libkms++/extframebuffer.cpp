@@ -23,6 +23,18 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, uint
 	set_id(id);
 }
 
+ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
+			       uint32_t handles[], uint32_t pitches[], uint32_t offsets[])
+	: Framebuffer(card, width, height)
+{
+	uint32_t id;
+	int r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles, pitches, offsets, &id, 0);
+	if (r)
+		throw std::invalid_argument(string("Failed to create ExtFramebuffer: ") + strerror(r));
+
+	set_id(id);
+}
+
 ExtFramebuffer::~ExtFramebuffer()
 {
 	drmModeRmFB(card().fd(), id());

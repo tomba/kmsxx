@@ -37,6 +37,15 @@ public:
 
 	bool connected() const;
 
+	const std::string& fullname() const { return m_fullname; }
+	uint32_t connector_type() const;
+	uint32_t connector_type_id() const;
+	uint32_t mmWidth() const;
+	uint32_t mmHeight() const;
+	uint32_t subpixel() const;
+	const std::string& subpixel_str() const;
+	std::vector<Videomode> get_modes() const;
+	std::vector<Encoder*> get_encoders() const;
 private:
 	Connector(Card& card, uint32_t id, uint32_t idx);
 	~Connector();

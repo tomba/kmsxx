@@ -42,6 +42,17 @@ static const map<int, string> connection_str = {
 	{ DRM_MODE_UNKNOWNCONNECTION, "Unknown" },
 };
 
+static const map<int, string> subpix_str = {
+#define DEF_SUBPIX(c) { DRM_MODE_SUBPIXEL_##c, #c }
+	DEF_SUBPIX(UNKNOWN),
+	DEF_SUBPIX(HORIZONTAL_RGB),
+	DEF_SUBPIX(HORIZONTAL_BGR),
+	DEF_SUBPIX(VERTICAL_RGB),
+	DEF_SUBPIX(VERTICAL_BGR),
+	DEF_SUBPIX(NONE),
+#undef DEF_SUBPIX
+};
+
 struct ConnectorPriv
 {
 	drmModeConnectorPtr drm_connector;
@@ -137,6 +148,58 @@ Crtc* Connector::get_current_crtc() const
 		return m_current_encoder->get_crtc();
 	else
 		return 0;
+}
+
+uint32_t Connector::connector_type() const
+{
+	return m_priv->drm_connector->connector_type;
+}
+
+uint32_t Connector::connector_type_id() const
+{
+	return m_priv->drm_connector->connector_type_id;
+}
+
+uint32_t Connector::mmWidth() const
+{
+	return m_priv->drm_connector->mmWidth;
+}
+
+uint32_t Connector::mmHeight() const
+{
+	return m_priv->drm_connector->mmHeight;
+}
+
+uint32_t Connector::subpixel() const
+{
+	return m_priv->drm_connector->subpixel;
+}
+
+const string& Connector::subpixel_str() const
+{
+	return subpix_str.at(subpixel());
+}
+
+std::vector<Videomode> Connector::get_modes() const
+{
+	vector<Videomode> modes;
+
+	for (int i = 0; i < m_priv->drm_connector->count_modes; i++)
+		modes.push_back(drm_mode_to_video_mode(
+					m_priv->drm_connector->modes[i]));
+
+	return modes;
+}
+
+std::vector<Encoder*> Connector::get_encoders() const
+{
+	vector<Encoder*> encoders;
+
+	for (int i = 0; i < m_priv->drm_connector->count_encoders; i++) {
+		auto enc = card().get_encoder(m_priv->drm_connector->encoders[i]);
+		encoders.push_back(enc);
+	}
+	return encoders;
 }
 
 }

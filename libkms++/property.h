@@ -15,6 +15,7 @@ public:
 
 	const std::string& name() const;
 
+	const std::string to_str(uint64_t val) const;
 private:
 	Property(Card& card, uint32_t id);
 	~Property();

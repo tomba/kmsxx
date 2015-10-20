@@ -87,4 +87,45 @@ int Crtc::page_flip(Framebuffer& fb, void *data)
 {
 	return drmModePageFlip(card().fd(), id(), fb.id(), DRM_MODE_PAGE_FLIP_EVENT, data);
 }
+
+uint32_t Crtc::buffer_id() const
+{
+	return m_priv->drm_crtc->buffer_id;
+}
+
+uint32_t Crtc::x() const
+{
+	return m_priv->drm_crtc->x;
+}
+
+uint32_t Crtc::y() const
+{
+	return m_priv->drm_crtc->y;
+}
+
+uint32_t Crtc::width() const
+{
+	return m_priv->drm_crtc->width;
+}
+
+uint32_t Crtc::height() const
+{
+	return m_priv->drm_crtc->height;
+}
+
+int Crtc::mode_valid() const
+{
+	return m_priv->drm_crtc->mode_valid;
+}
+
+Videomode Crtc::mode() const
+{
+	return drm_mode_to_video_mode(m_priv->drm_crtc->mode);
+}
+
+int Crtc::gamma_size() const
+{
+	return m_priv->drm_crtc->gamma_size;
+}
+
 }

@@ -26,6 +26,15 @@ public:
 
 	int page_flip(Framebuffer& fb, void *data);
 	int page_flip(Framebuffer& fb, PageFlipHandlerBase* data) { return page_flip(fb, (void*)data); }
+
+	uint32_t buffer_id() const;
+	uint32_t x() const;
+	uint32_t y() const;
+	uint32_t width() const;
+	uint32_t height() const;
+	int mode_valid() const;
+	Videomode mode() const;
+	int gamma_size() const;
 private:
 	Crtc(Card& card, uint32_t id, uint32_t idx);
 	~Crtc();

@@ -25,6 +25,15 @@ public:
 
 	PlaneType plane_type() const;
 
+	std::vector<PixelFormat> get_formats() const;
+	uint32_t crtc_id() const;
+	uint32_t fb_id() const;
+
+	uint32_t crtc_x() const;
+	uint32_t crtc_y() const;
+	uint32_t x() const;
+	uint32_t y() const;
+	uint32_t gamma_size() const;
 private:
 	Plane(Card& card, uint32_t id);
 	~Plane();

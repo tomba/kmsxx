@@ -18,6 +18,18 @@ struct EncoderPriv
 	drmModeEncoderPtr drm_encoder;
 };
 
+static const map<int, string> encoder_types = {
+#define DEF_ENC(c) { DRM_MODE_ENCODER_##c, #c }
+	DEF_ENC(NONE),
+	DEF_ENC(DAC),
+	DEF_ENC(TMDS),
+	DEF_ENC(LVDS),
+	DEF_ENC(TVDAC),
+	DEF_ENC(VIRTUAL),
+	DEF_ENC(DSI),
+#undef DEF_ENC
+};
+
 Encoder::Encoder(Card &card, uint32_t id)
 	:DrmObject(card, id, DRM_MODE_OBJECT_ENCODER)
 {
@@ -63,4 +75,10 @@ vector<Crtc*> Encoder::get_possible_crtcs() const
 
 	return crtcs;
 }
+
+const string& Encoder::get_encoder_type() const
+{
+	return encoder_types.at(m_priv->drm_encoder->encoder_type);
+}
+
 }

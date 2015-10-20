@@ -27,6 +27,9 @@ public:
 	uint64_t get_prop_value(uint32_t id) const;
 	uint64_t get_prop_value(const std::string& name) const;
 
+	const std::map<uint32_t, uint64_t>& get_prop_map() const {
+		return m_prop_values;
+	}
 protected:
 	DrmObject(Card& card, uint32_t object_type);
 	DrmObject(Card& card, uint32_t id, uint32_t object_type, uint32_t idx = 0);

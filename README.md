@@ -52,3 +52,12 @@ Option name          | Values        | Default
 CMAKE_BUILD_TYPE     | Release/Debug | Release
 LIBKMS_ENABLE_PYTHON | ON/OFF        | ON
 LIBKMS_ENABLE_LUA    | ON/OFF        | ON
+
+## Env variables
+
+You can use the following environmental variables to control the behavior of libkms.
+
+Variable                          | Description
+--------------------------------- | -------------
+LIBKMSXX_DISABLE_UNIVERSAL_PLANES | Set to disable the use of universal planes
+LIBKMSXX_DISABLE_ATOMIC           | Set to disable the use of atomic modesetting

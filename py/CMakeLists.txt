@@ -21,7 +21,7 @@ swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
 # We get some "maybe-uninitialized" warnings from the generated code. I hope they are harmless.
 set_source_files_properties(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
 
-add_custom_target(pyextras SOURCES test.py functest.py db.py)
+add_custom_target(pyextras SOURCES test.py functest.py db.py iact.py)
 
 add_test(NAME pytest COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/functest.py")
 set_property(TEST pytest PROPERTY

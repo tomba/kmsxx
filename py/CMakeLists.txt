@@ -12,10 +12,14 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(../libkms++ ../libkmstest)
 
 #set(CMAKE_SWIG_FLAGS "-I../../libkms")
+set(CMAKE_SWIG_FLAGS "-builtin")
 
 set_source_files_properties(pykms.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(pykms python pykms.i)
 swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
+
+# We get some "maybe-uninitialized" warnings from the generated code. I hope they are harmless.
+set_source_files_properties(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
 
 add_custom_target(pyextras SOURCES test.py functest.py db.py)
 

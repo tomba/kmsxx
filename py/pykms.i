@@ -9,6 +9,7 @@ using namespace kms;
 
 %include "std_string.i"
 %include "stdint.i"
+%include "std_vector.i"
 
 %feature("director") PageFlipHandlerBase;
 
@@ -26,3 +27,8 @@ using namespace kms;
 %include "pagefliphandler.h"
 
 %include "kmstest.h"
+
+%template(ConnectorVector) std::vector<kms::Connector*>;
+%template(CrtcVector) std::vector<kms::Crtc*>;
+%template(EncoderVector) std::vector<kms::Encoder*>;
+%template(PlaneVector) std::vector<kms::Plane*>;

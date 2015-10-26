@@ -21,6 +21,7 @@ public:
 	uint8_t* map(unsigned plane) const { return m_planes[plane].map; }
 	uint32_t stride(unsigned plane) const { return m_planes[plane].stride; }
 	uint32_t size(unsigned plane) const { return m_planes[plane].size; }
+	uint32_t offset(unsigned plane) const { return m_planes[plane].offset; }
 
 	void clear();
 
@@ -29,6 +30,7 @@ private:
 		uint32_t handle;
 		uint32_t size;
 		uint32_t stride;
+		uint32_t offset;
 		uint8_t *map;
 	};
 

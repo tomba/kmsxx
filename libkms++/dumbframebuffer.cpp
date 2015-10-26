@@ -91,6 +91,7 @@ void DumbFramebuffer::Create()
 		plane.handle = creq.handle;
 		plane.stride = creq.pitch;
 		plane.size = creq.height * creq.pitch;
+		plane.offset = 0;
 
 		/*
 		printf("buf %d: %dx%d, bitspp %d, stride %d, size %d\n",
@@ -117,7 +118,7 @@ void DumbFramebuffer::Create()
 	/* create framebuffer object for the dumb-buffer */
 	uint32_t bo_handles[4] = { m_planes[0].handle, m_planes[1].handle };
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
-	uint32_t offsets[4] = { 0 };
+	uint32_t offsets[4] = {  m_planes[0].offset, m_planes[1].offset };
 	uint32_t id;
 	r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
 			  bo_handles, pitches, offsets, &id, 0);

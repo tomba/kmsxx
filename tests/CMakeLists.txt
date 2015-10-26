@@ -14,3 +14,7 @@ add_executable (kmsprint kmsprint.cpp)
 target_link_libraries(kmsprint kms++ ${LIBDRM_LIBRARIES})
 
 add_executable (optiontester optiontester.cpp)
+
+add_executable (wb wb.cpp omapwb.h)
+target_link_libraries(wb kms++ kmstest ${LIBDRM_LIBRARIES})
+

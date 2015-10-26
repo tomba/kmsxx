@@ -20,12 +20,14 @@ public:
 	uint32_t stride(unsigned plane) const { return m_planes[plane].stride; }
 	uint32_t size(unsigned plane) const { return m_planes[plane].size; }
 	uint32_t offset(unsigned plane) const { return m_planes[plane].offset; }
+	uint32_t prime_fd(unsigned plane);
 
 	void clear();
 
 private:
 	struct FramebufferPlane {
 		uint32_t handle;
+		int prime_fd;
 		uint32_t size;
 		uint32_t stride;
 		uint32_t offset;

@@ -4,6 +4,8 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <drm_fourcc.h>
 #include <drm.h>
 #include <drm_mode.h>
@@ -31,6 +33,19 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 DumbFramebuffer::~DumbFramebuffer()
 {
 	Destroy();
+}
+
+uint32_t DumbFramebuffer::prime_fd(unsigned int plane)
+{
+	if (m_planes[plane].prime_fd >= 0)
+		return m_planes[plane].prime_fd;
+
+	int r = drmPrimeHandleToFD(card().fd(), m_planes[plane].handle,
+				   DRM_CLOEXEC, &m_planes[plane].prime_fd);
+	if (r)
+		throw std::runtime_error("drmPrimeHandleToFD failed\n");
+
+	return m_planes[plane].prime_fd;
 }
 
 struct FormatPlaneInfo
@@ -110,6 +125,8 @@ void DumbFramebuffer::Create()
 
 		/* clear the framebuffer to 0 */
 		memset(plane.map, 0, plane.size);
+
+		plane.prime_fd = -1;
 	}
 
 	/* create framebuffer object for the dumb-buffer */
@@ -140,7 +157,8 @@ void DumbFramebuffer::Destroy()
 		struct drm_mode_destroy_dumb dreq = drm_mode_destroy_dumb();
 		dreq.handle = plane.handle;
 		drmIoctl(card().fd(), DRM_IOCTL_MODE_DESTROY_DUMB, &dreq);
-
+		if (plane.prime_fd >= 0)
+			::close(plane.prime_fd);
 	}
 }
 

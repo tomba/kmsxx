@@ -9,6 +9,8 @@ constexpr uint32_t MakeFourCC(const char *fourcc)
 
 enum class PixelFormat : uint32_t
 {
+	Undefined = 0,
+
 	NV12 = MakeFourCC("NV12"),
 	NV21 = MakeFourCC("NV21"),
 

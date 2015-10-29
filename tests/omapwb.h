@@ -42,6 +42,22 @@ enum omap_wb_mode {
 	OMAP_WB_CAPTURE_MGR = 3,
 };
 
+/* the same as enum omap_plane */
+enum omap_wb_src_plane {
+	OMAP_WB_GFX	= 0,
+	OMAP_WB_VIDEO1	= 1,
+	OMAP_WB_VIDEO2	= 2,
+	OMAP_WB_VIDEO3	= 3,
+};
+
+/* the same as enum omap_channel */
+enum omap_wb_src_channel {
+	OMAP_WB_CHANNEL_LCD	= 0,
+	OMAP_WB_CHANNEL_DIGIT	= 1,
+	OMAP_WB_CHANNEL_LCD2	= 2,
+	OMAP_WB_CHANNEL_LCD3	= 3,
+};
+
 struct omap_wb_plane {
 	int fd;
 	uint16_t pitch;
@@ -59,8 +75,14 @@ struct omap_wb_buffer {
 };
 
 struct omap_wb_convert_info {
-	uint32_t wb_mode; /* enum omap_wb_mode */
-	struct omap_wb_buffer src;
+	uint32_t wb_mode; /* enum omap_wb_src_plane */
+
+	uint32_t wb_channel; /* enum omap_wb_src_channel */
+	uint32_t channel_width;
+	uint32_t channel_height;
+
+	uint32_t num_srcs;
+	struct omap_wb_buffer src[3];
 	struct omap_wb_buffer dst;
 };
 

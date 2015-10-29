@@ -20,12 +20,14 @@ static void draw_rgb_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB col
 {
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
+	case PixelFormat::ARGB8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.rgb888();
 		break;
 	}
 	case PixelFormat::XBGR8888:
+	case PixelFormat::ABGR8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.bgr888();
@@ -219,6 +221,8 @@ static void draw_test_pattern_impl(DumbFramebuffer& fb)
 	switch (fb.format()) {
 	case PixelFormat::XRGB8888:
 	case PixelFormat::XBGR8888:
+	case PixelFormat::ARGB8888:
+	case PixelFormat::ABGR8888:
 	case PixelFormat::RGB565:
 		for (y = 0; y < h; y++) {
 			for (x = 0; x < w; x++) {

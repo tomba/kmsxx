@@ -4,7 +4,8 @@ namespace kms
 {
 RGB::RGB()
 {
-	r = g = b = a = 0;
+	r = g = b = 0;
+	a = 255;
 }
 
 RGB::RGB(uint8_t r, uint8_t g, uint8_t b)
@@ -12,17 +13,17 @@ RGB::RGB(uint8_t r, uint8_t g, uint8_t b)
 	this->r = r;
 	this->g = g;
 	this->b = b;
-	this->a = 0;
+	this->a = 255;
 }
 
 uint32_t RGB::rgb888() const
 {
-	return (r << 16) | (g << 8) | (b << 0);
+	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
 uint32_t RGB::bgr888() const
 {
-	return (b << 16) | (g << 8) | (r << 0);
+	return (a << 24) | (b << 16) | (g << 8) | (r << 0);
 }
 
 uint16_t RGB::rgb565() const

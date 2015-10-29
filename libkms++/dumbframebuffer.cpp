@@ -65,6 +65,8 @@ static const map<PixelFormat, FormatInfo> format_info_array = {
 	/* RGB32 */
 	{ PixelFormat::XRGB8888, { 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::XBGR8888, { 1, { { 32, 1, 1 } }, } },
+	{ PixelFormat::ARGB8888, { 1, { { 32, 1, 1 } }, } },
+	{ PixelFormat::ABGR8888, { 1, { { 32, 1, 1 } }, } },
 };
 
 void DumbFramebuffer::Create()

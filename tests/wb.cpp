@@ -93,6 +93,8 @@ int main(int argc, char **argv)
 
 	struct omap_wb_convert_info conv_cmd = { };
 
+	conv_cmd.wb_mode = OMAP_WB_MEM2MEM_OVL;
+
 	conv_cmd.src.pipe = OMAP_DSS_VIDEO3;
 	conv_cmd.src.fourcc = (uint32_t)srcfb->format();
 	conv_cmd.src.num_planes = srcfb->num_planes();

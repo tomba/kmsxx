@@ -33,6 +33,15 @@
 
 #define OMAP_WB_CONVERT		OMAP_IOWR(0, struct omap_wb_convert_info)
 
+enum omap_wb_mode {
+	/* mem2mem from single ovl to wb */
+	OMAP_WB_MEM2MEM_OVL = 1,
+	/* mem2mem from N overlays via single mgr to wb */
+	OMAP_WB_MEM2MEM_MGR = 2,
+	/* capture from single mgr to wb */
+	OMAP_WB_CAPTURE_MGR = 3,
+};
+
 struct omap_wb_window {
 	uint16_t x, y;
 	uint16_t w, h;
@@ -52,6 +61,7 @@ struct omap_wb_buffer {
 };
 
 struct omap_wb_convert_info {
+	uint32_t wb_mode; /* enum omap_wb_mode */
 	struct omap_wb_buffer src;
 	struct omap_wb_buffer dst;
 };

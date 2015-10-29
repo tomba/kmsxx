@@ -193,14 +193,14 @@ int main()
 
 
 		Plane* plane = 0;
-
+#if 0 // disable the plane for now
 		for (Plane* p : crtc->get_possible_planes()) {
 			if (p->plane_type() == PlaneType::Overlay) {
 				plane = p;
 				break;
 			}
 		}
-
+#endif
 		OutputFlipHandler* output;
 		if (plane)
 			output = new OutputFlipHandler(conn, crtc, mode, plane, 500, 400);

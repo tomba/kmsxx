@@ -70,25 +70,6 @@ int main(int argc, char **argv)
 			    0, 0, dstfb->width(), dstfb->height());
 	ASSERT(r == 0);
 
-	int srcfds[2], dstfds[2];
-
-	r = drmPrimeHandleToFD(card.fd(), srcfb->handle(0), DRM_CLOEXEC, &srcfds[0]);
-	ASSERT(r == 0);
-
-	if (srcfb->num_planes() > 1) {
-		r = drmPrimeHandleToFD(card.fd(), srcfb->handle(1), DRM_CLOEXEC, &srcfds[1]);
-		ASSERT(r == 0);
-	}
-
-	r = drmPrimeHandleToFD(card.fd(), dstfb->handle(0), DRM_CLOEXEC, &dstfds[0]);
-	ASSERT(r == 0);
-
-	if (dstfb->num_planes() > 1) {
-		r = drmPrimeHandleToFD(card.fd(), dstfb->handle(1), DRM_CLOEXEC, &dstfds[1]);
-		ASSERT(r == 0);
-	}
-
-
 	int wbfd = open("/dev/omap_wb", O_RDWR);
 
 	struct omap_wb_convert_info conv_cmd = { };
@@ -105,7 +86,7 @@ int main(int argc, char **argv)
 	conv_cmd.src.num_planes = srcfb->num_planes();
 
 	for (unsigned i = 0; i < srcfb->num_planes(); ++i) {
-		conv_cmd.src.plane[i].fd = srcfds[i];
+		conv_cmd.src.plane[i].fd = srcfb->prime_fd(i);
 		conv_cmd.src.plane[i].pitch = srcfb->stride(i);
 	}
 
@@ -119,7 +100,7 @@ int main(int argc, char **argv)
 	conv_cmd.dst.num_planes = dstfb->num_planes();
 
 	for (unsigned i = 0; i < dstfb->num_planes(); ++i) {
-		conv_cmd.dst.plane[i].fd = dstfds[i];
+		conv_cmd.dst.plane[i].fd = dstfb->prime_fd(i);
 		conv_cmd.dst.plane[i].pitch = dstfb->stride(i);
 	}
 

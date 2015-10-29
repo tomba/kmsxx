@@ -45,6 +45,7 @@ struct omap_wb_plane {
 };
 
 struct omap_wb_buffer {
+	uint32_t pipe; /* enum omap_plane */
 	uint32_t fourcc;
 	uint8_t num_planes;
 	struct omap_wb_plane plane[2];

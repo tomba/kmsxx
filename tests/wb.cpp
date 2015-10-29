@@ -19,6 +19,14 @@
 using namespace std;
 using namespace kms;
 
+enum omap_plane {
+	OMAP_DSS_GFX	= 0,
+	OMAP_DSS_VIDEO1	= 1,
+	OMAP_DSS_VIDEO2	= 2,
+	OMAP_DSS_VIDEO3	= 3,
+	OMAP_DSS_WB	= 4,
+};
+
 int main(int argc, char **argv)
 {
 	Card card;
@@ -85,6 +93,7 @@ int main(int argc, char **argv)
 
 	struct omap_wb_convert_info conv_cmd = { };
 
+	conv_cmd.src.pipe = OMAP_DSS_VIDEO3;
 	conv_cmd.src.fourcc = (uint32_t)srcfb->format();
 	conv_cmd.src.num_planes = srcfb->num_planes();
 	conv_cmd.src.plane[0].fd = srcfds[0];

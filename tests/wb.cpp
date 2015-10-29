@@ -97,39 +97,30 @@ int main(int argc, char **argv)
 
 	conv_cmd.src.pipe = OMAP_DSS_VIDEO3;
 	conv_cmd.src.fourcc = (uint32_t)srcfb->format();
-	conv_cmd.src.num_planes = srcfb->num_planes();
-	conv_cmd.src.plane[0].fd = srcfds[0];
-	conv_cmd.src.plane[0].win.x = 0;
-	conv_cmd.src.plane[0].win.y = 0;
-	conv_cmd.src.plane[0].win.w = srcfb->width();
-	conv_cmd.src.plane[0].win.h = srcfb->height();
-	conv_cmd.src.plane[0].pitch = srcfb->stride(0);
+	conv_cmd.src.x = 0;
+	conv_cmd.src.y = 0;
+	conv_cmd.src.width = srcfb->width();
+	conv_cmd.src.height = srcfb->height();
 
-	if (srcfb->num_planes() > 1) {
-		conv_cmd.src.plane[1].fd = srcfds[1];
-		conv_cmd.src.plane[1].win.x = 0;
-		conv_cmd.src.plane[1].win.y = 0;
-		conv_cmd.src.plane[1].win.w = srcfb->width();
-		conv_cmd.src.plane[1].win.h = srcfb->height();
-		conv_cmd.src.plane[1].pitch = srcfb->stride(1);
+	conv_cmd.src.num_planes = srcfb->num_planes();
+
+	for (unsigned i = 0; i < srcfb->num_planes(); ++i) {
+		conv_cmd.src.plane[i].fd = srcfds[i];
+		conv_cmd.src.plane[i].pitch = srcfb->stride(i);
 	}
 
-	conv_cmd.dst.fourcc = (uint32_t)dstfb->format();
-	conv_cmd.dst.num_planes = dstfb->num_planes();
-	conv_cmd.dst.plane[0].fd = dstfds[0];
-	conv_cmd.dst.plane[0].win.x = 0;
-	conv_cmd.dst.plane[0].win.y = 0;
-	conv_cmd.dst.plane[0].win.w = dstfb->width();
-	conv_cmd.dst.plane[0].win.h = dstfb->height();
-	conv_cmd.dst.plane[0].pitch = dstfb->stride(0);
 
-	if (dstfb->num_planes() > 1) {
-		conv_cmd.dst.plane[1].fd = dstfds[1];
-		conv_cmd.dst.plane[1].win.x = 0;
-		conv_cmd.dst.plane[1].win.y = 0;
-		conv_cmd.dst.plane[1].win.w = dstfb->width();
-		conv_cmd.dst.plane[1].win.h = dstfb->height();
-		conv_cmd.dst.plane[1].pitch = dstfb->stride(1);
+	conv_cmd.dst.fourcc = (uint32_t)dstfb->format();
+	conv_cmd.dst.x = 0;
+	conv_cmd.dst.y = 0;
+	conv_cmd.dst.width = dstfb->width();
+	conv_cmd.dst.height = dstfb->height();
+
+	conv_cmd.dst.num_planes = dstfb->num_planes();
+
+	for (unsigned i = 0; i < dstfb->num_planes(); ++i) {
+		conv_cmd.dst.plane[i].fd = dstfds[i];
+		conv_cmd.dst.plane[i].pitch = dstfb->stride(i);
 	}
 
 	r = ioctl(wbfd, OMAP_WB_CONVERT, &conv_cmd);

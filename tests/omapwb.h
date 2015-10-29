@@ -42,20 +42,18 @@ enum omap_wb_mode {
 	OMAP_WB_CAPTURE_MGR = 3,
 };
 
-struct omap_wb_window {
-	uint16_t x, y;
-	uint16_t w, h;
-};
-
 struct omap_wb_plane {
 	int fd;
-	struct omap_wb_window win;
 	uint16_t pitch;
 };
 
 struct omap_wb_buffer {
 	uint32_t pipe; /* enum omap_plane */
 	uint32_t fourcc;
+	uint16_t x, y;
+	uint16_t width, height;
+	uint16_t out_width, out_height;
+
 	uint8_t num_planes;
 	struct omap_wb_plane plane[2];
 };

@@ -66,7 +66,8 @@ struct omap_wb_plane {
 struct omap_wb_buffer {
 	uint32_t pipe; /* enum omap_plane */
 	uint32_t fourcc;
-	uint16_t x, y;
+	uint16_t x_offset, y_offset;
+	uint16_t x_pos, y_pos;
 	uint16_t width, height;
 	uint16_t out_width, out_height;
 

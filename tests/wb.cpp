@@ -19,13 +19,17 @@
 using namespace std;
 using namespace kms;
 
-static void setup_buf(struct omap_wb_buffer *buf, DumbFramebuffer* fb)
+static void setup_ovl(struct omap_wb_buffer *buf, DumbFramebuffer* fb,
+		      uint32_t x, uint32_t y,
+		      uint32_t out_w, uint32_t out_h)
 {
 	buf->fourcc = (uint32_t)fb->format();
-	buf->x = 0;
-	buf->y = 0;
+	buf->x_pos = x;
+	buf->y_pos = y;
 	buf->width = fb->width();
 	buf->height = fb->height();
+	buf->out_width = out_w;
+	buf->out_height = out_h;
 
 	buf->num_planes = fb->num_planes();
 
@@ -35,33 +39,36 @@ static void setup_buf(struct omap_wb_buffer *buf, DumbFramebuffer* fb)
 	}
 }
 
+static void setup_wb_ovl(struct omap_wb_buffer *buf, DumbFramebuffer* fb)
+{
+	buf->fourcc = (uint32_t)fb->format();
+	buf->x_pos = 0;
+	buf->y_pos = 0;
+	buf->width = fb->width();
+	buf->height = fb->height();
+	buf->out_width = 0;
+	buf->out_height = 0;
+
+	buf->num_planes = fb->num_planes();
+
+	for (unsigned i = 0; i < fb->num_planes(); ++i) {
+		buf->plane[i].fd = fb->prime_fd(i);
+		buf->plane[i].pitch = fb->stride(i);
+	}
+}
+
+void read_raw_image(DumbFramebuffer *targetfb)
+{
+	ifstream is("src.data", ifstream::binary);
+	is.read((char*)targetfb->map(0), targetfb->size(0));
+}
+
 int main(int argc, char **argv)
 {
 	Card card;
 
-	if (card.master() == false)
-		printf("Not DRM master, modeset may fail\n");
-
-	//card.print_short();
-
 	auto conn = card.get_first_connected_connector();
 	auto crtc = conn->get_current_crtc();
-
-	unsigned num_srcs = 2;
-
-	DumbFramebuffer* srcfbs[num_srcs] = {0};
-
-
-	srcfbs[0] = new DumbFramebuffer(card, 1920/2, 1200, PixelFormat::XRGB8888);
-	draw_test_pattern(*srcfbs[0]);
-
-	srcfbs[1] = new DumbFramebuffer(card, 1920/2, 1200/2, PixelFormat::XRGB8888);
-	draw_test_pattern(*srcfbs[1]);
-
-	//ifstream is("src.data", ifstream::binary);
-	//is.read((char*)srcfb->map(0), srcfb->size(0));
-
-	int r;
 
 	int wbfd = open("/dev/omap_wb", O_RDWR);
 
@@ -69,35 +76,69 @@ int main(int argc, char **argv)
 
 	conv_cmd.wb_mode = OMAP_WB_MEM2MEM_MGR;
 
+	unsigned num_srcs = 0;
+
+	{
+		struct omap_wb_buffer& src = conv_cmd.src[num_srcs];
+
+		auto fb = new DumbFramebuffer(card, 1920/2, 1200/2, PixelFormat::XRGB8888);
+		draw_test_pattern(*fb);
+
+		src.pipe = OMAP_WB_VIDEO3;
+
+		setup_ovl(&src, fb,
+			  100, 50,
+			  fb->width(), fb->height());
+
+		num_srcs++;
+	}
+
+#if 1
+	{
+		struct omap_wb_buffer& src = conv_cmd.src[num_srcs];
+
+		auto fb = new DumbFramebuffer(card, 1920/2, 1200/2, PixelFormat::XRGB8888);
+		draw_test_pattern(*fb);
+
+		src.pipe = OMAP_WB_VIDEO2;
+
+		setup_ovl(&src, fb,
+			  200, 150,
+			  fb->width(), fb->height());
+
+		num_srcs++;
+	}
+#endif
+
 	conv_cmd.num_srcs = num_srcs;
 
-	conv_cmd.src[0].pipe = OMAP_WB_VIDEO3;
-	conv_cmd.src[1].pipe = OMAP_WB_VIDEO2;
 
-	for (unsigned i = 0; i < num_srcs; ++i)
-		setup_buf(&conv_cmd.src[i], srcfbs[i]);
-
-
-
-	conv_cmd.wb_channel = OMAP_WB_CHANNEL_LCD3;
-	conv_cmd.channel_width = 1920;
-	conv_cmd.channel_height = 1200;
+	{
+		// Setup ovl manager
+		// these are ignored for OVL mode
+		conv_cmd.wb_channel = OMAP_WB_CHANNEL_LCD3;
+		conv_cmd.channel_width = 1920;
+		conv_cmd.channel_height = 1200;
+	}
 
 
 
 	auto dstfb = new DumbFramebuffer(card, 1920, 1200, PixelFormat::NV12);
 
-	setup_buf(&conv_cmd.dst, dstfb);
+	setup_wb_ovl(&conv_cmd.dst, dstfb);
+
+	int r;
 
 	r = ioctl(wbfd, OMAP_WB_CONVERT, &conv_cmd);
 	if (r < 0)
 		printf("wb o/p: wb_convert failed: %d\n", errno);
 
 
+
 	usleep(250000);
 
 
-
+	/* show the result */
 
 	Plane* plane = 0;
 
@@ -118,8 +159,4 @@ int main(int argc, char **argv)
 	printf("press enter to exit\n");
 
 	getchar();
-
-	for (unsigned i = 0; i < num_srcs; ++i)
-		if (srcfbs[i])
-			delete srcfbs[i];
 }

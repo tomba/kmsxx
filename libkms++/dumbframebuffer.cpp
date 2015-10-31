@@ -104,28 +104,7 @@ void DumbFramebuffer::Create()
 		plane.stride = creq.pitch;
 		plane.size = creq.height * creq.pitch;
 		plane.offset = 0;
-
-		/*
-		printf("buf %d: %dx%d, bitspp %d, stride %d, size %d\n",
-			i, creq.width, creq.height, pi->bitspp, plane->stride, plane->size);
-		*/
-
-		/* prepare buffer for memory mapping */
-		struct drm_mode_map_dumb mreq = drm_mode_map_dumb();
-		mreq.handle = plane.handle;
-		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_MAP_DUMB, &mreq);
-		if (r)
-			throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed") + strerror(errno));
-
-		/* perform actual memory mapping */
-		m_planes[i].map = (uint8_t *)mmap(0, plane.size, PROT_READ | PROT_WRITE, MAP_SHARED,
-						  card().fd(), mreq.offset);
-		if (plane.map == MAP_FAILED)
-			throw invalid_argument(string("mmap failed: ") + strerror(errno));
-
-		/* clear the framebuffer to 0 */
-		memset(plane.map, 0, plane.size);
-
+		plane.map = 0;
 		plane.prime_fd = -1;
 	}
 
@@ -162,10 +141,27 @@ void DumbFramebuffer::Destroy()
 	}
 }
 
-void DumbFramebuffer::clear()
+uint8_t* DumbFramebuffer::map(unsigned plane)
 {
-	for (unsigned i = 0; i < m_num_planes; ++i)
-		memset(m_planes[i].map, 0, m_planes[i].size);
+	FramebufferPlane& p = m_planes[plane];
+
+	if (p.map)
+		return p.map;
+
+	/* prepare buffer for memory mapping */
+	struct drm_mode_map_dumb mreq = drm_mode_map_dumb();
+	mreq.handle = p.handle;
+	int r = drmIoctl(card().fd(), DRM_IOCTL_MODE_MAP_DUMB, &mreq);
+	if (r)
+		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed") + strerror(errno));
+
+	/* perform actual memory mapping */
+	p.map = (uint8_t *)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+					  card().fd(), mreq.offset);
+	if (p.map == MAP_FAILED)
+		throw invalid_argument(string("mmap failed: ") + strerror(errno));
+
+	return p.map;
 }
 
 }

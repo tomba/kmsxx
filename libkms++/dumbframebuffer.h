@@ -16,13 +16,11 @@ public:
 	unsigned num_planes() const { return m_num_planes; }
 
 	uint32_t handle(unsigned plane) const { return m_planes[plane].handle; }
-	uint8_t* map(unsigned plane) const { return m_planes[plane].map; }
 	uint32_t stride(unsigned plane) const { return m_planes[plane].stride; }
 	uint32_t size(unsigned plane) const { return m_planes[plane].size; }
 	uint32_t offset(unsigned plane) const { return m_planes[plane].offset; }
+	uint8_t* map(unsigned plane);
 	uint32_t prime_fd(unsigned plane);
-
-	void clear();
 
 private:
 	struct FramebufferPlane {

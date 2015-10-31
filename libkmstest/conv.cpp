@@ -6,7 +6,7 @@
 
 namespace kms
 {
-static RGB read_rgb(const DumbFramebuffer& fb, int x, int y)
+static RGB read_rgb(DumbFramebuffer& fb, int x, int y)
 {
 	uint32_t *pc = (uint32_t *)(fb.map(0) + fb.stride(0) * y);
 
@@ -15,13 +15,13 @@ static RGB read_rgb(const DumbFramebuffer& fb, int x, int y)
 	return RGB((c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff);
 }
 
-static YUV read_rgb_as_yuv(const DumbFramebuffer& fb, int x, int y)
+static YUV read_rgb_as_yuv(DumbFramebuffer& fb, int x, int y)
 {
 	RGB rgb = read_rgb(fb, x, y);
 	return YUV(rgb);
 }
 
-static void fb_rgb_to_packed_yuv(DumbFramebuffer& dst_fb, const DumbFramebuffer& src_fb)
+static void fb_rgb_to_packed_yuv(DumbFramebuffer& dst_fb, DumbFramebuffer& src_fb)
 {
 	unsigned w = src_fb.width();
 	unsigned h = src_fb.height();
@@ -56,7 +56,7 @@ static void fb_rgb_to_packed_yuv(DumbFramebuffer& dst_fb, const DumbFramebuffer&
 	}
 }
 
-static void fb_rgb_to_semiplanar_yuv(DumbFramebuffer& dst_fb, const DumbFramebuffer& src_fb)
+static void fb_rgb_to_semiplanar_yuv(DumbFramebuffer& dst_fb, DumbFramebuffer& src_fb)
 {
 	unsigned w = src_fb.width();
 	unsigned h = src_fb.height();
@@ -91,7 +91,7 @@ static void fb_rgb_to_semiplanar_yuv(DumbFramebuffer& dst_fb, const DumbFramebuf
 	}
 }
 
-static void fb_rgb_to_rgb565(DumbFramebuffer& dst_fb, const DumbFramebuffer& src_fb)
+static void fb_rgb_to_rgb565(DumbFramebuffer& dst_fb, DumbFramebuffer& src_fb)
 {
 	unsigned w = src_fb.width();
 	unsigned h = src_fb.height();
@@ -113,7 +113,7 @@ static void fb_rgb_to_rgb565(DumbFramebuffer& dst_fb, const DumbFramebuffer& src
 	}
 }
 
-void color_convert(DumbFramebuffer& dst, const DumbFramebuffer &src)
+void color_convert(DumbFramebuffer& dst, DumbFramebuffer &src)
 {
 	switch (dst.format()) {
 	case PixelFormat::NV12:

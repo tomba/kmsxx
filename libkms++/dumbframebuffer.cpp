@@ -83,7 +83,7 @@ void DumbFramebuffer::Create()
 		creq.bpp = pi.bitspp;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
-			throw std::invalid_argument("foo");
+			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed") + strerror(errno));
 
 		plane.handle = creq.handle;
 		plane.stride = creq.pitch;
@@ -100,13 +100,13 @@ void DumbFramebuffer::Create()
 		mreq.handle = plane.handle;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_MAP_DUMB, &mreq);
 		if (r)
-			throw std::invalid_argument("foo");
+			throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed") + strerror(errno));
 
 		/* perform actual memory mapping */
 		m_planes[i].map = (uint8_t *)mmap(0, plane.size, PROT_READ | PROT_WRITE, MAP_SHARED,
 						  card().fd(), mreq.offset);
 		if (plane.map == MAP_FAILED)
-			throw std::invalid_argument("foo");
+			throw invalid_argument(string("mmap failed: ") + strerror(errno));
 
 		/* clear the framebuffer to 0 */
 		memset(plane.map, 0, plane.size);
@@ -120,7 +120,7 @@ void DumbFramebuffer::Create()
 	r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
-		throw std::invalid_argument("foo");
+		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
 
 	set_id(id);
 }

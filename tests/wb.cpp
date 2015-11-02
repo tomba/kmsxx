@@ -63,17 +63,35 @@ void read_raw_image(DumbFramebuffer *targetfb)
 	is.read((char*)targetfb->map(0), targetfb->size(0));
 }
 
-int main(int argc, char **argv)
+
+void setup_capture(struct omap_wb_convert_info& conv_cmd)
 {
-	Card card;
+	conv_cmd.wb_mode = OMAP_WB_CAPTURE_MGR;
 
-	auto conn = card.get_first_connected_connector();
-	auto crtc = conn->get_current_crtc();
+	// for capture, only the channel is relevant
+	conv_cmd.wb_channel = OMAP_WB_CHANNEL_LCD;
+}
 
-	int wbfd = open("/dev/omap_wb", O_RDWR);
+void setup_m2m_ovl(Card& card, struct omap_wb_convert_info& conv_cmd)
+{
+	conv_cmd.wb_mode = OMAP_WB_MEM2MEM_OVL;
 
-	struct omap_wb_convert_info conv_cmd = { };
+	conv_cmd.num_srcs = 1;
 
+	struct omap_wb_buffer& src = conv_cmd.src[0];
+
+	auto fb = new DumbFramebuffer(card, 1920/2, 1200/2, PixelFormat::XRGB8888);
+	draw_test_pattern(*fb);
+
+	src.pipe = OMAP_WB_VIDEO3;
+
+	setup_ovl(&src, fb,
+		  100, 50,
+		  fb->width(), fb->height());
+}
+
+void setup_m2m_mgr(Card& card, struct omap_wb_convert_info& conv_cmd)
+{
 	conv_cmd.wb_mode = OMAP_WB_MEM2MEM_MGR;
 
 	unsigned num_srcs = 0;
@@ -112,7 +130,6 @@ int main(int argc, char **argv)
 
 	conv_cmd.num_srcs = num_srcs;
 
-
 	{
 		// Setup ovl manager
 		// these are ignored for OVL mode
@@ -120,10 +137,24 @@ int main(int argc, char **argv)
 		conv_cmd.channel_width = 1920;
 		conv_cmd.channel_height = 1200;
 	}
+}
 
+int main(int argc, char **argv)
+{
+	Card card;
 
+	auto conn = card.get_first_connected_connector();
+	auto crtc = conn->get_current_crtc();
 
-	auto dstfb = new DumbFramebuffer(card, 1920, 1200, PixelFormat::NV12);
+	int wbfd = open("/dev/omap_wb", O_RDWR);
+
+	struct omap_wb_convert_info conv_cmd = { };
+
+	//setup_capture(conv_cmd);
+	setup_m2m_ovl(card, conv_cmd);
+	//setup_m2m_mgr(card, conv_cmd);
+
+	auto dstfb = new DumbFramebuffer(card, 1920, 1200, PixelFormat::XRGB8888);
 
 	setup_wb_ovl(&conv_cmd.dst, dstfb);
 
@@ -132,7 +163,6 @@ int main(int argc, char **argv)
 	r = ioctl(wbfd, OMAP_WB_CONVERT, &conv_cmd);
 	if (r < 0)
 		printf("wb o/p: wb_convert failed: %d\n", errno);
-
 
 
 	usleep(250000);
@@ -153,7 +183,6 @@ int main(int argc, char **argv)
 			    0, 0, dstfb->width(), dstfb->height(),
 			    0, 0, dstfb->width(), dstfb->height());
 	ASSERT(r == 0);
-
 
 
 	printf("press enter to exit\n");

@@ -153,11 +153,7 @@ void Card::print_short() const
 
 Property* Card::get_prop(const string& name) const
 {
-	for (auto pair : m_obmap) {
-		auto prop = dynamic_cast<Property*>(pair.second);
-		if (!prop)
-			continue;
-
+	for (auto prop : m_properties) {
 		if (name == prop->name())
 			return prop;
 	}
@@ -167,10 +163,8 @@ Property* Card::get_prop(const string& name) const
 
 Connector* Card::get_first_connected_connector() const
 {
-	for(auto pair : m_obmap) {
-		auto c = dynamic_cast<Connector*>(pair.second);
-
-		if (c && c->connected())
+	for(auto c : m_connectors) {
+		if (c->connected())
 			return c;
 	}
 
@@ -192,12 +186,7 @@ const vector<DrmObject*> Card::get_objects() const
 
 Crtc* Card::get_crtc_by_index(uint32_t idx) const
 {
-	for(auto pair : m_obmap) {
-		auto crtc = dynamic_cast<Crtc*>(pair.second);
-		if (crtc && crtc->idx() == idx)
-			return crtc;
-	}
-	throw invalid_argument(string("Crtc #") + to_string(idx) + " not found");
+	return m_crtcs[idx];
 }
 
 Connector* Card::get_connector(uint32_t id) const { return dynamic_cast<Connector*>(get_object(id)); }

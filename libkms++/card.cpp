@@ -182,6 +182,17 @@ vector<Connector*> Card::get_connectors() const
 	return v;
 }
 
+vector<Crtc*> Card::get_crtcs() const
+{
+	vector<Crtc*> v;
+	for(auto pair : m_obmap) {
+		auto p = dynamic_cast<Crtc*>(pair.second);
+		if (p)
+			v.push_back(p);
+	}
+	return v;
+}
+
 vector<Plane*> Card::get_planes() const
 {
 	vector<Plane*> v;

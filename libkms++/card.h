@@ -37,6 +37,7 @@ public:
 	void print_short() const;
 
 	std::vector<Connector*> get_connectors() const;
+	std::vector<Crtc*> get_crtcs() const;
 	std::vector<DrmObject*> get_objects() const;
 	std::vector<Plane*> get_planes() const;
 

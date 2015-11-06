@@ -51,6 +51,12 @@ private:
 
 	std::map<uint32_t, DrmObject*> m_obmap;
 
+	std::vector<Connector*> m_connectors;
+	std::vector<Encoder*> m_encoders;
+	std::vector<Crtc*> m_crtcs;
+	std::vector<Plane*> m_planes;
+	std::vector<Property*> m_properties;
+
 	int m_fd;
 	bool m_master;
 

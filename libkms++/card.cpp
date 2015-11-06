@@ -60,17 +60,23 @@ Card::Card()
 
 	for (int i = 0; i < res->count_connectors; ++i) {
 		uint32_t id = res->connectors[i];
-		m_obmap[id] = new Connector(*this, id, i);
+		auto ob = new Connector(*this, id, i);
+		m_obmap[id] = ob;
+		m_connectors.push_back(ob);
 	}
 
 	for (int i = 0; i < res->count_crtcs; ++i) {
 		uint32_t id = res->crtcs[i];
-		m_obmap[id] = new Crtc(*this, id, i);
+		auto ob = new Crtc(*this, id, i);
+		m_obmap[id] = ob;
+		m_crtcs.push_back(ob);
 	}
 
 	for (int i = 0; i < res->count_encoders; ++i) {
 		uint32_t id = res->encoders[i];
-		m_obmap[id] = new Encoder(*this, id);
+		auto ob = new Encoder(*this, id);
+		m_obmap[id] = ob;
+		m_encoders.push_back(ob);
 	}
 
 	drmModeFreeResources(res);
@@ -79,7 +85,9 @@ Card::Card()
 
 	for (uint i = 0; i < planeRes->count_planes; ++i) {
 		uint32_t id = planeRes->planes[i];
-		m_obmap[id] = new Plane(*this, id);
+		auto ob = new Plane(*this, id);
+		m_obmap[id] = ob;
+		m_planes.push_back(ob);
 	}
 
 	drmModeFreePlaneResources(planeRes);
@@ -94,8 +102,11 @@ Card::Card()
 		for (unsigned i = 0; i < props->count_props; ++i) {
 			uint32_t prop_id = props->props[i];
 
-			if (m_obmap.find(prop_id) == m_obmap.end())
-				m_obmap[prop_id] = new Property(*this, prop_id);
+			if (m_obmap.find(prop_id) == m_obmap.end()) {
+				auto ob = new Property(*this, prop_id);
+				m_obmap[prop_id] = ob;
+				m_properties.push_back(ob);
+			}
 		}
 
 		drmModeFreeObjectProperties(props);

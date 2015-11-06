@@ -181,8 +181,6 @@ int main()
 	if (card.master() == false)
 		printf("Not DRM master, modeset may fail\n");
 
-	//card.print_short();
-
 	vector<OutputFlipHandler*> outputs;
 
 	for (auto pipe : card.get_connected_pipelines())

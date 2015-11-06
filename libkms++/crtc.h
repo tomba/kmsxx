@@ -14,8 +14,6 @@ class Crtc : public DrmObject
 	friend class Card;
 	friend class Connector;
 public:
-	void print_short() const;
-
 	const std::vector<Plane*>& get_possible_planes() const { return m_possible_planes; }
 
 	int set_mode(Connector* conn, Framebuffer& fb, const Videomode& mode);

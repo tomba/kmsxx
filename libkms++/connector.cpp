@@ -96,14 +96,6 @@ void Connector::restore_mode()
 		m_saved_crtc->restore_mode(this);
 }
 
-void Connector::print_short() const
-{
-	auto c = m_priv->drm_connector;
-
-	printf("Connector %d, %s, %dx%dmm, %s\n", id(), m_fullname.c_str(),
-	       c->mmWidth, c->mmHeight, connection_str.at(c->connection).c_str());
-}
-
 Videomode Connector::get_default_mode() const
 {
 	drmModeModeInfo drmmode = m_priv->drm_connector->modes[0];

@@ -32,26 +32,6 @@ Plane::~Plane()
 	delete m_priv;
 }
 
-void Plane::print_short() const
-{
-	auto p = m_priv->drm_plane;
-
-	printf("Plane %d, %d modes, %d,%d -> %dx%d\n", id(),
-	       p->count_formats,
-	       p->crtc_x, p->crtc_y, p->x, p->y);
-
-	printf("\t");
-	for (unsigned i = 0; i < p->count_formats; ++i) {
-		uint32_t f = p->formats[i];
-		printf("%c%c%c%c ",
-		       (f >> 0) & 0xff,
-		       (f >> 8) & 0xff,
-		       (f >> 16) & 0xff,
-		       (f >> 24) & 0xff);
-	}
-	printf("\n");
-}
-
 bool Plane::supports_crtc(Crtc* crtc) const
 {
 	return m_priv->drm_plane->possible_crtcs & (1 << crtc->idx());

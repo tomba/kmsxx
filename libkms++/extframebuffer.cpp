@@ -40,9 +40,4 @@ ExtFramebuffer::~ExtFramebuffer()
 	drmModeRmFB(card().fd(), id());
 }
 
-void ExtFramebuffer::print_short() const
-{
-	printf("Framebuffer %d\n", id());
-}
-
 }

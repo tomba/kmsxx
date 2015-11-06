@@ -11,8 +11,6 @@ class Property : public DrmObject
 {
 	friend class Card;
 public:
-	void print_short() const;
-
 	const std::string& name() const;
 
 	const std::string to_str(uint64_t val) const;

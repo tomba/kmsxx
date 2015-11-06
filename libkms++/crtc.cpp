@@ -50,14 +50,6 @@ void Crtc::restore_mode(Connector* conn)
 		       conns, 1, &c->mode);
 }
 
-void Crtc::print_short() const
-{
-	auto c  = m_priv->drm_crtc;
-
-	printf("Crtc %d, %d,%d %dx%d\n", id(),
-	       c->x, c->y, c->width, c->height);
-}
-
 int Crtc::set_mode(Connector* conn, Framebuffer& fb, const Videomode& mode)
 {
 	uint32_t conns[] = { conn->id() };

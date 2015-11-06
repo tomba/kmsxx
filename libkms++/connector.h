@@ -26,8 +26,6 @@ class Connector : public DrmObject
 {
 	friend class Card;
 public:
-	void print_short() const;
-
 	Videomode get_default_mode() const;
 
 	Videomode get_mode(const std::string& mode) const;

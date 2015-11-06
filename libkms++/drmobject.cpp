@@ -45,14 +45,6 @@ void DrmObject::refresh_props()
 	drmModeFreeObjectProperties(props);
 }
 
-void DrmObject::print_props() const
-{
-	for (auto it = m_prop_values.begin(); it != m_prop_values.end(); ++it) {
-		cout << "\t" << card().get_prop(it->first)->name() <<
-			" = " << it->second << endl;
-	}
-}
-
 uint64_t DrmObject::get_prop_value(uint32_t id) const
 {
 	return m_prop_values.at(id);

@@ -4,7 +4,6 @@ require("libluakms")
 require("bit32")
 
 card = libluakms.Card()
-card:print_short()
 
 conn = card:get_first_connected_connector()
 

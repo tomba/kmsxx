@@ -21,8 +21,6 @@ int main(int argc, char **argv)
 	if (card.master() == false)
 		printf("Not DRM master, modeset may fail\n");
 
-	//card.print_short();
-
 	auto pipes = card.get_connected_pipelines();
 
 	vector<Framebuffer*> fbs;

@@ -44,14 +44,6 @@ Encoder::~Encoder()
 	delete m_priv;
 }
 
-void Encoder::print_short() const
-{
-	auto e = m_priv->drm_encoder;
-
-	printf("Encoder %d, %d\n", id(),
-	       e->encoder_type);
-}
-
 Crtc* Encoder::get_crtc() const
 {
 	if (m_priv->drm_encoder->crtc_id)

@@ -27,9 +27,4 @@ Framebuffer::Framebuffer(Card& card, uint32_t id)
 	drmModeFreeFB(fb);
 }
 
-void Framebuffer::print_short() const
-{
-	printf("Framebuffer %d\n", id());
-}
-
 }

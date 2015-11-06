@@ -3,7 +3,6 @@
 import pykms
 
 card = pykms.Card()
-card.print_short()
 
 conn = card.get_first_connected_connector()
 

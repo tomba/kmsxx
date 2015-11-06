@@ -33,11 +33,6 @@ DumbFramebuffer::~DumbFramebuffer()
 	Destroy();
 }
 
-void DumbFramebuffer::print_short() const
-{
-	printf("DumbFramebuffer %d\n", id());
-}
-
 struct FormatPlaneInfo
 {
 	uint8_t bitspp;	/* bits per (macro) pixel */

@@ -12,8 +12,6 @@ public:
 	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format);
 	virtual ~DumbFramebuffer();
 
-	void print_short() const;
-
 	PixelFormat format() const { return m_format; }
 	unsigned num_planes() const { return m_num_planes; }
 

@@ -35,8 +35,6 @@ public:
 	bool has_atomic() const { return m_has_atomic; }
 	bool has_has_universal_planes() const { return m_has_universal_planes; }
 
-	void print_short() const;
-
 	const std::vector<Connector*> get_connectors() const { return m_connectors; }
 	const std::vector<Encoder*> get_encoders() const { return m_encoders; }
 	const std::vector<Crtc*> get_crtcs() const { return m_crtcs; }

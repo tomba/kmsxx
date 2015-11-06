@@ -27,11 +27,6 @@ Property::~Property()
 	delete m_priv;
 }
 
-void Property::print_short() const
-{
-	printf("Property %d, %s\n", id(), name().c_str());
-}
-
 const string& Property::name() const
 {
 	return m_name;

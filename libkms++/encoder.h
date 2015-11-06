@@ -12,8 +12,6 @@ class Encoder : public DrmObject
 {
 	friend class Card;
 public:
-	void print_short() const;
-
 	Crtc* get_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;
 

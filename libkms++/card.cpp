@@ -132,25 +132,6 @@ void Card::restore_modes()
 		conn->restore_mode();
 }
 
-template <class T> static void print_obs(const map<uint32_t, DrmObject*>& obmap)
-{
-	for (auto pair : obmap) {
-		auto ob = pair.second;
-		if (dynamic_cast<T*>(ob)) {
-			ob->print_short();
-			//ob->print_props();
-		}
-	}
-}
-
-void Card::print_short() const
-{
-	print_obs<Connector>(m_obmap);
-	print_obs<Encoder>(m_obmap);
-	print_obs<Crtc>(m_obmap);
-	print_obs<Plane>(m_obmap);
-}
-
 Property* Card::get_prop(const string& name) const
 {
 	for (auto prop : m_properties) {

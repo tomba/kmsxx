@@ -14,9 +14,6 @@ public:
 	DrmObject(const DrmObject& other) = delete;
 	DrmObject& operator=(const DrmObject& other) = delete;
 
-	virtual void print_short() const = 0;
-	void print_props() const;
-
 	uint32_t id() const { return m_id; }
 	Card& card() const { return m_card; }
 

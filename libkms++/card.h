@@ -29,6 +29,7 @@ public:
 	Encoder* get_encoder(uint32_t id) const;
 	Property* get_prop(uint32_t id) const;
 	Property* get_prop(const std::string& name) const;
+	Plane* get_plane(uint32_t id) const;
 
 	bool master() const { return m_master; }
 	bool has_atomic() const { return m_has_atomic; }

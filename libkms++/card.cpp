@@ -226,6 +226,7 @@ Connector* Card::get_connector(uint32_t id) const { return dynamic_cast<Connecto
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
 Encoder* Card::get_encoder(uint32_t id) const { return dynamic_cast<Encoder*>(get_object(id)); }
 Property* Card::get_prop(uint32_t id) const { return dynamic_cast<Property*>(get_object(id)); }
+Plane* Card::get_plane(uint32_t id) const { return dynamic_cast<Plane*>(get_object(id)); }
 
 std::vector<kms::Pipeline> Card::get_connected_pipelines()
 {

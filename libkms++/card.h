@@ -37,10 +37,13 @@ public:
 
 	void print_short() const;
 
-	std::vector<Connector*> get_connectors() const;
-	std::vector<Crtc*> get_crtcs() const;
-	std::vector<DrmObject*> get_objects() const;
-	std::vector<Plane*> get_planes() const;
+	const std::vector<Connector*> get_connectors() const { return m_connectors; }
+	const std::vector<Encoder*> get_encoders() const { return m_encoders; }
+	const std::vector<Crtc*> get_crtcs() const { return m_crtcs; }
+	const std::vector<Plane*> get_planes() const { return m_planes; }
+	const std::vector<Property*> get_properties() const { return m_properties; }
+
+	const std::vector<DrmObject*> get_objects() const;
 
 	std::vector<Pipeline> get_connected_pipelines();
 

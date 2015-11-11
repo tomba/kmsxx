@@ -11,10 +11,6 @@
 
 #include "kms++.h"
 
-#ifndef DRM_CLIENT_CAP_ATOMIC
-#define DRM_CLIENT_CAP_ATOMIC 3
-#endif
-
 using namespace std;
 
 namespace kms
@@ -42,12 +38,16 @@ Card::Card()
 		m_has_universal_planes = false;
 	}
 
+#ifdef DRM_CLIENT_CAP_ATOMIC
 	if (getenv("LIBKMSXX_DISABLE_ATOMIC") == 0) {
 		r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
 		m_has_atomic = r == 0;
 	} else {
 		m_has_atomic = false;
 	}
+#else
+	m_has_atomic = false;
+#endif
 
 	uint64_t has_dumb;
 	r = drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb);

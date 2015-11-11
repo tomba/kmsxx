@@ -105,7 +105,8 @@ public:
 
 	void start_flipping()
 	{
-		m_t1 = std::chrono::steady_clock::now();
+		m_time_last = m_t1 = std::chrono::steady_clock::now();
+		m_slowest_frame = std::chrono::duration<float>::min();
 		m_frame_num = 0;
 		queue_next();
 	}
@@ -115,12 +116,22 @@ private:
 	{
 		++m_frame_num;
 
+		auto now = std::chrono::steady_clock::now();
+
+		std::chrono::duration<float> diff = now - m_time_last;
+		if (diff > m_slowest_frame)
+			m_slowest_frame = diff;
+
 		if (m_frame_num  % 100 == 0) {
-			auto t2 = std::chrono::steady_clock::now();
-			std::chrono::duration<float> fsec = t2 - m_t1;
-			printf("Output %d: fps %f\n", m_connector->idx(), 100.0 / fsec.count());
-			m_t1 = t2;
+			std::chrono::duration<float> fsec = now - m_t1;
+			printf("Output %d: fps %f, slowest %.2f ms\n",
+			       m_connector->idx(), 100.0 / fsec.count(),
+			       m_slowest_frame.count() * 1000);
+			m_t1 = now;
+			m_slowest_frame = std::chrono::duration<float>::min();
 		}
+
+		m_time_last = now;
 
 		queue_next();
 	}
@@ -167,6 +178,8 @@ private:
 
 	int m_frame_num;
 	chrono::steady_clock::time_point m_t1;
+	chrono::steady_clock::time_point m_time_last;
+	chrono::duration<float> m_slowest_frame;
 
 	Flipper m_flipper;
 

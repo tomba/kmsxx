@@ -35,19 +35,6 @@ DumbFramebuffer::~DumbFramebuffer()
 	Destroy();
 }
 
-uint32_t DumbFramebuffer::prime_fd(unsigned int plane)
-{
-	if (m_planes[plane].prime_fd >= 0)
-		return m_planes[plane].prime_fd;
-
-	int r = drmPrimeHandleToFD(card().fd(), m_planes[plane].handle,
-				   DRM_CLOEXEC, &m_planes[plane].prime_fd);
-	if (r)
-		throw std::runtime_error("drmPrimeHandleToFD failed\n");
-
-	return m_planes[plane].prime_fd;
-}
-
 struct FormatPlaneInfo
 {
 	uint8_t bitspp;	/* bits per (macro) pixel */
@@ -162,6 +149,19 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 
 	return p.map;
+}
+
+int DumbFramebuffer::prime_fd(unsigned int plane)
+{
+	if (m_planes[plane].prime_fd >= 0)
+		return m_planes[plane].prime_fd;
+
+	int r = drmPrimeHandleToFD(card().fd(), m_planes[plane].handle,
+				   DRM_CLOEXEC, &m_planes[plane].prime_fd);
+	if (r)
+		throw std::runtime_error("drmPrimeHandleToFD failed\n");
+
+	return m_planes[plane].prime_fd;
 }
 
 }

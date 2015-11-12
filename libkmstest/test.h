@@ -24,3 +24,9 @@
 		fprintf(stderr, "%s:%d: %s:\n" fmt "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \
 		abort(); \
 	}
+
+#define EXIT(fmt, ...) \
+	do { \
+		fprintf(stderr, fmt "\n", ##__VA_ARGS__); \
+		exit(-1); \
+	} while(0)

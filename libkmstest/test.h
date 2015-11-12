@@ -13,6 +13,12 @@
 		abort(); \
 	}
 
+#define FAIL(fmt, ...) \
+	do { \
+		fprintf(stderr, "%s:%d: %s:\n" fmt "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \
+		abort(); \
+	} while(0)
+
 #define FAIL_IF(x, fmt, ...) \
 	if (unlikely(x)) { \
 		fprintf(stderr, "%s:%d: %s:\n" fmt "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \

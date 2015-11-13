@@ -14,25 +14,23 @@ namespace kms
 
 
 static const map<int, string> connector_names = {
-#define DEF_CONN(c) { DRM_MODE_CONNECTOR_##c, #c }
-	DEF_CONN(Unknown),
-	DEF_CONN(VGA),
-	DEF_CONN(DVII),
-	DEF_CONN(DVID),
-	DEF_CONN(DVIA),
-	DEF_CONN(Composite),
-	DEF_CONN(SVIDEO),
-	DEF_CONN(LVDS),
-	DEF_CONN(Component),
-	DEF_CONN(9PinDIN),
-	DEF_CONN(DisplayPort),
-	DEF_CONN(HDMIA),
-	DEF_CONN(HDMIB),
-	DEF_CONN(TV),
-	DEF_CONN(eDP),
-	DEF_CONN(VIRTUAL),
-	DEF_CONN(DSI),
-#undef DEF_CONN
+	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
+	{ DRM_MODE_CONNECTOR_VGA, "VGA" },
+	{ DRM_MODE_CONNECTOR_DVII, "DVI-I" },
+	{ DRM_MODE_CONNECTOR_DVID, "DVI-D" },
+	{ DRM_MODE_CONNECTOR_DVIA, "DVI-A" },
+	{ DRM_MODE_CONNECTOR_Composite, "Composite" },
+	{ DRM_MODE_CONNECTOR_SVIDEO, "S-Video" },
+	{ DRM_MODE_CONNECTOR_LVDS, "LVDS" },
+	{ DRM_MODE_CONNECTOR_Component, "Component" },
+	{ DRM_MODE_CONNECTOR_9PinDIN, "9-Pin-DIN" },
+	{ DRM_MODE_CONNECTOR_DisplayPort, "DP" },
+	{ DRM_MODE_CONNECTOR_HDMIA, "HDMI-A" },
+	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI-B" },
+	{ DRM_MODE_CONNECTOR_TV, "TV" },
+	{ DRM_MODE_CONNECTOR_eDP, "eDP" },
+	{ DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
+	{ DRM_MODE_CONNECTOR_DSI, "DSI" },
 };
 
 static const map<int, string> connection_str = {
@@ -67,7 +65,7 @@ Connector::Connector(Card &card, uint32_t id, uint32_t idx)
 	assert(m_priv->drm_connector);
 
 	const auto& name = connector_names.at(m_priv->drm_connector->connector_type);
-	m_fullname = name + to_string(m_priv->drm_connector->connector_type_id);
+	m_fullname = name + "-" + to_string(m_priv->drm_connector->connector_type_id);
 }
 
 

@@ -116,7 +116,8 @@ Videomode Connector::get_mode(const string& mode) const
 
 bool Connector::connected() const
 {
-	return m_priv->drm_connector->connection == DRM_MODE_CONNECTED;
+	return m_priv->drm_connector->connection == DRM_MODE_CONNECTED ||
+			m_priv->drm_connector->connection == DRM_MODE_UNKNOWNCONNECTION;
 }
 
 vector<Crtc*> Connector::get_possible_crtcs() const

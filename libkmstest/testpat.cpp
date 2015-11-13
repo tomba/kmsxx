@@ -1,4 +1,6 @@
 
+//#define DRAW_PERF_PRINT
+
 #include <chrono>
 #include <cstring>
 #include <cassert>
@@ -266,15 +268,19 @@ static void draw_test_pattern_impl(DumbFramebuffer& fb)
 
 void draw_test_pattern(DumbFramebuffer& fb)
 {
+#ifdef DRAW_PERF_PRINT
 	using namespace std::chrono;
 
 	auto t1 = high_resolution_clock::now();
+#endif
 
 	draw_test_pattern_impl(fb);
 
+#ifdef DRAW_PERF_PRINT
 	auto t2 = high_resolution_clock::now();
 	auto time_span = duration_cast<microseconds>(t2 - t1);
 
 	printf("draw took %u us\n", (unsigned)time_span.count());
+#endif
 }
 }

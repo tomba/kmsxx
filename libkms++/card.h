@@ -11,6 +11,7 @@ namespace kms
 {
 class Card
 {
+	friend class Framebuffer;
 public:
 	Card();
 	~Card();
@@ -57,6 +58,7 @@ private:
 	std::vector<Crtc*> m_crtcs;
 	std::vector<Plane*> m_planes;
 	std::vector<Property*> m_properties;
+	std::vector<Framebuffer*> m_framebuffers;
 
 	int m_fd;
 	bool m_master;

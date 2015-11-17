@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <sys/mman.h>
@@ -14,6 +15,7 @@ namespace kms
 Framebuffer::Framebuffer(Card& card, int width, int height)
 	: DrmObject(card, DRM_MODE_OBJECT_FB), m_width(width), m_height(height)
 {
+	card.m_framebuffers.push_back(this);
 }
 
 Framebuffer::Framebuffer(Card& card, uint32_t id)
@@ -25,6 +27,16 @@ Framebuffer::Framebuffer(Card& card, uint32_t id)
 	m_height = fb->height;
 
 	drmModeFreeFB(fb);
+
+	card.m_framebuffers.push_back(this);
 }
+
+Framebuffer::~Framebuffer()
+{
+	auto& fbs = card().m_framebuffers;
+	auto iter = find(fbs.begin(), fbs.end(), this);
+	card().m_framebuffers.erase(iter);
+}
+
 
 }

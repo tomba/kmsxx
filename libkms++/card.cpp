@@ -120,6 +120,9 @@ Card::~Card()
 {
 	restore_modes();
 
+	while (m_framebuffers.size() > 0)
+		delete m_framebuffers.back();
+
 	for (auto pair : m_obmap)
 		delete pair.second;
 

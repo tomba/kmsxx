@@ -8,7 +8,7 @@ class Framebuffer : public DrmObject
 {
 public:
 	Framebuffer(Card& card, uint32_t id);
-	virtual ~Framebuffer() { }
+	virtual ~Framebuffer();
 
 	uint32_t width() const { return m_width; }
 	uint32_t height() const { return m_height; }

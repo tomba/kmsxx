@@ -25,6 +25,7 @@ using namespace kms;
 %include "connector.h"
 %include "encoder.h"
 %include "pagefliphandler.h"
+%include "videomode.h"
 
 %include "kmstest.h"
 

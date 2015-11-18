@@ -17,13 +17,16 @@ namespace kms
 {
 
 Card::Card()
+	: Card("/dev/dri/card0")
 {
-	const char *card = "/dev/dri/card0";
+}
 
-	int fd = open(card, O_RDWR | O_CLOEXEC);
+
+Card::Card(const std::string& device)
+{
+	int fd = open(device.c_str(), O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw invalid_argument(string(strerror(errno)) + " opening " +
-				       card);
+		throw invalid_argument(string(strerror(errno)) + " opening " + device);
 	m_fd = fd;
 
 	int r;

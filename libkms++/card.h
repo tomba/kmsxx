@@ -14,6 +14,7 @@ class Card
 	friend class Framebuffer;
 public:
 	Card();
+	Card(const std::string& device);
 	~Card();
 
 	Card(const Card& other) = delete;

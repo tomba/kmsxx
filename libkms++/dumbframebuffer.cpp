@@ -117,7 +117,8 @@ void DumbFramebuffer::Destroy()
 		FramebufferPlane& plane = m_planes[i];
 
 		/* unmap buffer */
-		munmap(plane.map, plane.size);
+		if (plane.map)
+			munmap(plane.map, plane.size);
 
 		/* delete dumb buffer */
 		struct drm_mode_destroy_dumb dreq = drm_mode_destroy_dumb();

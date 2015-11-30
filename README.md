@@ -52,6 +52,7 @@ Option name          | Values        | Default
 CMAKE_BUILD_TYPE     | Release/Debug | Release
 LIBKMS_ENABLE_PYTHON | ON/OFF        | ON
 LIBKMS_ENABLE_LUA    | ON/OFF        | ON
+LIBKMS_ENABLE_KMSCUBE | ON/OFF       | OFF
 
 ## Env variables
 

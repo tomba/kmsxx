@@ -8,7 +8,6 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
 set(LIBKMS_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
-set(LIBKMS_ENABLE_LUA OFF CACHE BOOL "Enable Lua wrappers")
 set(LIBKMS_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
@@ -33,8 +32,4 @@ endif()
 
 if(LIBKMS_ENABLE_PYTHON)
         add_subdirectory(py)
-endif()
-
-if(LIBKMS_ENABLE_LUA)
-        add_subdirectory(lua)
 endif()

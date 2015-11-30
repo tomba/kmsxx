@@ -2,14 +2,13 @@
 
 libkms++ is a C++11 library for kernel mode setting.
 
-Also included are simple test tools for KMS and python and lua wrappers for libkms++.
+Also included are simple test tools for KMS and python wrapper for libkms++.
 
 ## Dependencies:
 
 - libdrm
-- SWIG 3.x (for python & lua bindings)
+- SWIG 3.x (for python bindings)
 - Python 3.x (for python bindings)
-- Lua 5.x (for lua bindings)
 
 ## Build instructions:
 
@@ -51,7 +50,6 @@ Option name          | Values        | Default
 -------------------- | ------------- | --------
 CMAKE_BUILD_TYPE     | Release/Debug | Release
 LIBKMS_ENABLE_PYTHON | ON/OFF        | ON
-LIBKMS_ENABLE_LUA    | ON/OFF        | ON
 LIBKMS_ENABLE_KMSCUBE | ON/OFF       | OFF
 
 ## Env variables

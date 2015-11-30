@@ -4,6 +4,14 @@ libkms++ is a C++11 library for kernel mode setting.
 
 Also included are simple test tools for KMS and python wrapper for libkms++.
 
+## Test tools
+
+- kmsprint - print information about DRM objects
+- testpat - set modes and show test pattern on crtcs/planes
+- kmsview - view raw images
+- db - simple double-buffering test
+- kmscube - rotating 3D cube on crtcs/planes
+
 ## Dependencies:
 
 - libdrm

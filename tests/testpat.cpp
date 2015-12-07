@@ -120,7 +120,7 @@ static void get_default_crtc(Card& card, OutputInfo& output)
 static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 {
 	// @12:1920x1200-60
-	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+))(?:-(\\d+))?");
+	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:-(\\d+))?");
 
 	smatch sm;
 	if (!regex_match(crtc_str, sm, mode_re))
@@ -150,11 +150,10 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 
 	unsigned w = stoul(sm[3]);
 	unsigned h = stoul(sm[4]);
-	unsigned refresh = 0;
-	if (sm[5].matched)
-		refresh = stoul(sm[5]);
+	bool ilace = sm[5].matched ? true : false;
+	unsigned refresh = sm[6].matched ? stoul(sm[6]) : 0;
 
-	output.mode = output.connector->get_mode(w, h, refresh);
+	output.mode = output.connector->get_mode(w, h, refresh, ilace);
 }
 
 static void parse_plane(Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)

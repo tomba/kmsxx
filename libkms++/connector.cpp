@@ -112,7 +112,7 @@ Videomode Connector::get_mode(const string& mode) const
         throw invalid_argument(mode + ": mode not found");
 }
 
-Videomode Connector::get_mode(unsigned xres, unsigned yres, unsigned refresh) const
+Videomode Connector::get_mode(unsigned xres, unsigned yres, unsigned refresh, bool ilace) const
 {
 	auto c = m_priv->drm_connector;
 
@@ -123,6 +123,9 @@ Videomode Connector::get_mode(unsigned xres, unsigned yres, unsigned refresh) co
 			continue;
 
 		if (refresh && m.vrefresh != refresh)
+			continue;
+
+		if (ilace != !!(m.flags & DRM_MODE_FLAG_INTERLACE))
 			continue;
 
 		return drm_mode_to_video_mode(c->modes[i]);

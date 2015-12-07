@@ -89,9 +89,8 @@ public:
 
 	void set_mode()
 	{
-		auto mode = m_connector->get_default_mode();
 		auto fb = m_flipper.get_next();
-		int r = m_crtc->set_mode(m_connector, *fb, mode);
+		int r = m_crtc->set_mode(m_connector, *fb, m_mode);
 		ASSERT(r == 0);
 
 		if (m_plane) {

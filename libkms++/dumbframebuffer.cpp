@@ -80,9 +80,9 @@ void DumbFramebuffer::Create()
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
-		creq.width = width() / pi.xsub;
+		creq.width = width();
 		creq.height = height() / pi.ysub;
-		creq.bpp = pi.bitspp;
+		creq.bpp = pi.bitspp / pi.xsub;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
 			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed") + strerror(errno));

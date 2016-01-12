@@ -476,24 +476,25 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 
 static std::string videomode_to_string(const Videomode& mode)
 {
-	unsigned hfp, hsw, hbp;
-	unsigned vfp, vsw, vbp;
+	unsigned hfp = mode.hsync_start - mode.hdisplay;
+	unsigned hsw = mode.hsync_end - mode.hsync_start;
+	unsigned hbp = mode.htotal - mode.hsync_end;
 
-	hfp = mode.hsync_start - mode.hdisplay;
-	hsw = mode.hsync_end - mode.hsync_start;
-	hbp = mode.htotal - mode.hsync_end;
+	unsigned vfp = mode.vsync_start - mode.vdisplay;
+	unsigned vsw = mode.vsync_end - mode.vsync_start;
+	unsigned vbp = mode.vtotal - mode.vsync_end;
 
-	vfp = mode.vsync_start - mode.vdisplay;
-	vsw = mode.vsync_end - mode.vsync_start;
-	vbp = mode.vtotal - mode.vsync_end;
+	float hz = (mode.clock * 1000.0) / (mode.htotal * mode.vtotal);
+	if (mode.flags & (1<<4)) // XXX interlace
+		hz *= 2;
 
 	char buf[256];
 
-	sprintf(buf, "%.2f MHz %u/%u/%u/%u %u/%u/%u/%u %uHz",
+	sprintf(buf, "%.2f MHz %u/%u/%u/%u %u/%u/%u/%u %uHz (%.2fHz)",
 		mode.clock / 1000.0,
 		mode.hdisplay, hfp, hsw, hbp,
 		mode.vdisplay, vfp, vsw, vbp,
-		mode.vrefresh);
+		mode.vrefresh, hz);
 
 	return std::string(buf);
 }

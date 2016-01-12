@@ -96,6 +96,8 @@ void Connector::restore_mode()
 
 Videomode Connector::get_default_mode() const
 {
+	if (m_priv->drm_connector->count_modes == 0)
+		throw invalid_argument("no modes available\n");
 	drmModeModeInfo drmmode = m_priv->drm_connector->modes[0];
 
 	return drm_mode_to_video_mode(drmmode);

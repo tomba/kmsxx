@@ -11,6 +11,7 @@
 #ifndef DRM_CLIENT_CAP_ATOMIC
 
 #define DRM_MODE_ATOMIC_TEST_ONLY 0
+#define DRM_MODE_ATOMIC_NONBLOCK 0
 
 struct _drmModeAtomicReq;
 typedef struct _drmModeAtomicReq* drmModeAtomicReqPtr;

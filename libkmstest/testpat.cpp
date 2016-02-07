@@ -13,12 +13,13 @@
 
 #include "kms++.h"
 #include "test.h"
+#include "mappedbuffer.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 namespace kms
 {
-static void draw_rgb_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB color)
+static void draw_rgb_pixel(MappedBuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
@@ -46,7 +47,7 @@ static void draw_rgb_pixel(DumbFramebuffer& buf, unsigned x, unsigned y, RGB col
 	}
 }
 
-static void draw_yuv422_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
+static void draw_yuv422_macropixel(MappedBuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
 	ASSERT((x & 1) == 0);
 
@@ -91,7 +92,7 @@ static void draw_yuv422_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
 	}
 }
 
-static void draw_yuv420_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
+static void draw_yuv420_macropixel(MappedBuffer& buf, unsigned x, unsigned y,
 				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
 	ASSERT((x & 1) == 0);
@@ -133,7 +134,7 @@ static void draw_yuv420_macropixel(DumbFramebuffer& buf, unsigned x, unsigned y,
 	}
 }
 
-static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
+static RGB get_test_pattern_pixel(MappedBuffer& fb, unsigned x, unsigned y)
 {
 	const unsigned w = fb.width();
 	const unsigned h = fb.height();
@@ -214,7 +215,7 @@ static RGB get_test_pattern_pixel(DumbFramebuffer& fb, unsigned x, unsigned y)
 	}
 }
 
-static void draw_test_pattern_impl(DumbFramebuffer& fb)
+static void draw_test_pattern_impl(MappedBuffer& fb)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
@@ -266,7 +267,13 @@ static void draw_test_pattern_impl(DumbFramebuffer& fb)
 	}
 }
 
-void draw_test_pattern(DumbFramebuffer& fb)
+void draw_test_pattern(DumbFramebuffer &fb)
+{
+	MappedDumbBuffer mfb(fb);
+	draw_test_pattern(mfb);
+}
+
+void draw_test_pattern(MappedBuffer &fb)
 {
 #ifdef DRAW_PERF_PRINT
 	using namespace std::chrono;

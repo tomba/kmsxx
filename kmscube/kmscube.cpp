@@ -445,6 +445,20 @@ public:
 		ret = m_crtc->set_mode(m_connector, *fb, m_mode);
 		FAIL_IF(ret, "failed to set mode");
 
+		if (m_crtc->card().has_atomic()) {
+			Plane* root_plane = 0;
+			for (Plane* p : m_crtc->get_possible_planes()) {
+				if (p->crtc_id() == m_crtc->id()) {
+					root_plane = p;
+					break;
+				}
+			}
+
+			FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
+
+			m_root_plane = root_plane;
+		}
+
 		if (m_plane) {
 			ret = m_crtc->set_plane(m_plane, *planefb,
 						0, 0, planefb->width(), planefb->height(),
@@ -504,7 +518,7 @@ private:
 
 			AtomicReq req(m_crtc->card());
 
-			req.add(m_crtc, "FB_ID", fb->id());
+			req.add(m_root_plane, "FB_ID", fb->id());
 			if (m_plane)
 				req.add(m_plane, "FB_ID", planefb->id());
 
@@ -537,6 +551,7 @@ private:
 	Crtc* m_crtc;
 	Plane* m_plane;
 	Videomode m_mode;
+	Plane* m_root_plane;
 
 	unique_ptr<Surface> m_surface;
 	unique_ptr<Surface> m_surface2;

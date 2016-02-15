@@ -93,6 +93,20 @@ public:
 		int r = m_crtc->set_mode(m_connector, *fb, m_mode);
 		ASSERT(r == 0);
 
+		if (m_crtc->card().has_atomic()) {
+			Plane* root_plane = 0;
+			for (Plane* p : m_crtc->get_possible_planes()) {
+				if (p->crtc_id() == m_crtc->id()) {
+					root_plane = p;
+					break;
+				}
+			}
+
+			FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
+
+			m_root_plane = root_plane;
+		}
+
 		if (m_plane) {
 			auto planefb = m_plane_flipper->get_next();
 			r = m_crtc->set_plane(m_plane, *planefb,
@@ -148,7 +162,7 @@ private:
 
 			AtomicReq req(card);
 
-			req.add(m_crtc, "FB_ID", fb->id());
+			req.add(m_root_plane, "FB_ID", fb->id());
 			if (m_plane)
 				req.add(m_plane, "FB_ID", planefb->id());
 
@@ -174,6 +188,7 @@ private:
 	Connector* m_connector;
 	Crtc* m_crtc;
 	Videomode m_mode;
+	Plane* m_root_plane;
 
 	int m_frame_num;
 	chrono::steady_clock::time_point m_t1;

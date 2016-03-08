@@ -58,7 +58,22 @@ uint64_t DrmObject::get_prop_value(const string& name) const
 			return m_prop_values.at(prop->id());
 	}
 
-	throw invalid_argument(string(name) + ": property not found");
+	throw invalid_argument("property not found: " + name);
+}
+
+int DrmObject::set_prop_value(uint32_t id, uint64_t value)
+{
+	return drmModeObjectSetProperty(card().fd(), this->id(), this->object_type(), id, value);
+}
+
+int DrmObject::set_prop_value(const string &name, uint64_t value)
+{
+	Property* prop = card().get_prop(name);
+
+	if (prop == nullptr)
+		throw invalid_argument("property not found: " + name);
+
+	return set_prop_value(prop->id(), value);
 }
 
 void DrmObject::set_id(uint32_t id)

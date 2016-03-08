@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	r = ioctl(fd, FBIOGET_FSCREENINFO, &fix);
 	FAIL_IF(r, "FBIOGET_FSCREENINFO failed");
 
-	void* ptr = mmap(NULL,
+	uint8_t* ptr = (uint8_t*)mmap(NULL,
 			 var.yres_virtual * fix.line_length,
 			 PROT_WRITE | PROT_READ,
 			 MAP_SHARED, fd, 0);
@@ -51,7 +51,8 @@ int main(int argc, char** argv)
 
 	draw_test_pattern(buf);
 
-	memcpy(ptr, buf.map(0), buf.size(0));
+	for (unsigned y = 0; y < var.yres_virtual; ++y)
+		memcpy(ptr + fix.line_length * y, buf.map(0) + buf.stride(0) * y, buf.stride(0));
 
 	close(fd);
 

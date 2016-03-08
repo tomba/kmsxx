@@ -28,6 +28,7 @@ using namespace kms;
 %include "pagefliphandler.h"
 %include "videomode.h"
 
+%include "color.h"
 %include "kmstest.h"
 
 %template(ConnectorVector) std::vector<kms::Connector*>;

@@ -26,14 +26,14 @@ static void draw_rgb_pixel(MappedBuffer& buf, unsigned x, unsigned y, RGB color)
 	case PixelFormat::ARGB8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
-		*p = color.rgb888();
+		*p = color.argb8888();
 		break;
 	}
 	case PixelFormat::XBGR8888:
 	case PixelFormat::ABGR8888:
 	{
 		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
-		*p = color.bgr888();
+		*p = color.abgr8888();
 		break;
 	}
 	case PixelFormat::RGB565:
@@ -290,4 +290,20 @@ void draw_test_pattern(MappedBuffer &fb)
 	printf("draw took %u us\n", (unsigned)time_span.count());
 #endif
 }
+
+void draw_rect(MappedBuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
+{
+	for (unsigned i = x; i < x + w; ++i) {
+		for (unsigned j = y; j < y + h; ++j) {
+			draw_rgb_pixel(fb, i, j, color);
+		}
+	}
+}
+
+void draw_rect(DumbFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
+{
+	MappedDumbBuffer mfb(fb);
+	draw_rect(mfb, x, y, w, h, color);
+}
+
 }

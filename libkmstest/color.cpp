@@ -9,19 +9,32 @@ RGB::RGB()
 }
 
 RGB::RGB(uint8_t r, uint8_t g, uint8_t b)
+	:RGB(255, r, g, b)
+{
+}
+
+RGB::RGB(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
 {
 	this->r = r;
 	this->g = g;
 	this->b = b;
-	this->a = 255;
+	this->a = a;
 }
 
-uint32_t RGB::rgb888() const
+RGB::RGB(uint32_t argb)
+{
+	this->b = (argb >> 0) & 0xff;
+	this->g = (argb >> 8) & 0xff;
+	this->r = (argb >> 16) & 0xff;
+	this->a = (argb >> 24) & 0xff;
+}
+
+uint32_t RGB::argb8888() const
 {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
 }
 
-uint32_t RGB::bgr888() const
+uint32_t RGB::abgr8888() const
 {
 	return (a << 24) | (b << 16) | (g << 8) | (r << 0);
 }

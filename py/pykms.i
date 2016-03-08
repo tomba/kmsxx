@@ -10,6 +10,7 @@ using namespace kms;
 %include "std_string.i"
 %include "stdint.i"
 %include "std_vector.i"
+%include "std_map.i"
 
 %feature("director") PageFlipHandlerBase;
 
@@ -33,3 +34,4 @@ using namespace kms;
 %template(CrtcVector) std::vector<kms::Crtc*>;
 %template(EncoderVector) std::vector<kms::Encoder*>;
 %template(PlaneVector) std::vector<kms::Plane*>;
+%template(map_u32_u64) std::map<uint32_t, uint64_t>;

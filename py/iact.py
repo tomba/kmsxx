@@ -20,6 +20,16 @@ crtc = conn.get_current_crtc()
 
 #crtc.set_mode(conn, fb, mode)
 
+i = 0
+for p in card.get_planes():
+    globals()["plane"+str(i)] = p
+    i=i+1
+
+i = 0
+for c in card.get_crtcs():
+    globals()["crtc"+str(i)] = c
+    i=i+1
+
 for p in crtc.get_possible_planes():
     if p.plane_type() == 0:
         plane = p
@@ -27,6 +37,13 @@ for p in crtc.get_possible_planes():
 
 def set_plane(x, y):
     crtc.set_plane(plane, fb, x, y, fb.width(), fb.height(), 0, 0, fb.width(), fb.height())
+
+def props(o):
+    o.refresh_props()
+    map = o.get_prop_map()
+    for propid in map:
+        prop = card.get_prop(propid)
+        print("%-15s %d (%#x)" % (prop.name(), map[propid], map[propid]))
 
 set_plane(0, 0)
 

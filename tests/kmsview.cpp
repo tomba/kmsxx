@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <fstream>
+#include <unistd.h>
 
 #include "kms++.h"
 
@@ -7,6 +8,17 @@
 
 using namespace std;
 using namespace kms;
+
+static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* plane)
+{
+	is.read((char*)fb->map(0), fb->size(0));
+
+	int r = crtc->set_plane(plane, *fb,
+				0, 0, fb->width(), fb->height(),
+				0, 0, fb->width(), fb->height());
+
+	ASSERT(r == 0);
+}
 
 int main(int argc, char** argv)
 {
@@ -22,16 +34,20 @@ int main(int argc, char** argv)
 
 	auto pixfmt = FourCCToPixelFormat(modestr);
 
+
+	ifstream is(filename, ifstream::binary);
+
+	is.seekg(0, std::ios::end);
+	unsigned fsize = is.tellg();
+	is.seekg(0);
+
+
 	Card card;
 
 	auto conn = card.get_first_connected_connector();
 	auto crtc = conn->get_current_crtc();
 
 	auto fb = new DumbFramebuffer(card, w, h, pixfmt);
-
-	ifstream is(filename, ifstream::binary);
-	is.read((char*)fb->map(0), fb->size(0));
-	is.close();
 
 	Plane* plane = 0;
 
@@ -48,13 +64,19 @@ int main(int argc, char** argv)
 
 	FAIL_IF(!plane, "available plane not found");
 
-	int r = crtc->set_plane(plane, *fb,
-				0, 0, w, h,
-				0, 0, w, h);
 
-	ASSERT(r == 0);
+	unsigned num_frames = fsize / fb->size(0);
+	printf("file size %u, frames %u\n", fsize, num_frames);
+
+	for (unsigned i = 0; i < num_frames; ++i) {
+		printf("frame %d\n", i);
+		read_frame(is, fb, crtc, plane);
+		usleep(1000*50);
+	}
 
 	printf("press enter to exit\n");
+
+	is.close();
 
 	getchar();
 

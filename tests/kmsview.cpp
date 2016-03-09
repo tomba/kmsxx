@@ -11,7 +11,8 @@ using namespace kms;
 
 static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* plane)
 {
-	is.read((char*)fb->map(0), fb->size(0));
+	for (unsigned i = 0; i < fb->num_planes(); ++i)
+		is.read((char*)fb->map(i), fb->size(i));
 
 	int r = crtc->set_plane(plane, *fb,
 				0, 0, fb->width(), fb->height(),
@@ -65,7 +66,11 @@ int main(int argc, char** argv)
 	FAIL_IF(!plane, "available plane not found");
 
 
-	unsigned num_frames = fsize / fb->size(0);
+	unsigned frame_size = 0;
+	for (unsigned i = 0; i < fb->num_planes(); ++i)
+		frame_size += fb->size(i);
+
+	unsigned num_frames = fsize / frame_size;
 	printf("file size %u, frames %u\n", fsize, num_frames);
 
 	for (unsigned i = 0; i < num_frames; ++i) {

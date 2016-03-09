@@ -14,8 +14,11 @@ static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* pla
 	for (unsigned i = 0; i < fb->num_planes(); ++i)
 		is.read((char*)fb->map(i), fb->size(i));
 
+	unsigned w = min(crtc->width(), fb->width());
+	unsigned h = min(crtc->height(), fb->height());
+
 	int r = crtc->set_plane(plane, *fb,
-				0, 0, fb->width(), fb->height(),
+				0, 0, w, h,
 				0, 0, fb->width(), fb->height());
 
 	ASSERT(r == 0);
@@ -71,7 +74,7 @@ int main(int argc, char** argv)
 		frame_size += fb->size(i);
 
 	unsigned num_frames = fsize / frame_size;
-	printf("file size %u, frames %u\n", fsize, num_frames);
+	printf("file size %u, frame size %u, frames %u\n", fsize, frame_size, num_frames);
 
 	for (unsigned i = 0; i < num_frames; ++i) {
 		printf("frame %d\n", i);

@@ -15,3 +15,6 @@ target_link_libraries(kmsprint kms++ kmstest ${LIBDRM_LIBRARIES})
 
 add_executable (fbtestpat fbtestpat.cpp)
 target_link_libraries(fbtestpat kmstest)
+
+add_executable (kmscapture kmscapture.cpp)
+target_link_libraries(kmscapture kms++ kmstest ${LIBDRM_LIBRARIES})

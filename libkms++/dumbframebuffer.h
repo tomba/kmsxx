@@ -5,12 +5,15 @@
 
 namespace kms
 {
-class DumbFramebuffer : public Framebuffer
+class DumbFramebuffer : public Framebuffer, public IMappedFramebuffer
 {
 public:
 	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const std::string& fourcc);
 	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format);
 	virtual ~DumbFramebuffer();
+
+	uint32_t width() const { return Framebuffer::width(); }
+	uint32_t height() const { return Framebuffer::height(); }
 
 	PixelFormat format() const { return m_format; }
 	unsigned num_planes() const { return m_num_planes; }

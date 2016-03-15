@@ -13,13 +13,13 @@
 
 #include "kms++.h"
 #include "test.h"
-#include "mappedbuffer.h"
+#include "cpuframebuffer.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 namespace kms
 {
-static void draw_rgb_pixel(MappedBuffer& buf, unsigned x, unsigned y, RGB color)
+static void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
@@ -47,7 +47,7 @@ static void draw_rgb_pixel(MappedBuffer& buf, unsigned x, unsigned y, RGB color)
 	}
 }
 
-static void draw_yuv422_macropixel(MappedBuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
+static void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
 	ASSERT((x & 1) == 0);
 
@@ -92,7 +92,7 @@ static void draw_yuv422_macropixel(MappedBuffer& buf, unsigned x, unsigned y, YU
 	}
 }
 
-static void draw_yuv420_macropixel(MappedBuffer& buf, unsigned x, unsigned y,
+static void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
 				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
 	ASSERT((x & 1) == 0);
@@ -134,7 +134,7 @@ static void draw_yuv420_macropixel(MappedBuffer& buf, unsigned x, unsigned y,
 	}
 }
 
-static RGB get_test_pattern_pixel(MappedBuffer& fb, unsigned x, unsigned y)
+static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y)
 {
 	const unsigned w = fb.width();
 	const unsigned h = fb.height();
@@ -215,7 +215,7 @@ static RGB get_test_pattern_pixel(MappedBuffer& fb, unsigned x, unsigned y)
 	}
 }
 
-static void draw_test_pattern_impl(MappedBuffer& fb)
+static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
@@ -267,13 +267,7 @@ static void draw_test_pattern_impl(MappedBuffer& fb)
 	}
 }
 
-void draw_test_pattern(DumbFramebuffer &fb)
-{
-	MappedDumbBuffer mfb(fb);
-	draw_test_pattern(mfb);
-}
-
-void draw_test_pattern(MappedBuffer &fb)
+void draw_test_pattern(IMappedFramebuffer &fb)
 {
 #ifdef DRAW_PERF_PRINT
 	using namespace std::chrono;
@@ -291,19 +285,13 @@ void draw_test_pattern(MappedBuffer &fb)
 #endif
 }
 
-void draw_rect(MappedBuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
+void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
 {
 	for (unsigned i = x; i < x + w; ++i) {
 		for (unsigned j = y; j < y + h; ++j) {
 			draw_rgb_pixel(fb, i, j, color);
 		}
 	}
-}
-
-void draw_rect(DumbFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
-{
-	MappedDumbBuffer mfb(fb);
-	draw_rect(mfb, x, y, w, h, color);
 }
 
 }

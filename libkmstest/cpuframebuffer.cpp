@@ -1,6 +1,6 @@
 #include <map>
 
-#include "mappedbuffer.h"
+#include "cpuframebuffer.h"
 
 using namespace std;
 
@@ -37,7 +37,7 @@ static const map<PixelFormat, FormatInfo> format_info_array = {
 	{ PixelFormat::ABGR8888, { 1, { { 32, 1, 1 } }, } },
 };
 
-MappedCPUBuffer::MappedCPUBuffer(uint32_t width, uint32_t height, PixelFormat format)
+CPUFramebuffer::CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format)
 	: m_width(width), m_height(height), m_format(format)
 {
 	const FormatInfo& format_info = format_info_array.at(m_format);
@@ -55,7 +55,7 @@ MappedCPUBuffer::MappedCPUBuffer(uint32_t width, uint32_t height, PixelFormat fo
 	}
 }
 
-MappedCPUBuffer::~MappedCPUBuffer()
+CPUFramebuffer::~CPUFramebuffer()
 {
 	for (unsigned i = 0; i < m_num_planes; ++i) {
 		FramebufferPlane& plane = m_planes[i];

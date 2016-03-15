@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drmobject.h"
+#include "pixelformats.h"
 
 namespace kms
 {
@@ -19,4 +20,21 @@ private:
 	uint32_t m_width;
 	uint32_t m_height;
 };
+
+class IMappedFramebuffer {
+public:
+	virtual ~IMappedFramebuffer() { }
+
+	virtual uint32_t width() const = 0;
+	virtual uint32_t height() const = 0;
+
+	virtual PixelFormat format() const = 0;
+	virtual unsigned num_planes() const = 0;
+
+	virtual uint32_t stride(unsigned plane) const = 0;
+	virtual uint32_t size(unsigned plane) const = 0;
+	virtual uint32_t offset(unsigned plane) const = 0;
+	virtual uint8_t* map(unsigned plane) = 0;
+};
+
 }

@@ -35,54 +35,23 @@ DumbFramebuffer::~DumbFramebuffer()
 	Destroy();
 }
 
-struct FormatPlaneInfo
-{
-	uint8_t bitspp;	/* bits per (macro) pixel */
-	uint8_t xsub;
-	uint8_t ysub;
-};
-
-struct FormatInfo
-{
-	uint8_t num_planes;
-	struct FormatPlaneInfo planes[4];
-};
-
-static const map<PixelFormat, FormatInfo> format_info_array = {
-	/* YUV packed */
-	{ PixelFormat::UYVY, { 1, { { 32, 2, 1 } }, } },
-	{ PixelFormat::YUYV, { 1, { { 32, 2, 1 } }, } },
-	{ PixelFormat::YVYU, { 1, { { 32, 2, 1 } }, } },
-	{ PixelFormat::VYUY, { 1, { { 32, 2, 1 } }, } },
-	/* YUV semi-planar */
-	{ PixelFormat::NV12, { 2, { { 8, 1, 1, }, { 16, 2, 2 } }, } },
-	{ PixelFormat::NV21, { 2, { { 8, 1, 1, }, { 16, 2, 2 } }, } },
-	/* RGB16 */
-	{ PixelFormat::RGB565, { 1, { { 16, 1, 1 } }, } },
-	/* RGB32 */
-	{ PixelFormat::XRGB8888, { 1, { { 32, 1, 1 } }, } },
-	{ PixelFormat::XBGR8888, { 1, { { 32, 1, 1 } }, } },
-	{ PixelFormat::ARGB8888, { 1, { { 32, 1, 1 } }, } },
-	{ PixelFormat::ABGR8888, { 1, { { 32, 1, 1 } }, } },
-};
-
 void DumbFramebuffer::Create()
 {
 	int r;
 
-	const FormatInfo& format_info = format_info_array.at(m_format);
+	const PixelFormatInfo& format_info = get_pixel_format_info(m_format);
 
 	m_num_planes = format_info.num_planes;
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
-		const FormatPlaneInfo& pi = format_info.planes[i];
+		const PixelFormatPlaneInfo& pi = format_info.planes[i];
 		FramebufferPlane& plane = m_planes[i];
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
 		creq.width = width();
 		creq.height = height() / pi.ysub;
-		creq.bpp = pi.bitspp / pi.xsub;
+		creq.bpp = pi.bitspp;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
 			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed") + strerror(errno));

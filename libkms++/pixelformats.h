@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include <string>
+
 namespace kms
 {
 constexpr uint32_t MakeFourCC(const char *fourcc)
@@ -41,5 +44,20 @@ static inline std::string PixelFormatToFourCC(PixelFormat f)
 			0 };
 	return std::string(buf);
 }
+
+struct PixelFormatPlaneInfo
+{
+	uint8_t bitspp;
+	uint8_t xsub;
+	uint8_t ysub;
+};
+
+struct PixelFormatInfo
+{
+	uint8_t num_planes;
+	struct PixelFormatPlaneInfo planes[4];
+};
+
+const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format);
 
 }

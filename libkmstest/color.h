@@ -13,6 +13,7 @@ struct RGB
 	RGB(uint8_t a, uint8_t r, uint8_t g, uint8_t b);
 	RGB(uint32_t argb);
 
+	uint32_t rgb888() const;
 	uint32_t argb8888() const;
 	uint32_t abgr8888() const;
 	uint16_t rgb565() const;

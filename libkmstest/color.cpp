@@ -29,6 +29,11 @@ RGB::RGB(uint32_t argb)
 	this->a = (argb >> 24) & 0xff;
 }
 
+uint32_t RGB::rgb888() const
+{
+	return (r << 16) | (g << 8) | (b << 0);
+}
+
 uint32_t RGB::argb8888() const
 {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);

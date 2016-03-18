@@ -70,7 +70,7 @@ void OmapFramebuffer::Create()
 		FramebufferPlane& plane = m_planes[i];
 
 		uint32_t size = width() * height() * pi.bitspp / 8;
-		uint32_t flags = OMAP_BO_SCANOUT | OMAP_BO_WC;
+		uint32_t flags = OMAP_BO_SCANOUT | OMAP_BO_CACHED;
 
 		struct omap_bo* bo;
 

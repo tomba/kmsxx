@@ -20,7 +20,7 @@ struct PlaneInfo
 	unsigned w;
 	unsigned h;
 
-	DumbFramebuffer* fb;
+	OmapFramebuffer* fb;
 };
 
 struct OutputInfo
@@ -30,7 +30,7 @@ struct OutputInfo
 	Crtc* crtc;
 	Videomode mode;
 	bool user_set_crtc;
-	DumbFramebuffer* fb;
+	OmapFramebuffer* fb;
 
 	vector<PlaneInfo> planes;
 };
@@ -214,14 +214,14 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }
 
-static DumbFramebuffer* get_default_fb(Card& card, unsigned width, unsigned height)
+static OmapFramebuffer* get_default_fb(OmapCard& card, unsigned width, unsigned height)
 {
-	auto fb = new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888);
-	draw_test_pattern(*fb);
+	auto fb = new OmapFramebuffer(card, width, height, PixelFormat::XRGB8888);
+	//draw_test_pattern(*fb);
 	return fb;
 }
 
-static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
+static OmapFramebuffer* parse_fb(OmapCard& card, const string& fb_str, unsigned def_w, unsigned def_h)
 {
 	unsigned w = def_w;
 	unsigned h = def_h;
@@ -244,8 +244,8 @@ static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_
 			format = FourCCToPixelFormat(sm[3]);
 	}
 
-	auto fb = new DumbFramebuffer(card, w, h, format);
-	draw_test_pattern(*fb);
+	auto fb = new OmapFramebuffer(card, w, h, format);
+	//draw_test_pattern(*fb);
 	return fb;
 }
 
@@ -344,7 +344,7 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 	return args;
 }
 
-static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& output_args)
+static vector<OutputInfo> setups_to_outputs(OmapCard& card, const vector<Arg>& output_args)
 {
 	vector<OutputInfo> outputs;
 
@@ -551,7 +551,7 @@ int main(int argc, char **argv)
 {
 	vector<Arg> output_args = parse_cmdline(argc, argv);
 
-	Card card(s_device_path);
+	OmapCard card(s_device_path);
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
 
@@ -559,7 +559,13 @@ int main(int argc, char **argv)
 
 	set_crtcs_n_planes(card, outputs);
 
-	printf("press enter to exit\n");
+	OmapFramebuffer *fb = outputs[0].fb;
+
+	fb->prep();
+	draw_test_pattern(*fb);
+	fb->unprep();
+
+	//printf("press enter to exit\n");
 
 	getchar();
 }

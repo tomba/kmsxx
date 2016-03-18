@@ -149,4 +149,30 @@ int OmapFramebuffer::prime_fd(unsigned int plane)
 	return fd;
 }
 
+void OmapFramebuffer::prep()
+{
+	//OMAP_GEM_READ = 0x01,
+	//OMAP_GEM_WRITE = 0x02,
+
+	for (uint i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes[i];
+
+		printf("prep %d\n", i);
+		int r = omap_bo_cpu_prep(plane.omap_bo, (omap_gem_op)(OMAP_GEM_WRITE | OMAP_GEM_READ));
+		if (r)
+			throw std::runtime_error("prep failed");
+	}
+}
+
+void OmapFramebuffer::unprep()
+{
+	for (uint i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes[i];
+
+		int r = omap_bo_cpu_fini(plane.omap_bo, (omap_gem_op)(OMAP_GEM_WRITE | OMAP_GEM_READ));
+		if (r)
+			throw std::runtime_error("unprep failed");
+	}
+}
+
 }

@@ -29,6 +29,9 @@ public:
 	uint8_t* map(unsigned plane);
 	int prime_fd(unsigned plane);
 
+	void prep();
+	void unprep();
+
 private:
 	OmapCard& m_omap_card;
 

@@ -18,12 +18,12 @@ static void main_loop(Card& card);
 class Flipper
 {
 public:
-	Flipper(Card& card, unsigned width, unsigned height)
+	Flipper(OmapCard& card, unsigned width, unsigned height)
 		: m_current(0), m_bar_xpos(0)
 	{
 		auto format = PixelFormat::XRGB8888;
-		m_fbs[0] = new DumbFramebuffer(card, width, height, format);
-		m_fbs[1] = new DumbFramebuffer(card, width, height, format);
+		m_fbs[0] = new OmapFramebuffer(card, width, height, format);
+		m_fbs[1] = new OmapFramebuffer(card, width, height, format);
 	}
 
 	~Flipper()
@@ -53,7 +53,7 @@ public:
 	}
 
 private:
-	DumbFramebuffer* m_fbs[2];
+	OmapFramebuffer* m_fbs[2];
 
 	int m_current;
 	int m_bar_xpos;
@@ -62,20 +62,20 @@ private:
 class OutputFlipHandler : private PageFlipHandlerBase
 {
 public:
-	OutputFlipHandler(Connector* conn, Crtc* crtc, const Videomode& mode)
+	OutputFlipHandler(OmapCard& card, Connector* conn, Crtc* crtc, const Videomode& mode)
 		: m_connector(conn), m_crtc(crtc), m_mode(mode),
-		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay),
+		  m_flipper(card, mode.hdisplay, mode.vdisplay),
 		  m_plane(0), m_plane_flipper(0)
 	{
 	}
 
-	OutputFlipHandler(Connector* conn, Crtc* crtc, const Videomode& mode,
+	OutputFlipHandler(OmapCard& card, Connector* conn, Crtc* crtc, const Videomode& mode,
 			  Plane* plane, unsigned pwidth, unsigned pheight)
 		: m_connector(conn), m_crtc(crtc), m_mode(mode),
-		  m_flipper(conn->card(), mode.hdisplay, mode.vdisplay),
+		  m_flipper(card, mode.hdisplay, mode.vdisplay),
 		  m_plane(plane)
 	{
-		m_plane_flipper = new Flipper(conn->card(), pwidth, pheight);
+		m_plane_flipper = new Flipper(card, pwidth, pheight);
 	}
 
 	~OutputFlipHandler()
@@ -203,7 +203,7 @@ private:
 
 int main()
 {
-	Card card;
+	OmapCard card;
 
 	if (card.master() == false)
 		printf("Not DRM master, modeset may fail\n");
@@ -228,9 +228,9 @@ int main()
 #endif
 		OutputFlipHandler* output;
 		if (plane)
-			output = new OutputFlipHandler(conn, crtc, mode, plane, 500, 400);
+			output = new OutputFlipHandler(card, conn, crtc, mode, plane, 500, 400);
 		else
-			output = new OutputFlipHandler(conn, crtc, mode);
+			output = new OutputFlipHandler(card, conn, crtc, mode);
 		outputs.push_back(output);
 	}
 

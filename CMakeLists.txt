@@ -19,6 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDRM libdrm REQUIRED)
+pkg_check_modules(LIBDRM_OMAP libdrm_omap REQUIRED)
 
 enable_testing()
 

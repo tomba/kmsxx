@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <drm_fourcc.h>
 
 #include <kms++.h>
 

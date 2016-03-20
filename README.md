@@ -54,11 +54,12 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 You can use the following cmake flags to control the build. Use `-DFLAG=VALUE` to set them.
 
-Option name          | Values        | Default
--------------------- | ------------- | --------
-CMAKE_BUILD_TYPE     | Release/Debug | Release
-LIBKMS_ENABLE_PYTHON | ON/OFF        | ON
-LIBKMS_ENABLE_KMSCUBE | ON/OFF       | OFF
+Option name           | Values        | Default  | Notes
+--------------------- | ------------- | -------- | --------
+CMAKE_BUILD_TYPE      | Release/Debug | Release  |
+LIBKMS_ENABLE_PYTHON  | ON/OFF        | ON       |
+LIBKMS_ENABLE_KMSCUBE | ON/OFF        | OFF      |
+LIBKMS_ENABLE_LTO     | ON/OFF        | OFF      | Link Time Optimization
 
 ## Env variables
 

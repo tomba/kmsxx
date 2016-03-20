@@ -63,7 +63,7 @@ LIBKMS_ENABLE_LTO     | ON/OFF        | OFF      | Link Time Optimization
 
 ## Env variables
 
-You can use the following environmental variables to control the behavior of libkms.
+You can use the following runtime environmental variables to control the behavior of libkms.
 
 Variable                          | Description
 --------------------------------- | -------------

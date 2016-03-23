@@ -35,4 +35,6 @@ using namespace kms;
 %template(CrtcVector) std::vector<kms::Crtc*>;
 %template(EncoderVector) std::vector<kms::Encoder*>;
 %template(PlaneVector) std::vector<kms::Plane*>;
-%template(map_u32_u64) std::map<uint32_t, uint64_t>;
+/* for some reason uint64_t doesn't compile on 64 bit pc */
+/* %template(map_u32_u64) std::map<uint32_t, uint64_t>; */
+%template(map_u32_u64) std::map<uint32_t, unsigned long long>;

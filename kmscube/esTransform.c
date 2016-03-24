@@ -46,7 +46,7 @@
 
 #define PI 3.1415926535897932384626433832795f
 
-void ESUTIL_API
+void
 esScale(ESMatrix *result, GLfloat sx, GLfloat sy, GLfloat sz)
 {
 	result->m[0][0] *= sx;
@@ -65,7 +65,7 @@ esScale(ESMatrix *result, GLfloat sx, GLfloat sy, GLfloat sz)
 	result->m[2][3] *= sz;
 }
 
-void ESUTIL_API
+void
 esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz)
 {
 	result->m[3][0] += (result->m[0][0] * tx + result->m[1][0] * ty + result->m[2][0] * tz);
@@ -74,7 +74,7 @@ esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz)
 	result->m[3][3] += (result->m[0][3] * tx + result->m[1][3] * ty + result->m[2][3] * tz);
 }
 
-void ESUTIL_API
+void
 esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
 	GLfloat sinAngle, cosAngle;
@@ -127,7 +127,7 @@ esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 	}
 }
 
-void ESUTIL_API
+void
 esFrustum(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
 	float       deltaX = right - left;
@@ -157,7 +157,7 @@ esFrustum(ESMatrix *result, float left, float right, float bottom, float top, fl
 }
 
 
-void ESUTIL_API
+void
 esPerspective(ESMatrix *result, float fovy, float aspect, float nearZ, float farZ)
 {
 	GLfloat frustumW, frustumH;
@@ -168,7 +168,7 @@ esPerspective(ESMatrix *result, float fovy, float aspect, float nearZ, float far
 	esFrustum( result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ );
 }
 
-void ESUTIL_API
+void
 esOrtho(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
 	float       deltaX = right - left;
@@ -191,7 +191,7 @@ esOrtho(ESMatrix *result, float left, float right, float bottom, float top, floa
 }
 
 
-void ESUTIL_API
+void
 esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB)
 {
 	ESMatrix    tmp;
@@ -223,7 +223,7 @@ esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB)
 }
 
 
-void ESUTIL_API
+void
 esMatrixLoadIdentity(ESMatrix *result)
 {
 	memset(result, 0x0, sizeof(ESMatrix));

@@ -13,7 +13,7 @@ namespace kms
 {
 
 DrmObject::DrmObject(Card& card, uint32_t object_type)
-	:m_card(card), m_id(-1), m_object_type(object_type)
+	:m_card(card), m_id(-1), m_object_type(object_type), m_idx(0)
 {
 }
 

@@ -15,8 +15,5 @@ public:
 	virtual ~ExtFramebuffer();
 
 private:
-	uint32_t m_pitch;
-	uint32_t m_bpp;
-	uint32_t m_depth;
 };
 }

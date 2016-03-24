@@ -12,7 +12,7 @@
 #include <linux/fb.h>
 
 #include "test.h"
-#include "cpuframebuffer.h"
+#include "extcpuframebuffer.h"
 
 using namespace kms;
 
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
 	FAIL_IF(ptr == MAP_FAILED, "mmap failed");
 
-	CPUFramebuffer buf(var.xres_virtual, var.yres_virtual, PixelFormat::XRGB8888);
+	ExtCPUFramebuffer buf(var.xres, var.yres_virtual, PixelFormat::XRGB8888, ptr, fix.line_length);
 
 	printf("%s: res %dx%d, virtual %dx%d, line_len %d\n",
 	       fbdev,

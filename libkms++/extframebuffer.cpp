@@ -35,6 +35,31 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	set_id(id);
 }
 
+ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
+			       int fds[4], uint32_t pitches[4], uint32_t offsets[4])
+	: Framebuffer(card, width, height)
+{
+	int r;
+
+	const PixelFormatInfo& format_info = get_pixel_format_info(format);
+
+	uint32_t handles[4] = { 0 };
+
+	for (int i = 0; i < format_info.num_planes; ++i) {
+		r = drmPrimeFDToHandle(card.fd(), fds[i], &handles[i]);
+		if (r)
+			throw invalid_argument(string("drmPrimeFDToHandle: ") + strerror(errno));
+	}
+
+	uint32_t id;
+	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
+			  handles, pitches, offsets, &id, 0);
+	if (r)
+		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+
+	set_id(id);
+}
+
 ExtFramebuffer::~ExtFramebuffer()
 {
 	drmModeRmFB(card().fd(), id());

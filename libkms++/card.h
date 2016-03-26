@@ -22,6 +22,8 @@ public:
 
 	int fd() const { return m_fd; }
 
+	void drop_master();
+
 	Connector* get_first_connected_connector() const;
 
 	DrmObject* get_object(uint32_t id) const;

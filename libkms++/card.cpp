@@ -132,6 +132,11 @@ Card::~Card()
 	close(m_fd);
 }
 
+void Card::drop_master()
+{
+	drmDropMaster(fd());
+}
+
 void Card::restore_modes()
 {
 	for (auto conn : get_connectors())

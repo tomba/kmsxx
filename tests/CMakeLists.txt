@@ -18,3 +18,9 @@ target_link_libraries(fbtestpat kmstest)
 
 add_executable (kmscapture kmscapture.cpp)
 target_link_libraries(kmscapture kms++ kmstest ${LIBDRM_LIBRARIES})
+
+add_executable (producer producer.cpp prodcons.cpp prodcons.h)
+target_link_libraries(producer kms++ kmstest ${LIBDRM_LIBRARIES})
+
+add_executable (consumer consumer.cpp prodcons.cpp prodcons.h)
+target_link_libraries(consumer kms++ kmstest ${LIBDRM_LIBRARIES})

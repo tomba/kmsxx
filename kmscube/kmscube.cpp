@@ -310,6 +310,11 @@ struct Surface
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
+	void swap_buffers()
+	{
+		eglSwapBuffers(gl.display(), esurface);
+	}
+
 	static void drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 	{
 		auto fb = reinterpret_cast<Framebuffer*>(data);
@@ -337,7 +342,6 @@ struct Surface
 	struct Framebuffer* lock_next()
 	{
 		bo_prev = bo_next;
-		eglSwapBuffers(gl.display(), esurface);
 		bo_next = gbm_surface_lock_front_buffer(gsurface);
 		FAIL_IF(!bo_next, "could not lock gbm buffer");
 		return drm_fb_get_from_bo(bo_next, card);
@@ -431,6 +435,7 @@ public:
 
 		m_surface->make_current();
 		m_surface->clear();
+		m_surface->swap_buffers();
 		struct Framebuffer* fb = m_surface->lock_next();
 
 		struct Framebuffer* planefb = 0;
@@ -438,6 +443,7 @@ public:
 		if (m_plane) {
 			m_surface2->make_current();
 			m_surface2->clear();
+			m_surface2->swap_buffers();
 			planefb = m_surface2->lock_next();
 		}
 
@@ -502,6 +508,7 @@ private:
 		m_surface->make_current();
 		m_surface->clear();
 		draw(m_frame_num * m_rotation_mult, *m_surface);
+		m_surface->swap_buffers();
 		struct Framebuffer* fb = m_surface->lock_next();
 
 		struct Framebuffer* planefb = 0;
@@ -510,6 +517,7 @@ private:
 			m_surface2->make_current();
 			m_surface2->clear();
 			draw(m_frame_num * m_rotation_mult * 2, *m_surface2);
+			m_surface2->swap_buffers();
 			planefb = m_surface2->lock_next();
 		}
 

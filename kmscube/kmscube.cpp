@@ -30,6 +30,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <poll.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -39,6 +40,7 @@
 
 #include <kms++.h>
 #include "test.h"
+#include "opts.h"
 
 using namespace kms;
 using namespace std;
@@ -445,6 +447,37 @@ private:
 	struct gbm_bo* bo_next;
 };
 
+class NullEglSurface
+{
+public:
+	NullEglSurface(const EglState& egl)
+		: egl(egl)
+	{
+		esurface = eglCreateWindowSurface(egl.display(), egl.config(), 0, NULL);
+		FAIL_IF(esurface == EGL_NO_SURFACE, "failed to create egl surface");
+	}
+
+	~NullEglSurface()
+	{
+		eglDestroySurface(egl.display(), esurface);
+	}
+
+	void make_current()
+	{
+		eglMakeCurrent(egl.display(), esurface, esurface, egl.context());
+	}
+
+	void swap_buffers()
+	{
+		eglSwapBuffers(egl.display(), esurface);
+	}
+
+private:
+	const EglState& egl;
+
+	EGLSurface esurface;
+};
+
 class OutputHandler : private PageFlipHandlerBase
 {
 public:
@@ -603,13 +636,8 @@ private:
 	float m_rotation_mult;
 };
 
-int main(int argc, char *argv[])
+static void main_gbm()
 {
-	for (int i = 1; i < argc; ++i) {
-		if (argv[i] == string("-v"))
-			s_verbose = true;
-	}
-
 	Card card;
 
 	GbmDevice gdev(card);
@@ -653,23 +681,88 @@ int main(int argc, char *argv[])
 	for (auto& out : outputs)
 		out->start_flipping();
 
+	struct pollfd fds[2] = { 0 };
+	fds[0].fd = 0;
+	fds[0].events =  POLLIN;
+	fds[1].fd = card.fd();
+	fds[1].events =  POLLIN;
+
 	while (!s_need_exit || s_flip_pending) {
-		fd_set fds;
-		FD_ZERO(&fds);
-		if (!s_need_exit)
-			FD_SET(0, &fds);
-		FD_SET(card.fd(), &fds);
+		int r = poll(fds, ARRAY_SIZE(fds), -1);
+		FAIL_IF(r < 0, "poll error %d", r);
 
-		int ret = select(card.fd() + 1, &fds, NULL, NULL, NULL);
-
-		FAIL_IF(ret < 0, "select error: %d", ret);
-		FAIL_IF(ret == 0, "select timeout");
-
-		if (FD_ISSET(0, &fds))
+		if (fds[0].revents)
 			s_need_exit = true;
 
-		if (FD_ISSET(card.fd(), &fds))
+		if (fds[1].revents)
 			card.call_page_flip_handlers();
+	}
+}
+
+static void main_egl()
+{
+	EglState egl(EGL_DEFAULT_DISPLAY);
+	NullEglSurface surface(egl);
+	GlScene scene;
+
+	scene.set_viewport(600, 600);
+
+	int framenum = 0;
+
+	struct pollfd fds[1] = { 0 };
+	fds[0].fd = 0;
+	fds[0].events =  POLLIN;
+
+	while (true) {
+		int r = poll(fds, ARRAY_SIZE(fds), 0);
+		ASSERT(r >= 0);
+
+		if (fds[0].revents)
+			break;
+
+		surface.make_current();
+		scene.draw(framenum++);
+		surface.swap_buffers();
+	}
+}
+
+int main(int argc, char *argv[])
+{
+	OptionSet optionset = {
+		Option("v|verbose",
+		[&]()
+		{
+			s_verbose = true;
+		}),
+	};
+
+	optionset.parse(argc, argv);
+
+	int mode;
+
+	if (optionset.params().size() == 0) {
+		mode = 0;
+	} else {
+		const string m = optionset.params().front();
+
+		if (m == "gbm")
+			mode = 0;
+		else if (m == "null")
+			mode = 1;
+		else {
+			printf("Unknown mode %s\n", m.c_str());
+			return -1;
+		}
+	}
+
+	switch (mode) {
+	case 0:
+		main_gbm();
+		break;
+
+	case 1:
+		main_egl();
+		break;
 	}
 
 	return 0;

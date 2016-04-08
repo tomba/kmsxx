@@ -64,7 +64,7 @@ public:
 	GbmDevice(const GbmDevice& other) = delete;
 	GbmDevice& operator=(const GbmDevice& other) = delete;
 
-	operator struct gbm_device*() const { return m_dev; }
+	struct gbm_device* handle() const { return m_dev; }
 
 private:
 	struct gbm_device* m_dev;
@@ -75,7 +75,7 @@ class GbmSurface
 public:
 	GbmSurface(GbmDevice& gdev, int width, int height)
 	{
-		m_surface = gbm_surface_create(gdev, width, height,
+		m_surface = gbm_surface_create(gdev.handle(), width, height,
 					       GBM_FORMAT_XRGB8888,
 					       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 		FAIL_IF(!m_surface, "failed to create gbm surface");
@@ -89,20 +89,29 @@ public:
 	GbmSurface(const GbmSurface& other) = delete;
 	GbmSurface& operator=(const GbmSurface& other) = delete;
 
-	operator struct gbm_surface*() const { return m_surface; }
+	gbm_bo* lock_front_buffer()
+	{
+		return gbm_surface_lock_front_buffer(m_surface);
+	}
+
+	void release_buffer(gbm_bo *bo)
+	{
+		gbm_surface_release_buffer(m_surface, bo);
+	}
+
+	struct gbm_surface* handle() const { return m_surface; }
+
 private:
 	struct gbm_surface* m_surface;
 };
 
-struct GLState {
-	GLState(GbmDevice& gdev)
+class EglState
+{
+public:
+	EglState(EGLNativeDisplayType display_id)
 	{
-		EGLint major, minor, n;
-		GLuint vertex_shader, fragment_shader;
-		GLint ret;
 		EGLBoolean b;
-
-#include "cube.h"
+		EGLint major, minor, n;
 
 		static const EGLint context_attribs[] = {
 			EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -119,41 +128,7 @@ struct GLState {
 			EGL_NONE
 		};
 
-		static const char *vertex_shader_source =
-				"uniform mat4 modelviewMatrix;      \n"
-				"uniform mat4 modelviewprojectionMatrix;\n"
-				"uniform mat3 normalMatrix;         \n"
-				"                                   \n"
-				"attribute vec4 in_position;        \n"
-				"attribute vec3 in_normal;          \n"
-				"attribute vec4 in_color;           \n"
-				"\n"
-				"vec4 lightSource = vec4(2.0, 2.0, 20.0, 0.0);\n"
-				"                                   \n"
-				"varying vec4 vVaryingColor;        \n"
-				"                                   \n"
-				"void main()                        \n"
-				"{                                  \n"
-				"    gl_Position = modelviewprojectionMatrix * in_position;\n"
-				"    vec3 vEyeNormal = normalMatrix * in_normal;\n"
-				"    vec4 vPosition4 = modelviewMatrix * in_position;\n"
-				"    vec3 vPosition3 = vPosition4.xyz / vPosition4.w;\n"
-				"    vec3 vLightDir = normalize(lightSource.xyz - vPosition3);\n"
-				"    float diff = max(0.0, dot(vEyeNormal, vLightDir));\n"
-				"    vVaryingColor = vec4(diff * in_color.rgb, 1.0);\n"
-				"}                                  \n";
-
-		static const char *fragment_shader_source =
-				"precision mediump float;           \n"
-				"                                   \n"
-				"varying vec4 vVaryingColor;        \n"
-				"                                   \n"
-				"void main()                        \n"
-				"{                                  \n"
-				"    gl_FragColor = vVaryingColor;  \n"
-				"}                                  \n";
-
-		m_display = eglGetDisplay(gdev);
+		m_display = eglGetDisplay(display_id);
 		FAIL_IF(!m_display, "failed to get egl display");
 
 		b = eglInitialize(m_display, &major, &minor);
@@ -192,6 +167,68 @@ struct GLState {
 		FAIL_IF(!m_context, "failed to create context");
 
 		eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, m_context);
+	}
+
+	~EglState()
+	{
+		eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+		eglTerminate(m_display);
+	}
+
+	EGLDisplay display() const { return m_display; }
+	EGLConfig config() const { return m_config; }
+	EGLContext context() const { return m_context; }
+
+private:
+	EGLDisplay m_display;
+	EGLConfig m_config;
+	EGLContext m_context;
+};
+
+class GlScene
+{
+public:
+	GlScene()
+	{
+		GLuint vertex_shader, fragment_shader;
+		GLint ret;
+
+#include "cube.h"
+
+		static const char *vertex_shader_source =
+				"uniform mat4 modelviewMatrix;      \n"
+				"uniform mat4 modelviewprojectionMatrix;\n"
+				"uniform mat3 normalMatrix;         \n"
+				"                                   \n"
+				"attribute vec4 in_position;        \n"
+				"attribute vec3 in_normal;          \n"
+				"attribute vec4 in_color;           \n"
+				"\n"
+				"vec4 lightSource = vec4(2.0, 2.0, 20.0, 0.0);\n"
+				"                                   \n"
+				"varying vec4 vVaryingColor;        \n"
+				"                                   \n"
+				"void main()                        \n"
+				"{                                  \n"
+				"    gl_Position = modelviewprojectionMatrix * in_position;\n"
+				"    vec3 vEyeNormal = normalMatrix * in_normal;\n"
+				"    vec4 vPosition4 = modelviewMatrix * in_position;\n"
+				"    vec3 vPosition3 = vPosition4.xyz / vPosition4.w;\n"
+				"    vec3 vLightDir = normalize(lightSource.xyz - vPosition3);\n"
+				"    float diff = max(0.0, dot(vEyeNormal, vLightDir));\n"
+				"    vVaryingColor = vec4(diff * in_color.rgb, 1.0);\n"
+				"}                                  \n";
+
+		static const char *fragment_shader_source =
+				"precision mediump float;           \n"
+				"                                   \n"
+				"varying vec4 vVaryingColor;        \n"
+				"                                   \n"
+				"void main()                        \n"
+				"{                                  \n"
+				"    gl_FragColor = vVaryingColor;  \n"
+				"}                                  \n";
+
 
 		if (s_verbose) {
 			printf("GL_VENDOR:       %s\n", glGetString(GL_VENDOR));
@@ -257,62 +294,97 @@ struct GLState {
 		glEnableVertexAttribArray(2);
 	}
 
-	~GLState()
+	GlScene(const GlScene& other) = delete;
+	GlScene& operator=(const GlScene& other) = delete;
+
+	void set_viewport(uint32_t width, uint32_t height)
 	{
-		eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-		eglTerminate(m_display);
+		m_width = width;
+		m_height = height;
 	}
 
-	GLState(const GLState& other) = delete;
-	GLState& operator=(const GLState& other) = delete;
+	void draw(uint32_t framenum)
+	{
+		glViewport(0, 0, m_width, m_height);
 
-	EGLDisplay display() const { return m_display; }
-	EGLConfig config() const { return m_config; }
-	EGLContext context() const { return m_context; }
+		glClearColor(0.5, 0.5, 0.5, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-	GLint modelviewmatrix() const { return m_modelviewmatrix; }
-	GLint modelviewprojectionmatrix() const { return m_modelviewprojectionmatrix; }
-	GLint normalmatrix() const { return m_normalmatrix; }
+		ESMatrix modelview;
+
+		esMatrixLoadIdentity(&modelview);
+		esTranslate(&modelview, 0.0f, 0.0f, -8.0f);
+		esRotate(&modelview, 45.0f + (0.75f * framenum), 1.0f, 0.0f, 0.0f);
+		esRotate(&modelview, 45.0f - (0.5f * framenum), 0.0f, 1.0f, 0.0f);
+		esRotate(&modelview, 10.0f + (0.45f * framenum), 0.0f, 0.0f, 1.0f);
+
+		GLfloat aspect = (float)m_height / m_width;
+
+		ESMatrix projection;
+		esMatrixLoadIdentity(&projection);
+		esFrustum(&projection, -2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
+
+		ESMatrix modelviewprojection;
+		esMatrixLoadIdentity(&modelviewprojection);
+		esMatrixMultiply(&modelviewprojection, &modelview, &projection);
+
+		float normal[9];
+		normal[0] = modelview.m[0][0];
+		normal[1] = modelview.m[0][1];
+		normal[2] = modelview.m[0][2];
+		normal[3] = modelview.m[1][0];
+		normal[4] = modelview.m[1][1];
+		normal[5] = modelview.m[1][2];
+		normal[6] = modelview.m[2][0];
+		normal[7] = modelview.m[2][1];
+		normal[8] = modelview.m[2][2];
+
+		glUniformMatrix4fv(m_modelviewmatrix, 1, GL_FALSE, &modelview.m[0][0]);
+		glUniformMatrix4fv(m_modelviewprojectionmatrix, 1, GL_FALSE, &modelviewprojection.m[0][0]);
+		glUniformMatrix3fv(m_normalmatrix, 1, GL_FALSE, normal);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
+		glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
+	}
 
 private:
-	EGLDisplay m_display;
-	EGLConfig m_config;
-	EGLContext m_context;
 	GLint m_modelviewmatrix, m_modelviewprojectionmatrix, m_normalmatrix;
+
+	uint32_t m_width;
+	uint32_t m_height;
 };
 
-struct Surface
+class GbmEglSurface
 {
-	Surface(Card& card, GbmDevice& gdev, const GLState& gl, int width, int height)
-		: card(card), gdev(gdev), gl(gl), gsurface(gdev, width, height), m_width(width), m_height(height),
+public:
+	GbmEglSurface(Card& card, GbmDevice& gdev, const EglState& egl, int width, int height)
+		: card(card), gdev(gdev), egl(egl), m_width(width), m_height(height),
 		  bo_prev(0), bo_next(0)
 	{
-		esurface = eglCreateWindowSurface(gl.display(), gl.config(), gsurface, NULL);
+		gsurface = unique_ptr<GbmSurface>(new GbmSurface(gdev, width, height));
+		esurface = eglCreateWindowSurface(egl.display(), egl.config(), gsurface->handle(), NULL);
 		FAIL_IF(esurface == EGL_NO_SURFACE, "failed to create egl surface");
 	}
 
-	~Surface()
+	~GbmEglSurface()
 	{
 		if (bo_next)
-			gbm_surface_release_buffer(gsurface, bo_next);
-		eglDestroySurface(gl.display(), esurface);
+			gsurface->release_buffer(bo_next);
+		eglDestroySurface(egl.display(), esurface);
 	}
 
 	void make_current()
 	{
-		eglMakeCurrent(gl.display(), esurface, esurface, gl.context());
-		glViewport(0, 0, m_width, m_height);
-	}
-
-	void clear()
-	{
-		glClearColor(0.5, 0.5, 0.5, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		eglMakeCurrent(egl.display(), esurface, esurface, egl.context());
 	}
 
 	void swap_buffers()
 	{
-		eglSwapBuffers(gl.display(), esurface);
+		eglSwapBuffers(egl.display(), esurface);
 	}
 
 	static void drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
@@ -342,7 +414,7 @@ struct Surface
 	struct Framebuffer* lock_next()
 	{
 		bo_prev = bo_next;
-		bo_next = gbm_surface_lock_front_buffer(gsurface);
+		bo_next = gsurface->lock_front_buffer();
 		FAIL_IF(!bo_next, "could not lock gbm buffer");
 		return drm_fb_get_from_bo(bo_next, card);
 	}
@@ -350,16 +422,20 @@ struct Surface
 	void free_prev()
 	{
 		if (bo_prev) {
-			gbm_surface_release_buffer(gsurface, bo_prev);
+			gsurface->release_buffer(bo_prev);
 			bo_prev = 0;
 		}
 	}
 
+	uint32_t width() const { return m_width; }
+	uint32_t height() const { return m_height; }
+
+private:
 	Card& card;
 	GbmDevice& gdev;
-	const GLState& gl;
+	const EglState& egl;
 
-	GbmSurface gsurface;
+	unique_ptr<GbmSurface> gsurface;
 	EGLSurface esurface;
 
 	int m_width;
@@ -369,61 +445,22 @@ struct Surface
 	struct gbm_bo* bo_next;
 };
 
-static void draw(uint32_t framenum, Surface& surface)
-{
-	const GLState& gl = surface.gl;
-
-	ESMatrix modelview;
-
-	esMatrixLoadIdentity(&modelview);
-	esTranslate(&modelview, 0.0f, 0.0f, -8.0f);
-	esRotate(&modelview, 45.0f + (0.75f * framenum), 1.0f, 0.0f, 0.0f);
-	esRotate(&modelview, 45.0f - (0.5f * framenum), 0.0f, 1.0f, 0.0f);
-	esRotate(&modelview, 10.0f + (0.45f * framenum), 0.0f, 0.0f, 1.0f);
-
-	GLfloat aspect = (GLfloat)(surface.m_height) / (GLfloat)(surface.m_width);
-
-	ESMatrix projection;
-	esMatrixLoadIdentity(&projection);
-	esFrustum(&projection, -2.8f, +2.8f, -2.8f * aspect, +2.8f * aspect, 6.0f, 10.0f);
-
-	ESMatrix modelviewprojection;
-	esMatrixLoadIdentity(&modelviewprojection);
-	esMatrixMultiply(&modelviewprojection, &modelview, &projection);
-
-	float normal[9];
-	normal[0] = modelview.m[0][0];
-	normal[1] = modelview.m[0][1];
-	normal[2] = modelview.m[0][2];
-	normal[3] = modelview.m[1][0];
-	normal[4] = modelview.m[1][1];
-	normal[5] = modelview.m[1][2];
-	normal[6] = modelview.m[2][0];
-	normal[7] = modelview.m[2][1];
-	normal[8] = modelview.m[2][2];
-
-	glUniformMatrix4fv(gl.modelviewmatrix(), 1, GL_FALSE, &modelview.m[0][0]);
-	glUniformMatrix4fv(gl.modelviewprojectionmatrix(), 1, GL_FALSE, &modelviewprojection.m[0][0]);
-	glUniformMatrix3fv(gl.normalmatrix(), 1, GL_FALSE, normal);
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glDrawArrays(GL_TRIANGLE_STRIP, 4, 4);
-	glDrawArrays(GL_TRIANGLE_STRIP, 8, 4);
-	glDrawArrays(GL_TRIANGLE_STRIP, 12, 4);
-	glDrawArrays(GL_TRIANGLE_STRIP, 16, 4);
-	glDrawArrays(GL_TRIANGLE_STRIP, 20, 4);
-}
-
 class OutputHandler : private PageFlipHandlerBase
 {
 public:
-	OutputHandler(Card& card, GbmDevice& gdev, const GLState& gl, Connector* connector, Crtc* crtc, Videomode& mode, Plane* plane, float rotation_mult)
+	OutputHandler(Card& card, GbmDevice& gdev, const EglState& egl, Connector* connector, Crtc* crtc, Videomode& mode, Plane* plane, float rotation_mult)
 		: m_frame_num(0), m_connector(connector), m_crtc(crtc), m_plane(plane), m_mode(mode),
 		  m_rotation_mult(rotation_mult)
 	{
-		m_surface = unique_ptr<Surface>(new Surface(card, gdev, gl, mode.hdisplay, mode.vdisplay));
-		if (m_plane)
-			m_surface2 = unique_ptr<Surface>(new Surface(card, gdev, gl, 400, 400));
+		m_surface1 = unique_ptr<GbmEglSurface>(new GbmEglSurface(card, gdev, egl, mode.hdisplay, mode.vdisplay));
+		m_scene1 = unique_ptr<GlScene>(new GlScene());
+		m_scene1->set_viewport(m_surface1->width(), m_surface1->height());
+
+		if (m_plane) {
+			m_surface2 = unique_ptr<GbmEglSurface>(new GbmEglSurface(card, gdev, egl, 400, 400));
+			m_scene2 = unique_ptr<GlScene>(new GlScene());
+			m_scene2->set_viewport(m_surface2->width(), m_surface2->height());
+		}
 	}
 
 	OutputHandler(const OutputHandler& other) = delete;
@@ -433,16 +470,14 @@ public:
 	{
 		int ret;
 
-		m_surface->make_current();
-		m_surface->clear();
-		m_surface->swap_buffers();
-		struct Framebuffer* fb = m_surface->lock_next();
+		m_surface1->make_current();
+		m_surface1->swap_buffers();
+		struct Framebuffer* fb = m_surface1->lock_next();
 
 		struct Framebuffer* planefb = 0;
 
 		if (m_plane) {
 			m_surface2->make_current();
-			m_surface2->clear();
 			m_surface2->swap_buffers();
 			planefb = m_surface2->lock_next();
 		}
@@ -493,7 +528,7 @@ private:
 
 		s_flip_pending--;
 
-		m_surface->free_prev();
+		m_surface1->free_prev();
 		if (m_plane)
 			m_surface2->free_prev();
 
@@ -505,18 +540,16 @@ private:
 
 	void queue_next()
 	{
-		m_surface->make_current();
-		m_surface->clear();
-		draw(m_frame_num * m_rotation_mult, *m_surface);
-		m_surface->swap_buffers();
-		struct Framebuffer* fb = m_surface->lock_next();
+		m_surface1->make_current();
+		m_scene1->draw(m_frame_num * m_rotation_mult);
+		m_surface1->swap_buffers();
+		struct Framebuffer* fb = m_surface1->lock_next();
 
 		struct Framebuffer* planefb = 0;
 
 		if (m_plane) {
 			m_surface2->make_current();
-			m_surface2->clear();
-			draw(m_frame_num * m_rotation_mult * 2, *m_surface2);
+			m_scene2->draw(m_frame_num * m_rotation_mult * 2);
 			m_surface2->swap_buffers();
 			planefb = m_surface2->lock_next();
 		}
@@ -561,8 +594,11 @@ private:
 	Videomode m_mode;
 	Plane* m_root_plane;
 
-	unique_ptr<Surface> m_surface;
-	unique_ptr<Surface> m_surface2;
+	unique_ptr<GbmEglSurface> m_surface1;
+	unique_ptr<GbmEglSurface> m_surface2;
+
+	unique_ptr<GlScene> m_scene1;
+	unique_ptr<GlScene> m_scene2;
 
 	float m_rotation_mult;
 };
@@ -577,7 +613,7 @@ int main(int argc, char *argv[])
 	Card card;
 
 	GbmDevice gdev(card);
-	const GLState gl(gdev);
+	EglState egl(gdev.handle());
 
 	vector<unique_ptr<OutputHandler>> outputs;
 	vector<Plane*> used_planes;
@@ -605,7 +641,7 @@ int main(int argc, char *argv[])
 		if (plane)
 			used_planes.push_back(plane);
 
-		auto out = new OutputHandler(card, gdev, gl, connector, crtc, mode, plane, rot_mult);
+		auto out = new OutputHandler(card, gdev, egl, connector, crtc, mode, plane, rot_mult);
 		outputs.emplace_back(out);
 
 		rot_mult *= 1.33;

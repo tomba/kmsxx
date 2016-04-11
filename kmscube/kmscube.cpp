@@ -49,6 +49,8 @@ static bool s_verbose;
 static int s_flip_pending;
 static bool s_need_exit;
 
+static bool s_support_planes;
+
 class GbmDevice
 {
 public:
@@ -662,15 +664,17 @@ static void main_gbm()
 
 		Plane* plane = 0;
 
-		for (Plane* p : crtc->get_possible_planes()) {
-			if (find(used_planes.begin(), used_planes.end(), p) != used_planes.end())
-				continue;
+		if (s_support_planes) {
+			for (Plane* p : crtc->get_possible_planes()) {
+				if (find(used_planes.begin(), used_planes.end(), p) != used_planes.end())
+					continue;
 
-			if (p->plane_type() != PlaneType::Overlay)
-				continue;
+				if (p->plane_type() != PlaneType::Overlay)
+					continue;
 
-			plane = p;
-			break;
+				plane = p;
+				break;
+			}
 		}
 
 		if (plane)

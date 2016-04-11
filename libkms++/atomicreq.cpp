@@ -76,4 +76,11 @@ int AtomicReq::commit(void* data)
 
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, data);
 }
+
+int AtomicReq::commit_sync()
+{
+	uint32_t flags = 0;
+
+	return drmModeAtomicCommit(m_card.fd(), m_req, flags, 0);
+}
 }

@@ -91,6 +91,11 @@ public:
 	GbmSurface(const GbmSurface& other) = delete;
 	GbmSurface& operator=(const GbmSurface& other) = delete;
 
+	bool has_free()
+	{
+		return gbm_surface_has_free_buffers(m_surface);
+	}
+
 	gbm_bo* lock_front_buffer()
 	{
 		return gbm_surface_lock_front_buffer(m_surface);
@@ -381,6 +386,8 @@ public:
 
 	void make_current()
 	{
+		FAIL_IF(!gsurface->has_free(), "No free buffers");
+
 		eglMakeCurrent(egl.display(), esurface, esurface, egl.context());
 	}
 

@@ -1,17 +1,38 @@
-include_directories(${LIBDRM_INCLUDE_DIRS})
-link_directories(${LIBDRM_LIBRARY_DIRS})
 
 pkg_check_modules(GLESv2 glesv2 REQUIRED)
-include_directories(${GLESv2_INCLUDE_DIRS})
-link_directories(${GLESv2_LIBRARY_DIRS})
-
 pkg_check_modules(EGL egl REQUIRED)
-include_directories(${EGL_INCLUDE_DIRS})
-link_directories(${EGL_LIBRARY_DIRS})
-
 pkg_check_modules(GBM gbm REQUIRED)
-include_directories(${GBM_INCLUDE_DIRS})
-link_directories(${GBM_LIBRARY_DIRS})
+pkg_check_modules(X11 x11 REQUIRED)
+pkg_check_modules(XCB xcb REQUIRED)
+pkg_check_modules(X11XCB x11-xcb REQUIRED)
+
+include_directories(
+    ${LIBDRM_INCLUDE_DIRS}
+    ${GLESv2_INCLUDE_DIRS}
+    ${EGL_INCLUDE_DIRS}
+    ${GBM_INCLUDE_DIRS}
+    ${X11_INCLUDE_DIRS}
+    ${XCB_INCLUDE_DIRS}
+    ${X11XCB_INCLUDE_DIRS}
+)
+
+link_directories(
+    ${LIBDRM_LIBRARY_DIRS}
+    ${GLESv2_LIBRARY_DIRS}
+    ${EGL_LIBRARY_DIRS}
+    ${GBM_LIBRARY_DIRS}
+    ${X11_LIBRARY_DIRS}
+    ${XCB_LIBRARY_DIRS}
+    ${X11XCB_LIBRARY_DIRS}
+)
 
 add_executable (kmscube kmscube.cpp esTransform.c esUtil.h cube.h)
-target_link_libraries(kmscube kms++ kmstest ${LIBDRM_LIBRARIES} ${GLESv2_LIBRARIES} ${EGL_LIBRARIES} ${GBM_LIBRARIES})
+target_link_libraries(kmscube kms++ kmstest
+    ${LIBDRM_LIBRARIES}
+    ${GLESv2_LIBRARIES}
+    ${EGL_LIBRARIES}
+    ${GBM_LIBRARIES}
+    ${X11_LIBRARIES}
+    ${XCB_LIBRARIES}
+    ${X11XCB_LIBRARIES}
+)

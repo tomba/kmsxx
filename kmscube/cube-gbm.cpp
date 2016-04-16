@@ -379,7 +379,7 @@ void main_gbm()
 	for (auto& out : outputs)
 		out->start_flipping();
 
-	struct pollfd fds[2] = { 0 };
+	struct pollfd fds[2] = { };
 	fds[0].fd = 0;
 	fds[0].events =  POLLIN;
 	fds[1].fd = card.fd();

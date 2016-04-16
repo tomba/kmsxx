@@ -121,7 +121,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 
 	ASSERT(m_fd >= 0);
 
-	struct v4l2_frmsizeenum v4lfrms = { 0 };
+	struct v4l2_frmsizeenum v4lfrms = { };
 	v4lfrms.pixel_format = (uint32_t) pixfmt;
 	while (ioctl(m_fd, VIDIOC_ENUM_FRAMESIZES, &v4lfrms) == 0) {
 		if (v4lfrms.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
@@ -142,7 +142,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	m_out_x = x + iw / 2 - m_out_width / 2;
 	m_out_y = y + ih / 2 - m_out_height / 2;
 
-	struct v4l2_format v4lfmt = { 0 };
+	struct v4l2_format v4lfmt = { };
 	v4lfmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
 	ASSERT(r == 0);
@@ -154,7 +154,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);
 	ASSERT(r == 0);
 
-	struct v4l2_requestbuffers v4lreqbuf = { 0 };
+	struct v4l2_requestbuffers v4lreqbuf = { };
 	v4lreqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4lreqbuf.memory = v4l_mem;
 	v4lreqbuf.count = CAMERA_BUF_QUEUE_SIZE;
@@ -162,7 +162,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	ASSERT(r == 0);
 	ASSERT(v4lreqbuf.count == CAMERA_BUF_QUEUE_SIZE);
 
-	struct v4l2_buffer v4lbuf = { 0 };
+	struct v4l2_buffer v4lbuf = { };
 	v4lbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4lbuf.memory = v4l_mem;
 
@@ -219,7 +219,7 @@ void Camera::show_next_frame(Crtc* crtc)
 	else
 		v4l_mem = V4L2_MEMORY_DMABUF;
 
-	struct v4l2_buffer v4l2buf = { 0 };
+	struct v4l2_buffer v4l2buf = { };
 	v4l2buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4l2buf.memory = v4l_mem;
 	r = ioctl(m_fd, VIDIOC_DQBUF, &v4l2buf);
@@ -257,7 +257,7 @@ void Camera::show_next_frame(Crtc* crtc)
 
 static bool is_capture_dev(int fd)
 {
-	struct v4l2_capability cap = { 0 };
+	struct v4l2_capability cap = { };
 	int r;
 
 	r = ioctl(fd, VIDIOC_QUERYCAP, &cap);
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
 
 	FAIL_IF(i < nr_cameras, "available plane not found");
 
-	struct pollfd fds[nr_cameras + 1] = { 0 };
+	struct pollfd fds[nr_cameras + 1] = { };
 	for (i = 0; i < nr_cameras; i++) {
 		fds[i].fd = cameras[i]->fd();
 		fds[i].events =  POLLIN;

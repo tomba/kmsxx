@@ -14,6 +14,8 @@ include_directories(../libkms++ ../libkmstest)
 #set(CMAKE_SWIG_FLAGS "-I../../libkms")
 set(CMAKE_SWIG_FLAGS "-builtin")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
+
 set_source_files_properties(pykms.i PROPERTIES CPLUSPLUS ON)
 swig_add_module(pykms python pykms.i)
 swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})

@@ -18,7 +18,7 @@ void main_null()
 
 	int framenum = 0;
 
-	struct pollfd fds[1] = { 0 };
+	struct pollfd fds[1] = { };
 	fds[0].fd = 0;
 	fds[0].events =  POLLIN;
 

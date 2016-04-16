@@ -5,6 +5,9 @@ pkg_check_modules(GBM gbm REQUIRED)
 pkg_check_modules(X11 x11 REQUIRED)
 pkg_check_modules(XCB xcb REQUIRED)
 pkg_check_modules(X11XCB x11-xcb REQUIRED)
+pkg_check_modules(WL wayland-client REQUIRED)
+pkg_check_modules(WL_EGL wayland-egl REQUIRED)
+
 
 include_directories(
     ${LIBDRM_INCLUDE_DIRS}
@@ -26,7 +29,9 @@ link_directories(
     ${X11XCB_LIBRARY_DIRS}
 )
 
-add_executable (kmscube kmscube.cpp esTransform.c esUtil.h cube.h)
+add_executable (kmscube cube.cpp cube.h cube-egl.cpp cube-egl.h cube-gles2.cpp cube-gles2.h
+    cube-null.cpp cube-gbm.cpp cube-x11.cpp cube-wl.cpp
+    esTransform.c esTransform.h)
 target_link_libraries(kmscube kms++ kmstest
     ${LIBDRM_LIBRARIES}
     ${GLESv2_LIBRARIES}
@@ -35,4 +40,6 @@ target_link_libraries(kmscube kms++ kmstest
     ${X11_LIBRARIES}
     ${XCB_LIBRARIES}
     ${X11XCB_LIBRARIES}
+    ${WL_LIBRARIES}
+    ${WL_EGL_LIBRARIES}
 )

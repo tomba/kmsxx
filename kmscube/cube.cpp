@@ -33,6 +33,7 @@ using namespace std;
 
 bool s_verbose;
 bool s_fullscreen;
+unsigned s_num_frames;
 
 int main(int argc, char *argv[])
 {
@@ -46,6 +47,11 @@ int main(int argc, char *argv[])
 		[&]()
 		{
 			s_fullscreen = true;
+		}),
+		Option("n|numframes=",
+		[&](string s)
+		{
+			s_num_frames = stoi(s);
 		}),
 	};
 

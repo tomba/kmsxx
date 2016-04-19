@@ -11,9 +11,9 @@ using namespace std;
 
 void main_x11()
 {
-	Display* display = XOpenDisplay(NULL);
+	Display* dpy = XOpenDisplay(NULL);
 
-	xcb_connection_t *c = XGetXCBConnection(display);
+	xcb_connection_t *c = XGetXCBConnection(dpy);
 
 	/* Get the first screen */
 	const xcb_setup_t      *setup  = xcb_get_setup (c);
@@ -67,24 +67,35 @@ void main_x11()
 	xcb_map_window (c, window);
 	xcb_flush (c);
 
-	EglState egl(display);
-	EglSurface surface(egl, (void*)(uintptr_t)window);
-	GlScene scene;
+	{
+		EglState egl(dpy);
+		EglSurface surface(egl, (void*)(uintptr_t)window);
+		GlScene scene;
 
-	scene.set_viewport(width, height);
+		scene.set_viewport(width, height);
 
-	int framenum = 0;
-
-	surface.make_current();
-	surface.swap_buffers();
-
-	xcb_generic_event_t *event;
-	while ( (event = xcb_poll_for_event (c)) ) {
+		unsigned framenum = 0;
 
 		surface.make_current();
-		scene.draw(framenum++);
 		surface.swap_buffers();
+
+		xcb_generic_event_t *event;
+		while ( (event = xcb_poll_for_event (c)) ) {
+
+			free(event);
+
+			if (s_num_frames && framenum >= s_num_frames)
+				break;
+
+			surface.make_current();
+			scene.draw(framenum++);
+			surface.swap_buffers();
+		}
 	}
 
-	xcb_disconnect (c);
+	xcb_flush(c);
+	xcb_unmap_window(c, window);
+	xcb_destroy_window(c, window);
+
+	XCloseDisplay(dpy);
 }

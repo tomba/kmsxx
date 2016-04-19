@@ -15,6 +15,9 @@ void main_x11()
 
 	xcb_connection_t *c = XGetXCBConnection(dpy);
 
+	/* Acquire event queue ownership */
+	XSetEventQueueOwner(dpy, XCBOwnsEventQueue);
+
 	/* Get the first screen */
 	const xcb_setup_t      *setup  = xcb_get_setup (c);
 	xcb_screen_t           *screen = xcb_setup_roots_iterator (setup).data;
@@ -32,9 +35,12 @@ void main_x11()
 		height = 600;
 	}
 
-	const uint32_t xcb_window_attrib_mask = XCB_CW_EVENT_MASK;
+	const uint32_t xcb_window_attrib_mask = XCB_CW_OVERRIDE_REDIRECT | XCB_CW_EVENT_MASK;
 	const uint32_t xcb_window_attrib_list[] = {
-		XCB_EVENT_MASK_EXPOSURE,
+		// OVERRIDE_REDIRECT
+		0,
+		// EVENT_MASK
+		XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS,
 	};
 
 	xcb_window_t window = xcb_generate_id (c);
@@ -49,7 +55,6 @@ void main_x11()
 			   screen->root_visual,           /* visual              */
 			   xcb_window_attrib_mask,
 			   xcb_window_attrib_list);
-
 
 #if 0 // Doesn't work
 	if (s_fullscreen) {
@@ -79,15 +84,32 @@ void main_x11()
 		surface.make_current();
 		surface.swap_buffers();
 
+		bool need_exit = false;
+
 		xcb_generic_event_t *event;
-		while ( (event = xcb_poll_for_event (c)) ) {
+		while (!need_exit && (event = xcb_wait_for_event (c))) {
+			switch (event->response_type & ~0x80) {
+			case XCB_EXPOSE: {
+
+				break;
+			}
+			case XCB_KEY_PRESS: {
+				xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
+				if (kp->detail == 24) {
+					printf("Exit due to keypress\n");
+					need_exit = true;
+				}
+
+				break;
+			}
+			}
 
 			free(event);
 
 			if (s_num_frames && framenum >= s_num_frames)
-				break;
+				need_exit = true;
 
-			surface.make_current();
+			// this should be in XCB_EXPOSE, but we don't get the event after swaps...
 			scene.draw(framenum++);
 			surface.swap_buffers();
 		}

@@ -32,6 +32,7 @@
 using namespace std;
 
 bool s_verbose;
+bool s_fullscreen;
 
 int main(int argc, char *argv[])
 {
@@ -40,6 +41,11 @@ int main(int argc, char *argv[])
 		[&]()
 		{
 			s_verbose = true;
+		}),
+		Option("f|fullscreen",
+		[&]()
+		{
+			s_fullscreen = true;
 		}),
 	};
 

@@ -1,6 +1,7 @@
 #pragma once
 
 extern bool s_verbose;
+extern bool s_fullscreen;
 
 void main_null();
 void main_gbm();

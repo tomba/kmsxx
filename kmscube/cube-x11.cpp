@@ -1,5 +1,6 @@
 
 #include <X11/Xlib-xcb.h>
+#include <X11/Xlibint.h>
 
 #include "cube.h"
 #include "cube-egl.h"
@@ -9,9 +10,80 @@
 
 using namespace std;
 
+static void main_loop(Display* dpy, xcb_connection_t *c, xcb_window_t window, uint32_t width, uint32_t height)
+{
+	EglState egl(dpy);
+	EglSurface surface(egl, (void*)(uintptr_t)window);
+	GlScene scene;
+
+	scene.set_viewport(width, height);
+
+	unsigned framenum = 0;
+
+	surface.make_current();
+	surface.swap_buffers();
+
+	bool need_exit = false;
+
+	xcb_generic_event_t *event;
+	while (true) {
+
+		while ((event = xcb_poll_for_event (c))) {
+			bool handled = false;
+			uint8_t response_type = event->response_type & ~0x80;
+
+			switch (response_type) {
+			case XCB_EXPOSE: {
+				handled = true;
+				break;
+			}
+			case XCB_KEY_PRESS: {
+				handled = true;
+
+				xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
+				if (kp->detail == 24) {
+					printf("Exit due to keypress\n");
+					need_exit = true;
+				}
+
+				break;
+			}
+			}
+
+			if (!handled) {
+				// Check if a custom XEvent constructor was registered in xlib for this event type, and call it discarding the constructed XEvent if any.
+				// XESetWireToEvent might be used by libraries to intercept messages from the X server e.g. the OpenGL lib waiting for DRI2 events.
+
+				XLockDisplay(dpy);
+				Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(dpy, response_type, NULL);
+				if (proc) {
+					XESetWireToEvent(dpy, response_type, proc);
+					XEvent dummy;
+					event->sequence = LastKnownRequestProcessed(dpy);
+					proc(dpy, &dummy, (xEvent*)event);
+				}
+				XUnlockDisplay(dpy);
+			}
+
+			free(event);
+		}
+
+		if (s_num_frames && framenum >= s_num_frames)
+			need_exit = true;
+
+		if (need_exit)
+			break;
+
+		// this should be in XCB_EXPOSE, but we don't get the event after swaps...
+		scene.draw(framenum++);
+		surface.swap_buffers();
+	}
+}
+
 void main_x11()
 {
 	Display* dpy = XOpenDisplay(NULL);
+	FAIL_IF(!dpy, "Failed to connect to the X server");
 
 	xcb_connection_t *c = XGetXCBConnection(dpy);
 
@@ -72,48 +144,7 @@ void main_x11()
 	xcb_map_window (c, window);
 	xcb_flush (c);
 
-	{
-		EglState egl(dpy);
-		EglSurface surface(egl, (void*)(uintptr_t)window);
-		GlScene scene;
-
-		scene.set_viewport(width, height);
-
-		unsigned framenum = 0;
-
-		surface.make_current();
-		surface.swap_buffers();
-
-		bool need_exit = false;
-
-		xcb_generic_event_t *event;
-		while (!need_exit && (event = xcb_wait_for_event (c))) {
-			switch (event->response_type & ~0x80) {
-			case XCB_EXPOSE: {
-
-				break;
-			}
-			case XCB_KEY_PRESS: {
-				xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
-				if (kp->detail == 24) {
-					printf("Exit due to keypress\n");
-					need_exit = true;
-				}
-
-				break;
-			}
-			}
-
-			free(event);
-
-			if (s_num_frames && framenum >= s_num_frames)
-				need_exit = true;
-
-			// this should be in XCB_EXPOSE, but we don't get the event after swaps...
-			scene.draw(framenum++);
-			surface.swap_buffers();
-		}
-	}
+	main_loop(dpy, c, window, width, height);
 
 	xcb_flush(c);
 	xcb_unmap_window(c, window);

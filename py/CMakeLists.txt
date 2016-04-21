@@ -5,7 +5,7 @@ include(${SWIG_USE_FILE})
 include_directories(${LIBDRM_INCLUDE_DIRS})
 link_directories(${LIBDRM_LIBRARY_DIRS})
 
-pkg_check_modules(PYTHON python-3.4 REQUIRED)
+pkg_check_modules(PYTHON python3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 # XXX how to add these inc dirs in a proper way?

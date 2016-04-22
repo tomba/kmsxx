@@ -63,7 +63,8 @@ EglState::EglState(void *native_display)
 	m_context = eglCreateContext(m_display, m_config, EGL_NO_CONTEXT, context_attribs);
 	FAIL_IF(!m_context, "failed to create context");
 
-	eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, m_context);
+	EGLBoolean ok = eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, m_context);
+	FAIL_IF(!ok, "eglMakeCurrent() failed");
 }
 
 EglState::~EglState()
@@ -86,10 +87,12 @@ EglSurface::~EglSurface()
 
 void EglSurface::make_current()
 {
-	eglMakeCurrent(egl.display(), esurface, esurface, egl.context());
+	EGLBoolean ok = eglMakeCurrent(egl.display(), esurface, esurface, egl.context());
+	FAIL_IF(!ok, "eglMakeCurrent() failed");
 }
 
 void EglSurface::swap_buffers()
 {
-	eglSwapBuffers(egl.display(), esurface);
+	EGLBoolean ok = eglSwapBuffers(egl.display(), esurface);
+	FAIL_IF(!ok, "eglMakeCurrent() failed");
 }

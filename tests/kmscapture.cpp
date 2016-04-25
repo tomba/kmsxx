@@ -361,7 +361,8 @@ int main(int argc, char** argv)
 
 	FAIL_IF(i < nr_cameras, "available plane not found");
 
-	struct pollfd fds[nr_cameras + 1] = { };
+	vector<pollfd> fds(nr_cameras + 1);
+
 	for (i = 0; i < nr_cameras; i++) {
 		fds[i].fd = cameras[i]->fd();
 		fds[i].events =  POLLIN;
@@ -370,7 +371,7 @@ int main(int argc, char** argv)
 	fds[nr_cameras].events =  POLLIN;
 
 	while (true) {
-		int r = poll(fds, nr_cameras + 1, -1);
+		int r = poll(fds.data(), nr_cameras + 1, -1);
 		ASSERT(r > 0);
 
 		if (fds[nr_cameras].revents != 0)

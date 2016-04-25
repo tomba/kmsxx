@@ -89,7 +89,7 @@ class GbmEglSurface
 {
 public:
 	GbmEglSurface(Card& card, GbmDevice& gdev, const EglState& egl, int width, int height)
-		: card(card), gdev(gdev), egl(egl), m_width(width), m_height(height),
+		: card(card), egl(egl), m_width(width), m_height(height),
 		  bo_prev(0), bo_next(0)
 	{
 		gsurface = unique_ptr<GbmSurface>(new GbmSurface(gdev, width, height));
@@ -161,7 +161,6 @@ public:
 
 private:
 	Card& card;
-	GbmDevice& gdev;
 	const EglState& egl;
 
 	unique_ptr<GbmSurface> gsurface;

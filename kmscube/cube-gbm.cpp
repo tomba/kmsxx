@@ -140,7 +140,7 @@ public:
 		return fb;
 	}
 
-	struct Framebuffer* lock_next()
+	Framebuffer* lock_next()
 	{
 		bo_prev = bo_next;
 		bo_next = gsurface->lock_front_buffer();
@@ -201,9 +201,9 @@ public:
 
 		m_surface1->make_current();
 		m_surface1->swap_buffers();
-		struct Framebuffer* fb = m_surface1->lock_next();
+		Framebuffer* fb = m_surface1->lock_next();
 
-		struct Framebuffer* planefb = 0;
+		Framebuffer* planefb = 0;
 
 		if (m_plane) {
 			m_surface2->make_current();
@@ -272,9 +272,9 @@ private:
 		m_surface1->make_current();
 		m_scene1->draw(m_frame_num * m_rotation_mult);
 		m_surface1->swap_buffers();
-		struct Framebuffer* fb = m_surface1->lock_next();
+		Framebuffer* fb = m_surface1->lock_next();
 
-		struct Framebuffer* planefb = 0;
+		Framebuffer* planefb = 0;
 
 		if (m_plane) {
 			m_surface2->make_current();

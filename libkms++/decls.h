@@ -14,5 +14,5 @@ class DrmObject;
 class PageFlipHandlerBase;
 class Plane;
 class Property;
-class Videomode;
+struct Videomode;
 }

@@ -5,7 +5,7 @@
 
 namespace kms
 {
-class Videomode;
+struct Videomode;
 
 Videomode drm_mode_to_video_mode(const drmModeModeInfo& drmmode);
 drmModeModeInfo video_mode_to_drm_mode(const Videomode& mode);

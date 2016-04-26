@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sys/ioctl.h>
 #include <xf86drm.h>
+#include <glob.h>
 
 #include "kms++.h"
 #include "test.h"
@@ -23,16 +24,16 @@ enum class BufferProvider {
 	V4L2,
 };
 
-class Camera
+class CameraPipeline
 {
 public:
-	Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
-	       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
-	       BufferProvider buffer_provider);
-	~Camera();
+	CameraPipeline(int cam_fd, Card& card, Plane* plane, uint32_t x, uint32_t y,
+		       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
+		       BufferProvider buffer_provider);
+	~CameraPipeline();
 
-	Camera(const Camera& other) = delete;
-	Camera& operator=(const Camera& other) = delete;
+	CameraPipeline(const CameraPipeline& other) = delete;
+	CameraPipeline& operator=(const CameraPipeline& other) = delete;
 
 	void show_next_frame(Crtc* crtc);
 	int fd() const { return m_fd; }
@@ -67,7 +68,7 @@ static int buffer_export(int v4lfd, enum v4l2_buf_type bt, uint32_t index, int *
 	return 0;
 }
 
-ExtFramebuffer* Camera::GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt)
+ExtFramebuffer* CameraPipeline::GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt)
 {
 	int r, dmafd;
 
@@ -100,26 +101,14 @@ bool inline better_size(struct v4l2_frmsize_discrete* v4ldisc,
 	return false;
 }
 
-Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
-	       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
-	       BufferProvider buffer_provider)
+CameraPipeline::CameraPipeline(int cam_fd, Card& card, Plane* plane, uint32_t x, uint32_t y,
+			       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
+			       BufferProvider buffer_provider)
+	: m_fd(cam_fd), m_buffer_provider(buffer_provider)
 {
-	char dev_name[20];
 	int r;
 	uint32_t best_w = 320;
 	uint32_t best_h = 240;
-	uint32_t v4l_mem;
-
-	m_buffer_provider = buffer_provider;
-	if (m_buffer_provider == BufferProvider::V4L2)
-		v4l_mem = V4L2_MEMORY_MMAP;
-	else
-		v4l_mem = V4L2_MEMORY_DMABUF;
-
-	sprintf(dev_name, "/dev/video%d", camera_id);
-	m_fd = ::open(dev_name, O_RDWR | O_NONBLOCK);
-
-	ASSERT(m_fd >= 0);
 
 	struct v4l2_frmsizeenum v4lfrms = { };
 	v4lfrms.pixel_format = (uint32_t)pixfmt;
@@ -153,6 +142,13 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 
 	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);
 	ASSERT(r == 0);
+
+	uint32_t v4l_mem;
+
+	if (m_buffer_provider == BufferProvider::V4L2)
+		v4l_mem = V4L2_MEMORY_MMAP;
+	else
+		v4l_mem = V4L2_MEMORY_DMABUF;
 
 	struct v4l2_requestbuffers v4lreqbuf = { };
 	v4lreqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -191,13 +187,13 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
 	r = ioctl(m_fd, VIDIOC_STREAMON, &type);
-		ASSERT(r == 0);
+	ASSERT(r == 0);
 
 	m_plane = plane;
 }
 
 
-Camera::~Camera()
+CameraPipeline::~CameraPipeline()
 {
 	for (unsigned i = 0; i < m_fb.size(); i++)
 		delete m_fb[i];
@@ -208,7 +204,7 @@ Camera::~Camera()
 	::close(m_fd);
 }
 
-void Camera::show_next_frame(Crtc* crtc)
+void CameraPipeline::show_next_frame(Crtc* crtc)
 {
 	int r;
 	uint32_t v4l_mem;
@@ -253,68 +249,51 @@ void Camera::show_next_frame(Crtc* crtc)
 	m_prev_fb_index = fb_index;
 }
 
-
 static bool is_capture_dev(int fd)
 {
 	struct v4l2_capability cap = { };
-	int r;
-
-	r = ioctl(fd, VIDIOC_QUERYCAP, &cap);
+	int r = ioctl(fd, VIDIOC_QUERYCAP, &cap);
 	ASSERT(r == 0);
-	if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
-		return false;
-
-	return true;
+	return cap.capabilities & V4L2_CAP_VIDEO_CAPTURE;
 }
 
-static vector<int> count_cameras()
+std::vector<std::string> glob(const std::string& pat)
 {
-	int i, fd;
-	vector<int> camera_idx;
-	char dev_name[20];
-
-	for (i = 0; i < MAX_CAMERA; i++) {
-		sprintf(dev_name, "/dev/video%d", i);
-		fd = ::open(dev_name, O_RDWR | O_NONBLOCK);
-		if (fd >= 0) {
-			if (is_capture_dev(fd))
-				camera_idx.push_back(i);
-			close(fd);
-		}
-	}
-
-	return camera_idx;
+	glob_t glob_result;
+	glob(pat.c_str(), 0, NULL, &glob_result);
+	vector<string> ret;
+	for(unsigned i = 0; i < glob_result.gl_pathc; ++i)
+		ret.push_back(string(glob_result.gl_pathv[i]));
+	globfree(&glob_result);
+	return ret;
 }
 
 static const char* usage_str =
-"Usage: kmscapture [OPTIONS]\n\n"
-"Options:\n"
-"  -s, --single                Single camera mode. Open only /dev/video0\n"
-"      --buffer-type=<drm|v4l> Use DRM or V4L provided buffers. Default: DRM\n"
-"  -h, --help                  Print this help\n"
-;
+		"Usage: kmscapture [OPTIONS]\n\n"
+		"Options:\n"
+		"  -s, --single                Single camera mode. Open only /dev/video0\n"
+		"      --buffer-type=<drm|v4l> Use DRM or V4L provided buffers. Default: DRM\n"
+		"  -h, --help                  Print this help\n"
+		;
 
 int main(int argc, char** argv)
 {
-	uint32_t w;
 	BufferProvider buffer_provider = BufferProvider::DRM;
-
-	auto camera_idx = count_cameras();
-	unsigned nr_cameras = camera_idx.size();
-
-	FAIL_IF(!nr_cameras, "Not a single camera has been found.");
+	bool single_cam = false;
 
 	OptionSet optionset = {
-		Option("s|single", [&](string s)
+		Option("s|single", [&]()
 		{
-			nr_cameras = 1;
+			single_cam = true;
 		}),
 		Option("|buffer-type=", [&](string s)
 		{
-			if (!s.compare("v4l"))
+			if (s == "v4l")
 				buffer_provider = BufferProvider::V4L2;
-			else if (s.compare("drm"))
-				printf("invalid buffer-type: %s\n", s.c_str());
+			else if (s == "drm")
+				buffer_provider = BufferProvider::DRM;
+			else
+				FAIL("Invalid buffer provider: %s", s.c_str());
 		}),
 		Option("h|help", [&]()
 		{
@@ -330,20 +309,37 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 
-	auto pixfmt = FourCCToPixelFormat("YUYV");
+	auto pixfmt = PixelFormat::YUYV;
 
 	Card card;
 
 	auto conn = card.get_first_connected_connector();
 	auto crtc = conn->get_current_crtc();
 	printf("Display: %dx%d\n", crtc->width(), crtc->height());
-	printf("Buffer provider: %s\n",
-	       buffer_provider == BufferProvider::V4L2? "V4L" : "DRM");
+	printf("Buffer provider: %s\n", buffer_provider == BufferProvider::V4L2? "V4L" : "DRM");
 
-	w = crtc->width() / nr_cameras;
-	vector<Camera*> cameras;
+	vector<int> camera_fds;
 
-	unsigned cam_idx = 0;
+	for (string vidpath : glob("/dev/video*")) {
+		int fd = ::open(vidpath.c_str(), O_RDWR | O_NONBLOCK);
+
+		if (fd < 0)
+			continue;
+
+		if (!is_capture_dev(fd)) {
+			close(fd);
+			continue;
+		}
+
+		camera_fds.push_back(fd);
+
+		if (single_cam)
+			break;
+	}
+
+	FAIL_IF(camera_fds.size() == 0, "No cameras found");
+
+	vector<Plane*> available_planes;
 	for (Plane* p : crtc->get_possible_planes()) {
 		if (p->plane_type() != PlaneType::Overlay)
 			continue;
@@ -351,14 +347,24 @@ int main(int argc, char** argv)
 		if (!p->supports_format(pixfmt))
 			continue;
 
-		auto cam = new Camera(camera_idx[cam_idx], card, p, cam_idx * w, 0,
-				      w, crtc->height(), pixfmt, buffer_provider);
-		cameras.push_back(cam);
-		if (++cam_idx == nr_cameras)
-			break;
+		available_planes.push_back(p);
 	}
 
-	FAIL_IF(cam_idx < nr_cameras, "available plane not found");
+	FAIL_IF(available_planes.size() < camera_fds.size(), "Not enough video planes for cameras");
+
+	uint32_t plane_w = crtc->width() / camera_fds.size();
+	vector<CameraPipeline*> cameras;
+
+	for (unsigned i = 0; i < camera_fds.size(); ++i) {
+		int cam_fd = camera_fds[i];
+		Plane* plane = available_planes[i];
+
+		auto cam = new CameraPipeline(cam_fd, card, plane, i * plane_w, 0,
+					      plane_w, crtc->height(), pixfmt, buffer_provider);
+		cameras.push_back(cam);
+	}
+
+	unsigned nr_cameras = cameras.size();
 
 	vector<pollfd> fds(nr_cameras + 1);
 

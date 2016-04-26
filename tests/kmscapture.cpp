@@ -27,7 +27,7 @@ enum class BufferProvider {
 class CameraPipeline
 {
 public:
-	CameraPipeline(int cam_fd, Card& card, Plane* plane, uint32_t x, uint32_t y,
+	CameraPipeline(int cam_fd, Card& card, Crtc* crtc, Plane* plane, uint32_t x, uint32_t y,
 		       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
 		       BufferProvider buffer_provider);
 	~CameraPipeline();
@@ -35,11 +35,12 @@ public:
 	CameraPipeline(const CameraPipeline& other) = delete;
 	CameraPipeline& operator=(const CameraPipeline& other) = delete;
 
-	void show_next_frame(Crtc* crtc);
+	void show_next_frame(AtomicReq &req);
 	int fd() const { return m_fd; }
 private:
 	ExtFramebuffer* GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt);
 	int m_fd;	/* camera file descriptor */
+	Crtc* m_crtc;
 	Plane* m_plane;
 	BufferProvider m_buffer_provider;
 	vector<DumbFramebuffer*> m_fb; /* framebuffers for DRM buffers */
@@ -101,11 +102,12 @@ bool inline better_size(struct v4l2_frmsize_discrete* v4ldisc,
 	return false;
 }
 
-CameraPipeline::CameraPipeline(int cam_fd, Card& card, Plane* plane, uint32_t x, uint32_t y,
+CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane, uint32_t x, uint32_t y,
 			       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
 			       BufferProvider buffer_provider)
-	: m_fd(cam_fd), m_buffer_provider(buffer_provider)
+	: m_fd(cam_fd), m_crtc(crtc), m_buffer_provider(buffer_provider), m_prev_fb_index(-1)
 {
+
 	int r;
 	uint32_t best_w = 320;
 	uint32_t best_h = 240;
@@ -183,13 +185,39 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Plane* plane, uint32_t x,
 		else
 			m_fb.push_back(fb);
 	}
-	m_prev_fb_index = -1;
+
 	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
 	r = ioctl(m_fd, VIDIOC_STREAMON, &type);
 	ASSERT(r == 0);
 
 	m_plane = plane;
+
+	// Do initial plane setup with first fb, so that we only need to
+	// set the FB when page flipping
+	AtomicReq req(card);
+
+	Framebuffer *fb;
+	if (m_buffer_provider == BufferProvider::V4L2)
+		fb = m_extfb[0];
+	else
+		fb = m_fb[0];
+
+	req.add(m_plane, "CRTC_ID", m_crtc->id());
+	req.add(m_plane, "FB_ID", fb->id());
+
+	req.add(m_plane, "CRTC_X", m_out_x);
+	req.add(m_plane, "CRTC_Y", m_out_y);
+	req.add(m_plane, "CRTC_W", m_out_width);
+	req.add(m_plane, "CRTC_H", m_out_height);
+
+	req.add(m_plane, "SRC_X", 0);
+	req.add(m_plane, "SRC_Y", 0);
+	req.add(m_plane, "SRC_W", m_in_width << 16);
+	req.add(m_plane, "SRC_H", m_in_height << 16);
+
+	r = req.commit_sync();
+	FAIL_IF(r, "initial plane setup failed");
 }
 
 
@@ -204,7 +232,7 @@ CameraPipeline::~CameraPipeline()
 	::close(m_fd);
 }
 
-void CameraPipeline::show_next_frame(Crtc* crtc)
+void CameraPipeline::show_next_frame(AtomicReq& req)
 {
 	int r;
 	uint32_t v4l_mem;
@@ -224,16 +252,14 @@ void CameraPipeline::show_next_frame(Crtc* crtc)
 	}
 
 	unsigned fb_index = v4l2buf.index;
-	if (m_buffer_provider == BufferProvider::V4L2)
-		r = crtc->set_plane(m_plane, *m_extfb[fb_index],
-				    m_out_x, m_out_y, m_out_width, m_out_height,
-				    0, 0, m_in_width, m_in_height);
-	else
-		r = crtc->set_plane(m_plane, *m_fb[fb_index],
-				    m_out_x, m_out_y, m_out_width, m_out_height,
-				    0, 0, m_in_width, m_in_height);
 
-	ASSERT(r == 0);
+	Framebuffer *fb;
+	if (m_buffer_provider == BufferProvider::V4L2)
+		fb = m_extfb[fb_index];
+	else
+		fb = m_fb[fb_index];
+
+	req.add(m_plane, "FB_ID", fb->id());
 
 	if (m_prev_fb_index >= 0) {
 		memset(&v4l2buf, 0, sizeof(v4l2buf));
@@ -246,6 +272,7 @@ void CameraPipeline::show_next_frame(Crtc* crtc)
 		ASSERT(r == 0);
 
 	}
+
 	m_prev_fb_index = fb_index;
 }
 
@@ -359,7 +386,7 @@ int main(int argc, char** argv)
 		int cam_fd = camera_fds[i];
 		Plane* plane = available_planes[i];
 
-		auto cam = new CameraPipeline(cam_fd, card, plane, i * plane_w, 0,
+		auto cam = new CameraPipeline(cam_fd, card, crtc, plane, i * plane_w, 0,
 					      plane_w, crtc->height(), pixfmt, buffer_provider);
 		cameras.push_back(cam);
 	}
@@ -382,12 +409,19 @@ int main(int argc, char** argv)
 		if (fds[nr_cameras].revents != 0)
 			break;
 
+		AtomicReq req(card);
+
 		for (unsigned i = 0; i < nr_cameras; i++) {
 			if (!fds[i].revents)
 				continue;
-			cameras[i]->show_next_frame(crtc);
+			cameras[i]->show_next_frame(req);
 			fds[i].revents = 0;
 		}
+
+		r = req.test();
+		FAIL_IF(r, "Atomic commit failed: %d", r);
+
+		req.commit();
 	}
 
 	for (auto cam : cameras)

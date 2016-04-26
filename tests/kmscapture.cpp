@@ -37,7 +37,7 @@ public:
 	void show_next_frame(Crtc* crtc);
 	int fd() const { return m_fd; }
 private:
-	ExtFramebuffer* GetExtFrameBuffer(Card& card, int i, PixelFormat pixfmt);
+	ExtFramebuffer* GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt);
 	int m_fd;	/* camera file descriptor */
 	Plane* m_plane;
 	BufferProvider m_buffer_provider;
@@ -50,7 +50,7 @@ private:
 	uint32_t m_out_x, m_out_y;
 };
 
-static int buffer_export(int v4lfd, enum v4l2_buf_type bt, int index, int *dmafd)
+static int buffer_export(int v4lfd, enum v4l2_buf_type bt, uint32_t index, int *dmafd)
 {
 	struct v4l2_exportbuffer expbuf;
 
@@ -67,7 +67,7 @@ static int buffer_export(int v4lfd, enum v4l2_buf_type bt, int index, int *dmafd
 	return 0;
 }
 
-ExtFramebuffer* Camera::GetExtFrameBuffer(Card& card, int i, PixelFormat pixfmt)
+ExtFramebuffer* Camera::GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt)
 {
 	int r, dmafd;
 
@@ -105,7 +105,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	       BufferProvider buffer_provider)
 {
 	char dev_name[20];
-	int r, i;
+	int r;
 	uint32_t best_w = 320;
 	uint32_t best_h = 240;
 	uint32_t v4l_mem;
@@ -122,7 +122,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	ASSERT(m_fd >= 0);
 
 	struct v4l2_frmsizeenum v4lfrms = { };
-	v4lfrms.pixel_format = (uint32_t) pixfmt;
+	v4lfrms.pixel_format = (uint32_t)pixfmt;
 	while (ioctl(m_fd, VIDIOC_ENUM_FRAMESIZES, &v4lfrms) == 0) {
 		if (v4lfrms.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
 			if (better_size(&v4lfrms.discrete, iw, ih,
@@ -147,7 +147,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
 	ASSERT(r == 0);
 
-	v4lfmt.fmt.pix.pixelformat = (uint32_t) pixfmt;
+	v4lfmt.fmt.pix.pixelformat = (uint32_t)pixfmt;
 	v4lfmt.fmt.pix.width = m_in_width;
 	v4lfmt.fmt.pix.height = m_in_height;
 
@@ -166,7 +166,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	v4lbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 	v4lbuf.memory = v4l_mem;
 
-	for (i = 0; i < CAMERA_BUF_QUEUE_SIZE; i++) {
+	for (unsigned i = 0; i < CAMERA_BUF_QUEUE_SIZE; i++) {
 		DumbFramebuffer *fb = NULL;
 		ExtFramebuffer *extfb = NULL;
 
@@ -211,7 +211,6 @@ Camera::~Camera()
 void Camera::show_next_frame(Crtc* crtc)
 {
 	int r;
-	int fb_index;
 	uint32_t v4l_mem;
 
 	if (m_buffer_provider == BufferProvider::V4L2)
@@ -228,7 +227,7 @@ void Camera::show_next_frame(Crtc* crtc)
 		return;
 	}
 
-	fb_index = v4l2buf.index;
+	unsigned fb_index = v4l2buf.index;
 	if (m_buffer_provider == BufferProvider::V4L2)
 		r = crtc->set_plane(m_plane, *m_extfb[fb_index],
 				    m_out_x, m_out_y, m_out_width, m_out_height,
@@ -299,10 +298,9 @@ int main(int argc, char** argv)
 {
 	uint32_t w;
 	BufferProvider buffer_provider = BufferProvider::DRM;
-	int i;
 
 	auto camera_idx = count_cameras();
-	int nr_cameras = camera_idx.size();
+	unsigned nr_cameras = camera_idx.size();
 
 	FAIL_IF(!nr_cameras, "Not a single camera has been found.");
 
@@ -344,7 +342,8 @@ int main(int argc, char** argv)
 
 	w = crtc->width() / nr_cameras;
 	vector<Camera*> cameras;
-	i = 0;
+
+	unsigned cam_idx = 0;
 	for (Plane* p : crtc->get_possible_planes()) {
 		if (p->plane_type() != PlaneType::Overlay)
 			continue;
@@ -352,18 +351,18 @@ int main(int argc, char** argv)
 		if (!p->supports_format(pixfmt))
 			continue;
 
-		auto cam = new Camera(camera_idx[i], card, p, i * w, 0,
+		auto cam = new Camera(camera_idx[cam_idx], card, p, cam_idx * w, 0,
 				      w, crtc->height(), pixfmt, buffer_provider);
 		cameras.push_back(cam);
-		if (++i == nr_cameras)
+		if (++cam_idx == nr_cameras)
 			break;
 	}
 
-	FAIL_IF(i < nr_cameras, "available plane not found");
+	FAIL_IF(cam_idx < nr_cameras, "available plane not found");
 
 	vector<pollfd> fds(nr_cameras + 1);
 
-	for (i = 0; i < nr_cameras; i++) {
+	for (unsigned i = 0; i < nr_cameras; i++) {
 		fds[i].fd = cameras[i]->fd();
 		fds[i].events =  POLLIN;
 	}
@@ -377,7 +376,7 @@ int main(int argc, char** argv)
 		if (fds[nr_cameras].revents != 0)
 			break;
 
-		for (i = 0; i < nr_cameras; i++) {
+		for (unsigned i = 0; i < nr_cameras; i++) {
 			if (!fds[i].revents)
 				continue;
 			cameras[i]->show_next_frame(crtc);

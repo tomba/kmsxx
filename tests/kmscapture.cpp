@@ -37,6 +37,7 @@ public:
 
 	void show_next_frame(AtomicReq &req);
 	int fd() const { return m_fd; }
+	void start_streaming();
 private:
 	ExtFramebuffer* GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt);
 	int m_fd;	/* camera file descriptor */
@@ -186,11 +187,6 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 			m_fb.push_back(fb);
 	}
 
-	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-	r = ioctl(m_fd, VIDIOC_STREAMON, &type);
-	ASSERT(r == 0);
-
 	m_plane = plane;
 
 	// Do initial plane setup with first fb, so that we only need to
@@ -220,7 +216,6 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 	FAIL_IF(r, "initial plane setup failed");
 }
 
-
 CameraPipeline::~CameraPipeline()
 {
 	for (unsigned i = 0; i < m_fb.size(); i++)
@@ -230,6 +225,14 @@ CameraPipeline::~CameraPipeline()
 		delete m_extfb[i];
 
 	::close(m_fd);
+}
+
+void CameraPipeline::start_streaming()
+{
+	enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+	int r = ioctl(m_fd, VIDIOC_STREAMON, &type);
+	FAIL_IF(r, "Failed to enable camera stream: %d", r);
 }
 
 void CameraPipeline::show_next_frame(AtomicReq& req)
@@ -401,6 +404,9 @@ int main(int argc, char** argv)
 	}
 	fds[nr_cameras].fd = 0;
 	fds[nr_cameras].events =  POLLIN;
+
+	for (auto cam : cameras)
+		cam->start_streaming();
 
 	while (true) {
 		int r = poll(fds.data(), nr_cameras + 1, -1);

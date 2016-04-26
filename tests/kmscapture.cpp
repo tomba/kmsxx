@@ -18,9 +18,9 @@
 using namespace std;
 using namespace kms;
 
-enum buffer_provider {
-	BUFFER_DRM = 0,
-	BUFFER_V4L,
+enum class BufferProvider {
+	DRM,
+	V4L2,
 };
 
 class Camera
@@ -28,7 +28,7 @@ class Camera
 public:
 	Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
-	       enum buffer_provider buffer_type);
+	       BufferProvider buffer_type);
 	~Camera();
 
 	Camera(const Camera& other) = delete;
@@ -40,7 +40,7 @@ private:
 	ExtFramebuffer* GetExtFrameBuffer(Card& card, int i, PixelFormat pixfmt);
 	int m_fd;	/* camera file descriptor */
 	Plane* m_plane;
-	enum buffer_provider m_buffer_type;
+	BufferProvider m_buffer_type;
 	vector<DumbFramebuffer*> m_fb; /* framebuffers for DRM buffers */
 	vector<ExtFramebuffer*> m_extfb; /* framebuffers for V4L2 buffers */
 	int m_prev_fb_index;
@@ -102,7 +102,7 @@ bool inline better_size(struct v4l2_frmsize_discrete* v4ldisc,
 
 Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	       uint32_t iw, uint32_t ih, PixelFormat pixfmt,
-	       enum buffer_provider buffer_type)
+	       BufferProvider buffer_type)
 {
 	char dev_name[20];
 	int r, i;
@@ -111,7 +111,7 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 	uint32_t v4l_mem;
 
 	m_buffer_type = buffer_type;
-	if (m_buffer_type == BUFFER_V4L)
+	if (m_buffer_type == BufferProvider::V4L2)
 		v4l_mem = V4L2_MEMORY_MMAP;
 	else
 		v4l_mem = V4L2_MEMORY_DMABUF;
@@ -170,19 +170,19 @@ Camera::Camera(int camera_id, Card& card, Plane* plane, uint32_t x, uint32_t y,
 		DumbFramebuffer *fb = NULL;
 		ExtFramebuffer *extfb = NULL;
 
-		if (m_buffer_type == BUFFER_V4L)
+		if (m_buffer_type == BufferProvider::V4L2)
 			extfb = GetExtFrameBuffer(card, i, pixfmt);
 		else
 			fb = new DumbFramebuffer(card, m_in_width,
 						 m_in_height, pixfmt);
 
 		v4lbuf.index = i;
-		if (m_buffer_type == BUFFER_DRM)
+		if (m_buffer_type == BufferProvider::DRM)
 			v4lbuf.m.fd = fb->prime_fd(0);
 		r = ioctl(m_fd, VIDIOC_QBUF, &v4lbuf);
 		ASSERT(r == 0);
 
-		if (m_buffer_type == BUFFER_V4L)
+		if (m_buffer_type == BufferProvider::V4L2)
 			m_extfb.push_back(extfb);
 		else
 			m_fb.push_back(fb);
@@ -214,7 +214,7 @@ void Camera::show_next_frame(Crtc* crtc)
 	int fb_index;
 	uint32_t v4l_mem;
 
-	if (m_buffer_type == BUFFER_V4L)
+	if (m_buffer_type == BufferProvider::V4L2)
 		v4l_mem = V4L2_MEMORY_MMAP;
 	else
 		v4l_mem = V4L2_MEMORY_DMABUF;
@@ -229,7 +229,7 @@ void Camera::show_next_frame(Crtc* crtc)
 	}
 
 	fb_index = v4l2buf.index;
-	if (m_buffer_type == BUFFER_V4L)
+	if (m_buffer_type == BufferProvider::V4L2)
 		r = crtc->set_plane(m_plane, *m_extfb[fb_index],
 				    m_out_x, m_out_y, m_out_width, m_out_height,
 				    0, 0, m_in_width, m_in_height);
@@ -245,7 +245,7 @@ void Camera::show_next_frame(Crtc* crtc)
 		v4l2buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		v4l2buf.memory = v4l_mem;
 		v4l2buf.index = m_prev_fb_index;
-		if (m_buffer_type == BUFFER_DRM)
+		if (m_buffer_type == BufferProvider::DRM)
 			v4l2buf.m.fd = m_fb[m_prev_fb_index]->prime_fd(0);
 		r = ioctl(m_fd, VIDIOC_QBUF, &v4l2buf);
 		ASSERT(r == 0);
@@ -298,7 +298,7 @@ static const char* usage_str =
 int main(int argc, char** argv)
 {
 	uint32_t w;
-	enum buffer_provider buffer_type = BUFFER_DRM;
+	BufferProvider buffer_type = BufferProvider::DRM;
 	int i;
 
 	auto camera_idx = count_cameras();
@@ -314,7 +314,7 @@ int main(int argc, char** argv)
 		Option("|buffer-type=", [&](string s)
 		{
 			if (!s.compare("v4l"))
-				buffer_type = BUFFER_V4L;
+				buffer_type = BufferProvider::V4L2;
 			else if (s.compare("drm"))
 				printf("invalid buffer-type: %s\n", s.c_str());
 		}),
@@ -340,7 +340,7 @@ int main(int argc, char** argv)
 	auto crtc = conn->get_current_crtc();
 	printf("Display: %dx%d\n", crtc->width(), crtc->height());
 	printf("Buffer provider: %s\n",
-	       buffer_type == BUFFER_V4L? "V4L" : "DRM");
+	       buffer_type == BufferProvider::V4L2? "V4L" : "DRM");
 
 	w = crtc->width() / nr_cameras;
 	vector<Camera*> cameras;

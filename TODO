@@ -1,8 +1,4 @@
 
-'kmsprint' tool to print everything about kms objects
-
-port 'capture' test from omapdrm-tests
-
 C++ move semantics for classes (especially for Framebuffers)?
 
 Proper error checks and use of exceptions

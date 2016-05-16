@@ -4,6 +4,7 @@
 #include <set>
 
 #include "kms++.h"
+#include "modedb.h"
 
 #include "test.h"
 #include "opts.h"
@@ -34,6 +35,9 @@ struct OutputInfo
 
 	vector<PlaneInfo> planes;
 };
+
+static bool s_use_dmt;
+static bool s_use_cea;
 
 static set<Crtc*> s_used_crtcs;
 static set<Plane*> s_used_planes;
@@ -153,7 +157,31 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 	bool ilace = sm[5].matched ? true : false;
 	unsigned refresh = sm[6].matched ? stoul(sm[6]) : 0;
 
-	output.mode = output.connector->get_mode(w, h, refresh, ilace);
+	bool found_mode = false;
+
+	try {
+		output.mode = output.connector->get_mode(w, h, refresh, ilace);
+		found_mode = true;
+	} catch (exception& e) { }
+
+	if (!found_mode && s_use_dmt) {
+		try {
+			output.mode = find_dmt(w, h, refresh, ilace);
+			found_mode = true;
+			printf("Found mode from DMT\n");
+		} catch (exception& e) { }
+	}
+
+	if (!found_mode && s_use_cea) {
+		try {
+			output.mode = find_cea(w, h, refresh, ilace);
+			found_mode = true;
+			printf("Found mode from CEA\n");
+		} catch (exception& e) { }
+	}
+
+	if (!found_mode)
+		throw invalid_argument("Mode not found");
 }
 
 static void parse_plane(Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)
@@ -258,6 +286,8 @@ static const char* usage_str =
 		"  -r, --crtc=CRTC           CRTC is [<crtc>:]<w>x<h>[@<Hz>]\n"
 		"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
+		"      --dmt                 Search for the given mode from DMT tables\n"
+		"      --cea                 Search for the given mode from CEA tables\n"
 		"\n"
 		"<connector>, <crtc> and <plane> can be given by id (<id>) or index (@<idx>).\n"
 		"<connector> can also be given by name.\n"
@@ -326,6 +356,14 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("f|fb=", [&](string s)
 		{
 			args.push_back(Arg { ObjectType::Framebuffer, s });
+		}),
+		Option("|dmt", []()
+		{
+			s_use_dmt = true;
+		}),
+		Option("|cea", []()
+		{
+			s_use_cea = true;
 		}),
 		Option("h|help", [&]()
 		{

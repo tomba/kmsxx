@@ -119,8 +119,8 @@ static void get_default_crtc(Card& card, OutputInfo& output)
 
 static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 {
-	// @12:1920x1200-60
-	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:-(\\d+))?");
+	// @12:1920x1200@60
+	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:@(\\d+))?");
 
 	smatch sm;
 	if (!regex_match(crtc_str, sm, mode_re))

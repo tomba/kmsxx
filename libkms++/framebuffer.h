@@ -14,7 +14,7 @@ public:
 	uint32_t width() const { return m_width; }
 	uint32_t height() const { return m_height; }
 protected:
-	Framebuffer(Card& card, int width, int height);
+	Framebuffer(Card& card, uint32_t width, uint32_t height);
 
 private:
 	uint32_t m_width;

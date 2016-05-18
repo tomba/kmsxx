@@ -12,7 +12,7 @@ using namespace std;
 namespace kms
 {
 
-ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, uint32_t depth, uint32_t bpp, uint32_t stride, uint32_t handle)
+ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, uint8_t depth, uint8_t bpp, uint32_t stride, uint32_t handle)
 	:Framebuffer(card, width, height)
 {
 	uint32_t id;

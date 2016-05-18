@@ -12,7 +12,7 @@ using namespace std;
 namespace kms
 {
 
-Framebuffer::Framebuffer(Card& card, int width, int height)
+Framebuffer::Framebuffer(Card& card, uint32_t width, uint32_t height)
 	: DrmObject(card, DRM_MODE_OBJECT_FB), m_width(width), m_height(height)
 {
 	card.m_framebuffers.push_back(this);

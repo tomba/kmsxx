@@ -15,7 +15,7 @@ mode = conn.get_default_mode()
 crtc = conn.get_current_crtc()
 
 planes = []
-for p in card.get_planes():
+for p in card.planes:
     if p.supports_crtc(crtc) == False:
         continue
     planes.append(p)

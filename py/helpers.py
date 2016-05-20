@@ -4,13 +4,12 @@ def add_props(areq, ob, map):
     for key, value in map.items():
         areq.add(ob, key, value)
 
-
 def props(o):
     o.refresh_props()
-    map = o.get_prop_map()
-    for propid in map:
-        prop = o.card().get_prop(propid)
-        print("%-15s %d (%#x)" % (prop.name(), map[propid], map[propid]))
+    map = o.prop_map
+    for propid,propval in map.items():
+        prop = o.card.get_prop(propid)
+        print("%-15s %d (%#x)" % (prop.name, propval, propval))
 
 def set_props(ob, map):
     areq = pykms.AtomicReq(ob.card())
@@ -32,7 +31,7 @@ cyan = pykms.RGB(0, 255, 255)
 def disable_planes(card):
     areq = pykms.AtomicReq(card)
 
-    for p in card.get_planes():
+    for p in card.planes:
         areq.add(p, "FB_ID", 0)
         areq.add(p, "CRTC_ID", 0)
 

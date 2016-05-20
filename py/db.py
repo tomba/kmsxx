@@ -24,16 +24,16 @@ class FlipHandler(pykms.PageFlipHandlerBase):
         self.front_buf = self.front_buf ^ 1
 
         current_xpos = self.bar_xpos;
-        old_xpos = (current_xpos + (fb.width() - bar_width - bar_speed)) % (fb.width() - bar_width);
-        new_xpos = (current_xpos + bar_speed) % (fb.width() - bar_width);
+        old_xpos = (current_xpos + (fb.width - bar_width - bar_speed)) % (fb.width - bar_width);
+        new_xpos = (current_xpos + bar_speed) % (fb.width - bar_width);
 
         self.bar_xpos = new_xpos
 
         pykms.draw_color_bar(fb, old_xpos, new_xpos, bar_width)
 
-        if card.has_atomic():
+        if card.has_atomic:
             ctx = pykms.AtomicReq(card)
-            ctx.add(crtc, "FB_ID", fb.id())
+            ctx.add(crtc, "FB_ID", fb.id)
             ctx.commit(self)
         else:
             crtc.page_flip(fb, self)
@@ -61,7 +61,7 @@ def readkey(conn, mask):
     exit(0)
 
 sel = selectors.DefaultSelector()
-sel.register(card.fd(), selectors.EVENT_READ, readdrm)
+sel.register(card.fd, selectors.EVENT_READ, readdrm)
 sel.register(sys.stdin, selectors.EVENT_READ, readkey)
 
 while True:

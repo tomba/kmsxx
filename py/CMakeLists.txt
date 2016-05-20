@@ -1,27 +1,20 @@
-set(SWIG_EXECUTABLE "swig3.0")
-find_package(SWIG 3.0 REQUIRED)
-include(${SWIG_USE_FILE})
-
 include_directories(${LIBDRM_INCLUDE_DIRS})
 link_directories(${LIBDRM_LIBRARY_DIRS})
 
 pkg_check_modules(PYTHON python3 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-# XXX how to add these inc dirs in a proper way?
-include_directories(../libkms++ ../libkmstest)
+if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+endif()
 
-#set(CMAKE_SWIG_FLAGS "-I../../libkms")
-set(CMAKE_SWIG_FLAGS "-builtin")
+include_directories(${PROJECT_SOURCE_DIR}/ext/pybind11/include)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
+add_library(pykms SHARED pykms.cpp)
+target_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES})
 
-set_source_files_properties(pykms.i PROPERTIES CPLUSPLUS ON)
-swig_add_module(pykms python pykms.i)
-swig_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES} ${PYTHON_LIBRARIES})
-
-# We get some "maybe-uninitialized" warnings from the generated code. I hope they are harmless.
-set_source_files_properties(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
+# Don't add a 'lib' prefix to the shared library
+set_target_properties(pykms PROPERTIES PREFIX "")
 
 file(GLOB PY_SRCS "*.py")
 add_custom_target(pyextras SOURCES ${PY_SRCS})

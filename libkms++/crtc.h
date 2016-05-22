@@ -27,7 +27,6 @@ public:
 	Plane* get_primary_plane();
 
 	int page_flip(Framebuffer& fb, void *data);
-	int page_flip(Framebuffer& fb, PageFlipHandlerBase* data) { return page_flip(fb, (void*)data); }
 
 	uint32_t buffer_id() const;
 	uint32_t x() const;

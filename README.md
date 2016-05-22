@@ -15,7 +15,6 @@ Also included are simple test tools for KMS and python wrapper for libkms++.
 ## Dependencies:
 
 - libdrm
-- SWIG 3.x (for python bindings)
 - Python 3.x (for python bindings)
 
 ## Build instructions:
@@ -59,7 +58,6 @@ Option name           | Values        | Default  | Notes
 CMAKE_BUILD_TYPE      | Release/Debug | Release  |
 LIBKMS_ENABLE_PYTHON  | ON/OFF        | ON       |
 LIBKMS_ENABLE_KMSCUBE | ON/OFF        | OFF      |
-LIBKMS_ENABLE_LTO     | ON/OFF        | OFF      | Link Time Optimization
 
 ## Env variables
 

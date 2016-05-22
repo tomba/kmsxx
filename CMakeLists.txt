@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(kms++)
 
 IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: Debug, Release."
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+ENDIF()
 
 set(LIBKMS_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
 set(LIBKMS_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")

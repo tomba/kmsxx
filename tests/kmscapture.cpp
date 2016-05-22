@@ -427,7 +427,7 @@ int main(int argc, char** argv)
 		r = req.test();
 		FAIL_IF(r, "Atomic commit failed: %d", r);
 
-		req.commit();
+		req.commit_sync();
 	}
 
 	for (auto cam : cameras)

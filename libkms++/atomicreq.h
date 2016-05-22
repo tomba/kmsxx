@@ -23,7 +23,6 @@ public:
 	void add(DrmObject *ob, const std::string& prop, uint64_t value);
 
 	int test();
-	int commit();
 	int commit(void* data);
 	int commit_sync();
 

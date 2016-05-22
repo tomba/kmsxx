@@ -127,8 +127,7 @@ PYBIND11_PLUGIN(pykms) {
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def("add", (void (AtomicReq::*)(DrmObject*, const string&, uint64_t)) &AtomicReq::add)
 			.def("test", &AtomicReq::test)
-			.def("commit", (int (AtomicReq::*)()) &AtomicReq::commit)
-			.def("commit", (int (AtomicReq::*)(void*)) &AtomicReq::commit)
+			.def("commit", &AtomicReq::commit)
 			.def("commit_sync", &AtomicReq::commit_sync)
 			;
 

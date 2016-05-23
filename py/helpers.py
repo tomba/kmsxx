@@ -12,12 +12,12 @@ def props(o):
         print("%-15s %d (%#x)" % (prop.name, propval, propval))
 
 def set_props(ob, map):
-    areq = pykms.AtomicReq(ob.card())
+    areq = pykms.AtomicReq(ob.card)
 
     for key, value in map.items():
         areq.add(ob, key, value)
 
-    if areq.commit() != 0:
+    if areq.commit_sync() != 0:
         print("commit failed")
 
 red = pykms.RGB(255, 0, 0)
@@ -35,5 +35,5 @@ def disable_planes(card):
         areq.add(p, "FB_ID", 0)
         areq.add(p, "CRTC_ID", 0)
 
-    if areq.commit() != 0:
+    if areq.commit_sync() != 0:
         print("disabling planes failed")

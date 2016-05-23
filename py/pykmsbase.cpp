@@ -43,6 +43,7 @@ void init_pykmsbase(py::module &m)
 			.def("page_flip", &Crtc::page_flip)
 			.def("set_plane", &Crtc::set_plane)
 			.def_property_readonly("possible_planes", &Crtc::get_possible_planes)
+			.def_property_readonly("primary_plane", &Crtc::get_primary_plane)
 			.def("__repr__", [](const Crtc& o) { return "<pykms.Crtc " + to_string(o.id()) + ">"; })
 			;
 

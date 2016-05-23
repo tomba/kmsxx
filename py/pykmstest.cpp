@@ -14,6 +14,10 @@ void init_pykmstest(py::module &m)
 			.def(py::init<>())
 			.def(py::init<uint8_t, uint8_t, uint8_t&>())
 			.def(py::init<uint8_t, uint8_t, uint8_t, uint8_t&>())
+			.def_property_readonly("rgb888", &RGB::rgb888)
+			.def_property_readonly("argb8888", &RGB::argb8888)
+			.def_property_readonly("abgr8888", &RGB::abgr8888)
+			.def_property_readonly("rgb565", &RGB::rgb565)
 			;
 
 	// Use lambdas to handle IMappedFramebuffer

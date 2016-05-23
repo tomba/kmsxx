@@ -32,18 +32,18 @@ def test_am5_trans_dest():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, purple)
     pykms.draw_rect(fb, 100, 100, 100, 200, green)
     pykms.draw_rect(fb, 300, 100, 100, 200, red)
     pykms.draw_rect(fb, 500, 100, 100, 200, white)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), cyan)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 250, 100, 200, 200, yellow)
 
     set_props(crtc, {
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888(),
+        "trans-key": purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -51,17 +51,17 @@ def test_am5_trans_dest():
     plane = 0
 
     for i in range(0,2):
-        print("set crtc {}, plane {}, fb {}".format(crtc.id(), planes[i].id(), fbs[i].id()))
+        print("set crtc {}, plane {}, fb {}".format(crtc.id, planes[i].id, fbs[i].id))
 
         plane = planes[i]
         fb = fbs[i]
         set_props(plane, {
-            "FB_ID": fb.id(),
-            "CRTC_ID": crtc.id(),
-            "SRC_W": fb.width() << 16,
-            "SRC_H": fb.height() << 16,
-            "CRTC_W": fb.width(),
-            "CRTC_H": fb.height(),
+            "FB_ID": fb.id,
+            "CRTC_ID": crtc.id,
+            "SRC_W": fb.width << 16,
+            "SRC_H": fb.height << 16,
+            "CRTC_W": fb.width,
+            "CRTC_H": fb.height,
             "zorder": i,
         })
 
@@ -72,17 +72,17 @@ def test_am5_trans_src():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), white)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, white)
     pykms.draw_rect(fb, 200, 200, 100, 100, red)
-    pykms.draw_rect(fb, fb.width() - 300, 200, 100, 100, green)
+    pykms.draw_rect(fb, fb.width - 300, 200, 100, 100, green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), cyan)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 100, 100, 500, 500, purple)
 
     set_props(crtc, {
         "trans-key-mode": 2,
-        "trans-key": purple.rgb888(),
+        "trans-key": purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -90,17 +90,17 @@ def test_am5_trans_src():
     plane = 0
 
     for i in range(0,2):
-        print("set crtc {}, plane {}, fb {}".format(crtc.id(), planes[i].id(), fbs[i].id()))
+        print("set crtc {}, plane {}, fb {}".format(crtc.id, planes[i].id, fbs[i].id))
 
         plane = planes[i]
         fb = fbs[i]
         set_props(plane, {
-            "FB_ID": fb.id(),
-            "CRTC_ID": crtc.id(),
-            "SRC_W": fb.width() << 16,
-            "SRC_H": fb.height() << 16,
-            "CRTC_W": fb.width(),
-            "CRTC_H": fb.height(),
+            "FB_ID": fb.id,
+            "CRTC_ID": crtc.id,
+            "SRC_W": fb.width << 16,
+            "SRC_H": fb.height << 16,
+            "CRTC_W": fb.width,
+            "CRTC_H": fb.height,
             "zorder": 3 if i == 1 else 0,
         })
 
@@ -118,14 +118,14 @@ def test_am4_normal_trans_dst():
     pykms.draw_rect(fb, 300, 50, 50, 200, white)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), blue)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), cyan)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
 
     set_props(crtc, {
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888(),
+        "trans-key": purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -135,10 +135,10 @@ def test_am4_normal_trans_dst():
     plane = planes[0]
     fb = fbs[0]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_W": w,
         "CRTC_H": h,
     })
@@ -148,16 +148,16 @@ def test_am4_normal_trans_dst():
     plane = planes[1]
     fb = fbs[1]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_X": 0,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
     time.sleep(1)
@@ -165,16 +165,16 @@ def test_am4_normal_trans_dst():
     plane = planes[2]
     fb = fbs[2]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_X": w // 3,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
 def test_am4_normal_trans_src():
@@ -188,16 +188,16 @@ def test_am4_normal_trans_src():
     pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), blue)
-    pykms.draw_rect(fb, 100, 100, fb.width() - 200, fb.height() - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), cyan)
-    pykms.draw_rect(fb, 100, 100, fb.width() - 200, fb.height() - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
     set_props(crtc, {
         "trans-key-mode": 2,
-        "trans-key": purple.rgb888(),
+        "trans-key": purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -207,10 +207,10 @@ def test_am4_normal_trans_src():
     plane = planes[0]
     fb = fbs[0]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_W": w,
         "CRTC_H": h,
     })
@@ -220,16 +220,16 @@ def test_am4_normal_trans_src():
     plane = planes[1]
     fb = fbs[1]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_X": 0,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
     time.sleep(1)
@@ -237,16 +237,16 @@ def test_am4_normal_trans_src():
     plane = planes[2]
     fb = fbs[2]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
-        "CRTC_X": w - fb.width(),
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_X": w - fb.width,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
 def test_am4_alpha_trans_src():
@@ -260,16 +260,16 @@ def test_am4_alpha_trans_src():
     pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), blue)
-    pykms.draw_rect(fb, 100, 100, fb.width() - 200, fb.height() - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width(), fb.height(), cyan)
-    pykms.draw_rect(fb, 100, 100, fb.width() - 200, fb.height() - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
     set_props(crtc, {
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888(),
+        "trans-key": purple.rgb888,
         "background": 0,
         "alpha_blender": 1,
     })
@@ -279,10 +279,10 @@ def test_am4_alpha_trans_src():
     plane = planes[0]
     fb = fbs[0]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_W": w,
         "CRTC_H": h,
     })
@@ -292,16 +292,16 @@ def test_am4_alpha_trans_src():
     plane = planes[1]
     fb = fbs[1]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
         "CRTC_X": 0,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
     time.sleep(1)
@@ -309,16 +309,16 @@ def test_am4_alpha_trans_src():
     plane = planes[2]
     fb = fbs[2]
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
         "SRC_Y": 0 << 16,
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
-        "CRTC_X": w - fb.width(),
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_X": w - fb.width,
         "CRTC_Y": 0,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
     })
 
 

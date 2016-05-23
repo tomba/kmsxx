@@ -50,15 +50,15 @@ for i in range(len(planes)):
     plane = planes[i]
     fb = fbs[i]
 
-    print("set crtc {}, plane {}, fb {}".format(crtc.id(), p.id(), fbs[i].id()))
+    print("set crtc {}, plane {}, fb {}".format(crtc.id, p.id, fbs[i].id))
 
     set_props(plane, {
-        "FB_ID": fb.id(),
-        "CRTC_ID": crtc.id(),
-        "SRC_W": fb.width() << 16,
-        "SRC_H": fb.height() << 16,
-        "CRTC_W": fb.width(),
-        "CRTC_H": fb.height(),
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
         "zorder": i,
     })
 

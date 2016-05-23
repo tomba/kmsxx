@@ -33,11 +33,10 @@ class FlipHandler(pykms.PageFlipHandlerBase):
 
         if card.has_atomic:
             ctx = pykms.AtomicReq(card)
-            ctx.add(crtc, "FB_ID", fb.id)
+            ctx.add(crtc.primary_plane, "FB_ID", fb.id)
             ctx.commit(self)
         else:
             crtc.page_flip(fb, self)
-
 
 
 card = pykms.Card()

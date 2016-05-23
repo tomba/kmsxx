@@ -1,7 +1,7 @@
 #include "cube-egl.h"
 #include "cube.h"
 
-#include "test.h"
+#include <kms++util.h>
 
 using namespace std;
 

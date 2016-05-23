@@ -10,7 +10,7 @@
 #include <gbm.h>
 
 #include <kms++.h>
-#include "test.h"
+#include <kms++util.h>
 #include "cube-egl.h"
 #include "cube-gles2.h"
 

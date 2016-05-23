@@ -6,9 +6,8 @@
 #include <xf86drmMode.h>
 #include <drm_fourcc.h>
 
-#include "kms++.h"
-
-#include "test.h"
+#include <kms++.h>
+#include <kms++util.h>
 
 using namespace std;
 using namespace kms;

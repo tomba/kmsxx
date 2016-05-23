@@ -9,9 +9,9 @@
 #include <xf86drm.h>
 #include <glob.h>
 
-#include "kms++.h"
-#include "test.h"
-#include "opts.h"
+#include <kms++.h>
+#include <kms++util.h>
+#include <opts.h>
 
 #define CAMERA_BUF_QUEUE_SIZE	3
 #define MAX_CAMERA		9

@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <kms++.h>
-#include "kmstest.h"
+#include <kms++util.h>
 
 namespace py = pybind11;
 

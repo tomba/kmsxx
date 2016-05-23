@@ -1,8 +1,7 @@
 #include <cstdint>
 
 #include <kms++.h>
-
-#include "test.h"
+#include "kms++util.h"
 
 namespace kms
 {

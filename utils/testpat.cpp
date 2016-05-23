@@ -4,11 +4,11 @@
 #include <regex>
 #include <set>
 
-#include "kms++.h"
-#include "modedb.h"
+#include <kms++.h>
+#include <modedb.h>
 
-#include "test.h"
-#include "opts.h"
+#include <kms++util.h>
+#include <opts.h>
 
 using namespace std;
 using namespace kms;

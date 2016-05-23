@@ -11,8 +11,8 @@
 
 #include <linux/fb.h>
 
-#include "test.h"
-#include "extcpuframebuffer.h"
+#include <kms++util.h>
+#include <extcpuframebuffer.h>
 
 using namespace kms;
 

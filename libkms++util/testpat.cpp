@@ -5,9 +5,9 @@
 #include <cstring>
 #include <cassert>
 
-#include "kms++.h"
-#include "test.h"
-#include "cpuframebuffer.h"
+#include <kms++.h>
+#include <kms++util.h>
+#include <cpuframebuffer.h>
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 

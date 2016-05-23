@@ -2,15 +2,16 @@
 
 libkms++ is a C++11 library for kernel mode setting.
 
-Also included are simple test tools for KMS and python wrapper for libkms++.
+Also included are some simple utilities for KMS and python bindings for libkms++.
 
-## Test tools
+## Utilities
 
+- testpat - set modes and planes and show test pattern on crtcs/planes
 - kmsprint - print information about DRM objects
-- testpat - set modes and show test pattern on crtcs/planes
 - kmsview - view raw images
 - db - simple double-buffering test
 - kmscube - rotating 3D cube on crtcs/planes
+- kmscapture - show captured frames from a camera on screen
 
 ## Dependencies:
 
@@ -28,25 +29,15 @@ $ make -j4
 
 ## Cross compiling instructions:
 
-Directions for cross compiling depend on your environment. These are for mine (buildroot):
+Directions for cross compiling depend on your environment.
 
-As above, but specify `-DCMAKE_TOOLCHAIN_FILE=<path>/your-toolchain.cmake` for cmake, where your-toolchain.cmake is something similar to:
+These are for mine with buildroot:
 
 ```
-SET(CMAKE_SYSTEM_NAME Linux)
-
-SET(BROOT "<buildroot>/output/")
-
-# specify the cross compiler
-SET(CMAKE_C_COMPILER   ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-gcc)
-SET(CMAKE_CXX_COMPILER ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-g++)
-
-# where is the target environment
-SET(CMAKE_FIND_ROOT_PATH ${BROOT}/target ${BROOT}/host)
-
-SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+$ mkdir build
+$ cd build
+$ cmake -DCMAKE_TOOLCHAIN_FILE=<buildrootpath>/output/host/usr/share/buildroot/toolchainfile.cmake ..
+$ make -j4
 ```
 
 ## Build options

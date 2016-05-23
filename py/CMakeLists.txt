@@ -10,8 +10,8 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/ext/pybind11/include)
 
-add_library(pykms SHARED pykms.cpp pykmsbase.cpp pykmstest.cpp)
-target_link_libraries(pykms kms++ kmstest ${LIBDRM_LIBRARIES})
+add_library(pykms SHARED pykms.cpp pykmsbase.cpp pykmsutil.cpp)
+target_link_libraries(pykms kms++ kms++util ${LIBDRM_LIBRARIES})
 
 # Don't add a 'lib' prefix to the shared library
 set_target_properties(pykms PROPERTIES PREFIX "")

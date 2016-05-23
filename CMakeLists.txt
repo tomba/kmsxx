@@ -38,8 +38,8 @@ pkg_check_modules(LIBDRM libdrm REQUIRED)
 enable_testing()
 
 add_subdirectory(libkms++)
-add_subdirectory(libkmstest)
-add_subdirectory(tests)
+add_subdirectory(libkms++util)
+add_subdirectory(utils)
 
 if(LIBKMS_ENABLE_KMSCUBE)
 	add_subdirectory(kmscube)

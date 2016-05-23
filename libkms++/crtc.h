@@ -24,6 +24,8 @@ public:
 
 	int disable_plane(Plane* plane);
 
+	Plane* get_primary_plane();
+
 	int page_flip(Framebuffer& fb, void *data);
 	int page_flip(Framebuffer& fb, PageFlipHandlerBase* data) { return page_flip(fb, (void*)data); }
 

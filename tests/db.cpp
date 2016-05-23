@@ -93,19 +93,8 @@ public:
 		int r = m_crtc->set_mode(m_connector, *fb, m_mode);
 		ASSERT(r == 0);
 
-		if (m_crtc->card().has_atomic()) {
-			Plane* root_plane = 0;
-			for (Plane* p : m_crtc->get_possible_planes()) {
-				if (p->crtc_id() == m_crtc->id()) {
-					root_plane = p;
-					break;
-				}
-			}
-
-			FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
-
-			m_root_plane = root_plane;
-		}
+		if (m_crtc->card().has_atomic())
+			m_root_plane = m_crtc->get_primary_plane();
 
 		if (m_plane) {
 			auto planefb = m_plane_flipper->get_next();

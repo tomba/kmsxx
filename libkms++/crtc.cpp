@@ -80,6 +80,21 @@ int Crtc::disable_plane(Plane* plane)
 	return drmModeSetPlane(card().fd(), plane->id(), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
+Plane* Crtc::get_primary_plane()
+{
+	for (Plane* p : get_possible_planes()) {
+		if (p->plane_type() != PlaneType::Primary)
+			continue;
+
+		if (p->crtc_id() != id())
+			continue;
+
+		return p;
+	}
+
+	throw invalid_argument("No primary plane for crtc " + id());
+}
+
 int Crtc::page_flip(Framebuffer& fb, void *data)
 {
 	return drmModePageFlip(card().fd(), id(), fb.id(), DRM_MODE_PAGE_FLIP_EVENT, data);

@@ -31,6 +31,9 @@ void init_pykmsbase(py::module &m)
 	py::class_<DrmPropObject, DrmPropObject*>(m, "DrmPropObject", py::base<DrmObject>())
 			.def("refresh_props", &DrmPropObject::refresh_props)
 			.def_property_readonly("prop_map", &DrmPropObject::get_prop_map)
+			.def("get_prop_value", (uint64_t (DrmPropObject::*)(const string&) const)&DrmPropObject::get_prop_value)
+			.def("set_prop_value",(int (DrmPropObject::*)(const string&, uint64_t)) &DrmPropObject::set_prop_value)
+			.def("get_prop_value_as_blob", &DrmPropObject::get_prop_value_as_blob)
 			;
 
 	py::class_<Connector, Connector*>(m, "Connector",  py::base<DrmPropObject>())
@@ -67,6 +70,17 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Property, Property*>(m, "Property",  py::base<DrmObject>())
 			.def_property_readonly("name", &Property::name)
+			;
+
+	py::class_<Blob>(m, "Blob", py::base<DrmObject>())
+			.def("__init__", [](Blob& instance, Card& card, py::buffer buf) {
+				py::buffer_info info = buf.request();
+				if (info.ndim != 1)
+					throw std::runtime_error("Incompatible buffer dimension!");
+
+				new (&instance) Blob(card, info.ptr, info.size * info.itemsize);
+			})
+			.def_property_readonly("data", &Blob::data)
 			;
 
 	py::class_<Framebuffer>(m, "Framebuffer",  py::base<DrmObject>())

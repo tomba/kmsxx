@@ -61,6 +61,13 @@ uint64_t DrmPropObject::get_prop_value(const string& name) const
 	throw invalid_argument("property not found: " + name);
 }
 
+unique_ptr<Blob> DrmPropObject::get_prop_value_as_blob(const string& name) const
+{
+	uint32_t blob_id = (uint32_t)get_prop_value(name);
+
+	return unique_ptr<Blob>(new Blob(card(), blob_id));
+}
+
 int DrmPropObject::set_prop_value(uint32_t id, uint64_t value)
 {
 	return drmModeObjectSetProperty(card().fd(), this->id(), this->object_type(), id, value);

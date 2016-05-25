@@ -10,5 +10,6 @@
 #include "extframebuffer.h"
 #include "plane.h"
 #include "property.h"
+#include "blob.h"
 #include "pipeline.h"
 #include "pagefliphandler.h"

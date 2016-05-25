@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 
 #include "drmobject.h"
 #include "decls.h"
@@ -15,6 +16,7 @@ public:
 	void refresh_props();
 	uint64_t get_prop_value(uint32_t id) const;
 	uint64_t get_prop_value(const std::string& name) const;
+	std::unique_ptr<Blob> get_prop_value_as_blob(const std::string& name) const;
 
 	const std::map<uint32_t, uint64_t>& get_prop_map() const { return m_prop_values; }
 

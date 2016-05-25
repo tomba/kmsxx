@@ -33,7 +33,7 @@ if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
 endif()
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBDRM libdrm REQUIRED)
+pkg_check_modules(LIBDRM libdrm>=2.4.64 REQUIRED)
 
 enable_testing()
 

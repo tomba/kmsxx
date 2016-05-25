@@ -12,13 +12,18 @@ def props(o):
         print("%-15s %d (%#x)" % (prop.name, propval, propval))
 
 def set_props(ob, map):
-    areq = pykms.AtomicReq(ob.card)
+    if ob.card.has_atomic:
+        areq = pykms.AtomicReq(ob.card)
 
-    for key, value in map.items():
-        areq.add(ob, key, value)
+        for key, value in map.items():
+            areq.add(ob, key, value)
 
-    if areq.commit_sync() != 0:
-        print("commit failed")
+        if areq.commit_sync() != 0:
+            print("commit failed")
+    else:
+        for propid,propval in map.items():
+            if ob.set_prop_value(propid, propval) != 0:
+                print("setting property failed")
 
 red = pykms.RGB(255, 0, 0)
 green = pykms.RGB(0, 255, 0)

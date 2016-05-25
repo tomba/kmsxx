@@ -4,12 +4,15 @@
 #include <chrono>
 #include <cstring>
 #include <cassert>
+#include <thread>
 
 #include <kms++.h>
 #include <kms++util.h>
 #include <cpuframebuffer.h>
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
+using namespace std;
 
 namespace kms
 {
@@ -209,11 +212,10 @@ static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y
 	}
 }
 
-static void draw_test_pattern_impl(IMappedFramebuffer& fb)
+static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, unsigned end_y)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
-	unsigned h = fb.height();
 
 	switch (fb.format()) {
 	case PixelFormat::XRGB8888:
@@ -221,7 +223,7 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 	case PixelFormat::ARGB8888:
 	case PixelFormat::ABGR8888:
 	case PixelFormat::RGB565:
-		for (y = 0; y < h; y++) {
+		for (y = start_y; y < end_y; y++) {
 			for (x = 0; x < w; x++) {
 				RGB pixel = get_test_pattern_pixel(fb, x, y);
 				draw_rgb_pixel(fb, x, y, pixel);
@@ -233,7 +235,7 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 	case PixelFormat::YUYV:
 	case PixelFormat::YVYU:
 	case PixelFormat::VYUY:
-		for (y = 0; y < h; y++) {
+		for (y = start_y; y < end_y; y++) {
 			for (x = 0; x < w; x += 2) {
 				RGB pixel1 = get_test_pattern_pixel(fb, x, y);
 				RGB pixel2 = get_test_pattern_pixel(fb, x + 1, y);
@@ -244,7 +246,7 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 
 	case PixelFormat::NV12:
 	case PixelFormat::NV21:
-		for (y = 0; y < h; y += 2) {
+		for (y = start_y; y < end_y; y += 2) {
 			for (x = 0; x < w; x += 2) {
 				RGB pixel00 = get_test_pattern_pixel(fb, x, y);
 				RGB pixel10 = get_test_pattern_pixel(fb, x + 1, y);
@@ -259,6 +261,32 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 	default:
 		throw std::invalid_argument("unknown pixelformat");
 	}
+}
+
+static void draw_test_pattern_impl(IMappedFramebuffer& fb)
+{
+	if (fb.height() < 20) {
+		draw_test_pattern_part(fb, 0, fb.height());
+		return;
+	}
+
+	unsigned num_threads = thread::hardware_concurrency();
+	vector<thread> workers;
+
+	unsigned part = (fb.height() / num_threads) & ~1;
+
+	for (unsigned n = 0; n < num_threads; ++n) {
+		unsigned start = n * part;
+		unsigned end = start + part;
+
+		if (n == num_threads - 1)
+			end = fb.height();
+
+		workers.push_back(thread([&fb, start, end]() { draw_test_pattern_part(fb, start, end); }));
+	}
+
+	for (thread& t : workers)
+		t.join();
 }
 
 void draw_test_pattern(IMappedFramebuffer &fb)

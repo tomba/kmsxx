@@ -17,6 +17,13 @@ set(LIBKMS_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wno-unused-parameter")
 
+if (CMAKE_COMPILER_IS_GNUCC)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+        # GCC 4.x seems to warn too much
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-missing-field-initializers")
+    endif()
+endif()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # static link libc

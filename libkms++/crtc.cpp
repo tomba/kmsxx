@@ -18,7 +18,7 @@ struct CrtcPriv
 };
 
 Crtc::Crtc(Card &card, uint32_t id, uint32_t idx)
-	:DrmObject(card, id, DRM_MODE_OBJECT_CRTC, idx)
+	:DrmPropObject(card, id, DRM_MODE_OBJECT_CRTC, idx)
 {
 	m_priv = new CrtcPriv();
 	m_priv->drm_crtc = drmModeGetCrtc(this->card().fd(), this->id());

@@ -31,7 +31,7 @@ static const map<int, string> encoder_types = {
 };
 
 Encoder::Encoder(Card &card, uint32_t id)
-	:DrmObject(card, id, DRM_MODE_OBJECT_ENCODER)
+	:DrmPropObject(card, id, DRM_MODE_OBJECT_ENCODER)
 {
 	m_priv = new EncoderPriv();
 	m_priv->drm_encoder = drmModeGetEncoder(this->card().fd(), this->id());

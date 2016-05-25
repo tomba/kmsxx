@@ -57,7 +57,7 @@ struct ConnectorPriv
 };
 
 Connector::Connector(Card &card, uint32_t id, uint32_t idx)
-	:DrmObject(card, id, DRM_MODE_OBJECT_CONNECTOR, idx)
+	:DrmPropObject(card, id, DRM_MODE_OBJECT_CONNECTOR, idx)
 {
 	m_priv = new ConnectorPriv();
 

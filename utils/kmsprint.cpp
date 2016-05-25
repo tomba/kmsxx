@@ -49,7 +49,7 @@ void print_property(uint64_t val, const Property& p, int ind)
 	       p.name().c_str(), p.id(), p.to_str(val).c_str());
 }
 
-void print_properties(DrmObject& o, int ind)
+void print_properties(DrmPropObject& o, int ind)
 {
 	auto pmap = o.get_prop_map();
 	printf("%sProperties, %u in total:\n", width(ind, "").c_str(),

@@ -25,12 +25,15 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<DrmObject, DrmObject*>(m, "DrmObject")
 			.def_property_readonly("id", &DrmObject::id)
-			.def("refresh_props", &DrmObject::refresh_props)
-			.def_property_readonly("prop_map", &DrmObject::get_prop_map)
 			.def_property_readonly("card", &DrmObject::card)
 			;
 
-	py::class_<Connector, Connector*>(m, "Connector",  py::base<DrmObject>())
+	py::class_<DrmPropObject, DrmPropObject*>(m, "DrmPropObject", py::base<DrmObject>())
+			.def("refresh_props", &DrmPropObject::refresh_props)
+			.def_property_readonly("prop_map", &DrmPropObject::get_prop_map)
+			;
+
+	py::class_<Connector, Connector*>(m, "Connector",  py::base<DrmPropObject>())
 			.def_property_readonly("fullname", &Connector::fullname)
 			.def("get_default_mode", &Connector::get_default_mode)
 			.def("get_current_crtc", &Connector::get_current_crtc)
@@ -38,7 +41,7 @@ void init_pykmsbase(py::module &m)
 			.def("__repr__", [](const Connector& o) { return "<pykms.Connector " + to_string(o.id()) + ">"; })
 			;
 
-	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmObject>())
+	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
 			.def("set_mode", &Crtc::set_mode)
 			.def("page_flip", &Crtc::page_flip)
 			.def("set_plane", &Crtc::set_plane)
@@ -47,10 +50,10 @@ void init_pykmsbase(py::module &m)
 			.def("__repr__", [](const Crtc& o) { return "<pykms.Crtc " + to_string(o.id()) + ">"; })
 			;
 
-	py::class_<Encoder, Encoder*>(m, "Encoder",  py::base<DrmObject>())
+	py::class_<Encoder, Encoder*>(m, "Encoder",  py::base<DrmPropObject>())
 			;
 
-	py::class_<Plane, Plane*>(m, "Plane",  py::base<DrmObject>())
+	py::class_<Plane, Plane*>(m, "Plane",  py::base<DrmPropObject>())
 			.def("supports_crtc", &Plane::supports_crtc)
 			.def_property_readonly("plane_type", &Plane::plane_type)
 			.def("__repr__", [](const Plane& o) { return "<pykms.Plane " + to_string(o.id()) + ">"; })

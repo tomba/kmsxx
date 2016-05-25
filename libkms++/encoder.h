@@ -1,14 +1,14 @@
 #pragma once
 
 #include <vector>
-#include "drmobject.h"
+#include "drmpropobject.h"
 
 namespace kms
 {
 
 struct EncoderPriv;
 
-class Encoder : public DrmObject
+class Encoder : public DrmPropObject
 {
 	friend class Card;
 public:

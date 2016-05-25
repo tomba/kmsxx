@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "drmobject.h"
+#include "drmpropobject.h"
 #include "videomode.h"
 
 namespace kms
@@ -10,7 +10,7 @@ namespace kms
 
 struct ConnectorPriv;
 
-class Connector : public DrmObject
+class Connector : public DrmPropObject
 {
 	friend class Card;
 public:

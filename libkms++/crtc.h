@@ -2,14 +2,14 @@
 
 #include <vector>
 
-#include "drmobject.h"
+#include "drmpropobject.h"
 
 namespace kms
 {
 
 struct CrtcPriv;
 
-class Crtc : public DrmObject
+class Crtc : public DrmPropObject
 {
 	friend class Card;
 	friend class Connector;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drmobject.h"
+#include "drmpropobject.h"
 
 namespace kms
 {
@@ -14,7 +14,7 @@ enum class PlaneType
 
 struct PlanePriv;
 
-class Plane : public DrmObject
+class Plane : public DrmPropObject
 {
 	friend class Card;
 public:

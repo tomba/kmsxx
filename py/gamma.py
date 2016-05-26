@@ -32,14 +32,10 @@ for i in range(256):
 
 gamma = pykms.Blob(card, arr);
 
-set_props(crtc, {
-    "GAMMA_LUT": gamma.id,
-})
+set_prop(crtc, "GAMMA_LUT", gamma.id)
 
 input("press enter to remove gamma\n")
 
-set_props(crtc, {
-    "GAMMA_LUT": 0,
-})
+set_prop(crtc, "GAMMA_LUT", 0)
 
 input("press enter to exit\n")

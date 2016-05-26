@@ -11,6 +11,16 @@ def props(o):
         prop = o.card.get_prop(propid)
         print("%-15s %d (%#x)" % (prop.name, propval, propval))
 
+def set_prop(ob, prop, value):
+    if ob.card.has_atomic:
+        areq = pykms.AtomicReq(ob.card)
+        areq.add(ob, prop, value)
+        if areq.commit_sync() != 0:
+            print("commit failed")
+    else:
+        if ob.set_prop_value(prop, value) != 0:
+            print("setting property failed")
+
 def set_props(ob, map):
     if ob.card.has_atomic:
         areq = pykms.AtomicReq(ob.card)

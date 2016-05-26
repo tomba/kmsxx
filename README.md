@@ -20,6 +20,14 @@ Also included are some simple utilities for KMS and python bindings for libkms++
 
 ## Build instructions:
 
+To build the Python bindings you need to set up the git-submodule for pybind11:
+
+```
+git submodule update --init
+```
+
+And to compile:
+
 ```
 $ mkdir build
 $ cd build

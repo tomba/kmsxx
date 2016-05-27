@@ -86,9 +86,6 @@ Plane* Crtc::get_primary_plane()
 		if (p->plane_type() != PlaneType::Primary)
 			continue;
 
-		if (p->crtc_id() != id())
-			continue;
-
 		return p;
 	}
 

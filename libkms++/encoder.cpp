@@ -30,8 +30,8 @@ static const map<int, string> encoder_types = {
 #undef DEF_ENC
 };
 
-Encoder::Encoder(Card &card, uint32_t id)
-	:DrmPropObject(card, id, DRM_MODE_OBJECT_ENCODER)
+Encoder::Encoder(Card &card, uint32_t id, uint32_t idx)
+	:DrmPropObject(card, id, DRM_MODE_OBJECT_ENCODER, idx)
 {
 	m_priv = new EncoderPriv();
 	m_priv->drm_encoder = drmModeGetEncoder(this->card().fd(), this->id());

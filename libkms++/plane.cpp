@@ -18,8 +18,8 @@ struct PlanePriv
 	drmModePlanePtr drm_plane;
 };
 
-Plane::Plane(Card &card, uint32_t id)
-	:DrmPropObject(card, id, DRM_MODE_OBJECT_PLANE)
+Plane::Plane(Card &card, uint32_t id, uint32_t idx)
+	:DrmPropObject(card, id, DRM_MODE_OBJECT_PLANE, idx)
 {
 	m_priv = new PlanePriv();
 	m_priv->drm_plane = drmModeGetPlane(this->card().fd(), this->id());

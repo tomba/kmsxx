@@ -17,7 +17,7 @@ public:
 
 	const std::string& get_encoder_type() const;
 private:
-	Encoder(Card& card, uint32_t id);
+	Encoder(Card& card, uint32_t id, uint32_t idx);
 	~Encoder();
 
 	EncoderPriv* m_priv;

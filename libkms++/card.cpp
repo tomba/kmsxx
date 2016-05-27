@@ -77,7 +77,7 @@ Card::Card(const std::string& device)
 
 	for (int i = 0; i < res->count_encoders; ++i) {
 		uint32_t id = res->encoders[i];
-		auto ob = new Encoder(*this, id);
+		auto ob = new Encoder(*this, id, i);
 		m_obmap[id] = ob;
 		m_encoders.push_back(ob);
 	}
@@ -88,7 +88,7 @@ Card::Card(const std::string& device)
 
 	for (uint i = 0; i < planeRes->count_planes; ++i) {
 		uint32_t id = planeRes->planes[i];
-		auto ob = new Plane(*this, id);
+		auto ob = new Plane(*this, id, i);
 		m_obmap[id] = ob;
 		m_planes.push_back(ob);
 	}

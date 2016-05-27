@@ -56,6 +56,12 @@ void AtomicReq::add(DrmObject* ob, const string& prop, uint64_t value)
 	add(ob, m_card.get_prop(prop), value);
 }
 
+void AtomicReq::add(DrmObject* ob, const map<string, uint64_t>& values)
+{
+	for(const auto& kvp : values)
+		add(ob, kvp.first, kvp.second);
+}
+
 int AtomicReq::test()
 {
 	uint32_t flags = DRM_MODE_ATOMIC_TEST_ONLY;

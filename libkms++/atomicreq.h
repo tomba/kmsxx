@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <map>
 
 struct _drmModeAtomicReq;
 
@@ -21,6 +22,7 @@ public:
 	void add(uint32_t ob_id, uint32_t prop_id, uint64_t value);
 	void add(DrmObject *ob, Property *prop, uint64_t value);
 	void add(DrmObject *ob, const std::string& prop, uint64_t value);
+	void add(DrmObject *ob, const std::map<std::string, uint64_t>& values);
 
 	int test();
 	int commit(void* data);

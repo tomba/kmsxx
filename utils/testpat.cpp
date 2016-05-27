@@ -22,7 +22,7 @@ struct PlaneInfo
 	unsigned w;
 	unsigned h;
 
-	DumbFramebuffer* fb;
+	vector<DumbFramebuffer*> fbs;
 };
 
 struct OutputInfo
@@ -32,13 +32,14 @@ struct OutputInfo
 	Crtc* crtc;
 	Videomode mode;
 	bool user_set_crtc;
-	DumbFramebuffer* fb;
+	vector<DumbFramebuffer*> fbs;
 
 	vector<PlaneInfo> planes;
 };
 
 static bool s_use_dmt;
 static bool s_use_cea;
+static unsigned s_num_buffers = 1;
 
 static set<Crtc*> s_used_crtcs;
 static set<Plane*> s_used_planes;
@@ -243,12 +244,17 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }
 
-static DumbFramebuffer* get_default_fb(Card& card, unsigned width, unsigned height)
+static vector<DumbFramebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
 {
-	return new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888);
+	vector<DumbFramebuffer*> v;
+
+	for (unsigned i = 0; i < s_num_buffers; ++i)
+		v.push_back(new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888));
+
+	return v;
 }
 
-static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
+static vector<DumbFramebuffer*> parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
 {
 	unsigned w = def_w;
 	unsigned h = def_h;
@@ -271,7 +277,12 @@ static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_
 			format = FourCCToPixelFormat(sm[3]);
 	}
 
-	return new DumbFramebuffer(card, w, h, format);
+	vector<DumbFramebuffer*> v;
+
+	for (unsigned i = 0; i < s_num_buffers; ++i)
+		v.push_back(new DumbFramebuffer(card, w, h, format));
+
+	return v;
 }
 
 static const char* usage_str =
@@ -391,7 +402,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 			output.crtc = pipe.crtc;
 			output.mode = output.connector->get_default_mode();
 
-			output.fb = get_default_fb(card, output.mode.hdisplay, output.mode.vdisplay);
+			output.fbs = get_default_fb(card, output.mode.hdisplay, output.mode.vdisplay);
 
 			outputs.push_back(output);
 		}
@@ -478,12 +489,12 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 				def_h = current_output->mode.vdisplay;
 			}
 
-			auto fb = parse_fb(card, arg.arg, def_w, def_h);
+			auto fbs = parse_fb(card, arg.arg, def_w, def_h);
 
 			if (current_plane)
-				current_plane->fb = fb;
+				current_plane->fbs = fbs;
 			else
-				current_output->fb = fb;
+				current_output->fbs = fbs;
 
 			break;
 		}
@@ -497,12 +508,12 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 			o.user_set_crtc = true;
 		}
 
-		if (!o.fb && o.user_set_crtc)
-			o.fb = get_default_fb(card, o.mode.hdisplay, o.mode.vdisplay);
+		if (o.fbs.empty() && o.user_set_crtc)
+			o.fbs = get_default_fb(card, o.mode.hdisplay, o.mode.vdisplay);
 
 		for (PlaneInfo &p : o.planes) {
-			if (!p.fb)
-				p.fb = get_default_fb(card, p.w, p.h);
+			if (p.fbs.empty())
+				p.fbs = get_default_fb(card, p.w, p.h);
 		}
 	}
 
@@ -544,16 +555,19 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 		printf("  Crtc %u/@%u: %ux%u-%u (%s)\n", o.crtc->id(), o.crtc->idx(),
 		       o.mode.hdisplay, o.mode.vdisplay, o.mode.vrefresh,
 		       videomode_to_string(o.mode).c_str());
-		if (o.fb)
-			printf("    Fb %ux%u-%s\n", o.fb->width(), o.fb->height(),
-			       PixelFormatToFourCC(o.fb->format()).c_str());
+		if (!o.fbs.empty()) {
+			auto fb = o.fbs[0];
+			printf("    Fb %ux%u-%s\n", fb->width(), fb->height(),
+			       PixelFormatToFourCC(fb->format()).c_str());
+		}
 
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
 			const PlaneInfo& p = o.planes[j];
+			auto fb = p.fbs[0];
 			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->id(), p.plane->idx(),
 			       p.x, p.y, p.w, p.h);
-			printf("    Fb %ux%u-%s\n", p.fb->width(), p.fb->height(),
-			       PixelFormatToFourCC(p.fb->format()).c_str());
+			printf("    Fb %ux%u-%s\n", fb->width(), fb->height(),
+			       PixelFormatToFourCC(fb->format()).c_str());
 		}
 	}
 }
@@ -561,11 +575,12 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 static void draw_test_patterns(const vector<OutputInfo>& outputs)
 {
 	for (const OutputInfo& o : outputs) {
-		if (o.fb)
-			draw_test_pattern(*o.fb);
+		for (auto fb : o.fbs)
+			draw_test_pattern(*fb);
 
 		for (const PlaneInfo& p : o.planes)
-			draw_test_pattern(*p.fb);
+			for (auto fb : p.fbs)
+				draw_test_pattern(*fb);
 	}
 }
 
@@ -575,17 +590,19 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 		auto conn = o.connector;
 		auto crtc = o.crtc;
 
-		if (o.fb) {
-			int r = crtc->set_mode(conn, *o.fb, o.mode);
+		if (!o.fbs.empty()) {
+			auto fb = o.fbs[0];
+			int r = crtc->set_mode(conn, *fb, o.mode);
 			if (r)
 				printf("crtc->set_mode() failed for crtc %u: %s\n",
 				       crtc->id(), strerror(-r));
 		}
 
 		for (const PlaneInfo& p : o.planes) {
-			int r = crtc->set_plane(p.plane, *p.fb,
+			auto fb = p.fbs[0];
+			int r = crtc->set_plane(p.plane, *fb,
 						p.x, p.y, p.w, p.h,
-						0, 0, p.fb->width(), p.fb->height());
+						0, 0, fb->width(), fb->height());
 			if (r)
 				printf("crtc->set_plane() failed for plane %u: %s\n",
 				       p.plane->id(), strerror(-r));

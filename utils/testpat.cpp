@@ -30,6 +30,7 @@ struct OutputInfo
 	Connector* connector;
 
 	Crtc* crtc;
+	Plane* primary_plane;
 	Videomode mode;
 	bool user_set_crtc;
 	vector<DumbFramebuffer*> fbs;
@@ -552,7 +553,10 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 
 		printf("Connector %u/@%u: %s\n", o.connector->id(), o.connector->idx(),
 		       o.connector->fullname().c_str());
-		printf("  Crtc %u/@%u: %ux%u-%u (%s)\n", o.crtc->id(), o.crtc->idx(),
+		printf("  Crtc %u/@%u", o.crtc->id(), o.crtc->idx());
+		if (o.primary_plane)
+			printf(" (plane %u/@%u)", o.primary_plane->id(), o.primary_plane->idx());
+		printf(": %ux%u-%u (%s)\n",
 		       o.mode.hdisplay, o.mode.vdisplay, o.mode.vrefresh,
 		       videomode_to_string(o.mode).c_str());
 		if (!o.fbs.empty()) {
@@ -617,6 +621,15 @@ int main(int argc, char **argv)
 	Card card(s_device_path);
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
+
+	if (card.has_atomic()) {
+		for (OutputInfo& o : outputs) {
+			o.primary_plane = o.crtc->get_primary_plane();
+
+			if (!o.fbs.empty() && !o.primary_plane)
+				EXIT("Could not get primary plane for crtc '%u'", o.crtc->id());
+		}
+	}
 
 	draw_test_patterns(outputs);
 

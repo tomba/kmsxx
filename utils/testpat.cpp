@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <regex>
 #include <set>
+#include <chrono>
 
 #include <kms++.h>
 #include <modedb.h>
@@ -41,6 +42,8 @@ struct OutputInfo
 static bool s_use_dmt;
 static bool s_use_cea;
 static unsigned s_num_buffers = 1;
+static bool s_flip_mode;
+static bool s_flip_sync;
 
 static set<Crtc*> s_used_crtcs;
 static set<Plane*> s_used_planes;
@@ -297,6 +300,8 @@ static const char* usage_str =
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
+		"      --flip                Do page flipping for each output\n"
+		"      --sync                Synchronize page flipping\n"
 		"\n"
 		"<connector>, <crtc> and <plane> can be given by id (<id>) or index (@<idx>).\n"
 		"<connector> can also be given by name.\n"
@@ -373,6 +378,15 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("|cea", []()
 		{
 			s_use_cea = true;
+		}),
+		Option("|flip", []()
+		{
+			s_flip_mode = true;
+			s_num_buffers = 2;
+		}),
+		Option("|sync", []()
+		{
+			s_flip_sync = true;
 		}),
 		Option("h|help", [&]()
 		{
@@ -683,11 +697,199 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 		EXIT("Atomic commit failed: %d\n", r);
 }
 
+class FlipState : private PageFlipHandlerBase
+{
+public:
+	FlipState(Card& card, const string& name, vector<const OutputInfo*> outputs)
+		: m_card(card), m_name(name), m_outputs(outputs)
+	{
+	}
+
+	void start_flipping()
+	{
+		m_prev_frame = m_prev_print = std::chrono::steady_clock::now();
+		m_slowest_frame = std::chrono::duration<float>::min();
+		m_frame_num = 0;
+		queue_next();
+	}
+
+private:
+	void handle_page_flip(uint32_t frame, double time)
+	{
+		m_frame_num++;
+
+		auto now = std::chrono::steady_clock::now();
+
+		std::chrono::duration<float> diff = now - m_prev_frame;
+		if (diff > m_slowest_frame)
+			m_slowest_frame = diff;
+
+		if (m_frame_num  % 100 == 0) {
+			std::chrono::duration<float> fsec = now - m_prev_print;
+			printf("Connector %s: fps %f, slowest %.2f ms\n",
+			       m_name.c_str(),
+			       100.0 / fsec.count(),
+			       m_slowest_frame.count() * 1000);
+			m_prev_print = now;
+			m_slowest_frame = std::chrono::duration<float>::min();
+		}
+
+		m_prev_frame = now;
+
+		queue_next();
+	}
+
+	static unsigned get_bar_pos(DumbFramebuffer* fb, unsigned frame_num)
+	{
+		return (frame_num * bar_speed) % (fb->width() - bar_width + 1);
+	}
+
+	static void draw_bar(DumbFramebuffer* fb, unsigned frame_num)
+	{
+		int old_xpos = frame_num < s_num_buffers ? -1 : get_bar_pos(fb, frame_num - s_num_buffers);
+		int new_xpos = get_bar_pos(fb, frame_num);
+
+		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
+	}
+
+	static void do_flip_output(AtomicReq& req, unsigned frame_num, const OutputInfo& o)
+	{
+		unsigned cur = frame_num % s_num_buffers;
+
+		if (!o.fbs.empty()) {
+			auto fb = o.fbs[cur];
+
+			draw_bar(fb, frame_num);
+
+			req.add(o.primary_plane, {
+					{ "FB_ID", fb->id() },
+				});
+		}
+
+		for (const PlaneInfo& p : o.planes) {
+			auto fb = p.fbs[cur];
+
+			draw_bar(fb, frame_num);
+
+			req.add(p.plane, {
+					{ "FB_ID", fb->id() },
+				});
+		}
+	}
+
+	void do_flip_output_legacy(unsigned frame_num, const OutputInfo& o)
+	{
+		unsigned cur = frame_num % s_num_buffers;
+
+		if (!o.fbs.empty()) {
+			auto fb = o.fbs[cur];
+
+			draw_bar(fb, frame_num);
+
+			int r = o.crtc->page_flip(*fb, this);
+			ASSERT(r == 0);
+		}
+
+		for (const PlaneInfo& p : o.planes) {
+			auto fb = p.fbs[cur];
+
+			draw_bar(fb, frame_num);
+
+			int r = o.crtc->set_plane(p.plane, *fb,
+						  p.x, p.y, p.w, p.h,
+						  0, 0, fb->width(), fb->height());
+			ASSERT(r == 0);
+		}
+	}
+
+	void queue_next()
+	{
+		if (m_card.has_atomic()) {
+			AtomicReq req(m_card);
+
+			for (auto o : m_outputs)
+				do_flip_output(req, m_frame_num, *o);
+
+			int r = req.commit(this);
+			if (r)
+				EXIT("Flip commit failed: %d\n", r);
+		} else {
+			ASSERT(m_outputs.size() == 1);
+			do_flip_output_legacy(m_frame_num, *m_outputs[0]);
+		}
+	}
+
+	Card& m_card;
+	string m_name;
+	vector<const OutputInfo*> m_outputs;
+	unsigned m_frame_num;
+
+	chrono::steady_clock::time_point m_prev_print;
+	chrono::steady_clock::time_point m_prev_frame;
+	chrono::duration<float> m_slowest_frame;
+
+	static const unsigned bar_width = 20;
+	static const unsigned bar_speed = 8;
+};
+
+static void main_flip(Card& card, const vector<OutputInfo>& outputs)
+{
+	fd_set fds;
+
+	FD_ZERO(&fds);
+
+	int fd = card.fd();
+
+	vector<unique_ptr<FlipState>> flipstates;
+
+	if (!s_flip_sync) {
+		for (const OutputInfo& o : outputs) {
+			auto fs = unique_ptr<FlipState>(new FlipState(card, to_string(o.connector->idx()), { &o }));
+			flipstates.push_back(move(fs));
+		}
+	} else {
+		vector<const OutputInfo*> ois;
+
+		string name;
+		for (const OutputInfo& o : outputs) {
+			name += to_string(o.connector->idx()) + ",";
+			ois.push_back(&o);
+		}
+
+		auto fs = unique_ptr<FlipState>(new FlipState(card, name, ois));
+		flipstates.push_back(move(fs));
+	}
+
+	for (unique_ptr<FlipState>& fs : flipstates)
+		fs->start_flipping();
+
+	while (true) {
+		int r;
+
+		FD_SET(0, &fds);
+		FD_SET(fd, &fds);
+
+		r = select(fd + 1, &fds, NULL, NULL, NULL);
+		if (r < 0) {
+			fprintf(stderr, "select() failed with %d: %m\n", errno);
+			break;
+		} else if (FD_ISSET(0, &fds)) {
+			fprintf(stderr, "Exit due to user-input\n");
+			break;
+		} else if (FD_ISSET(fd, &fds)) {
+			card.call_page_flip_handlers();
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	vector<Arg> output_args = parse_cmdline(argc, argv);
 
 	Card card(s_device_path);
+
+	if (!card.has_atomic() && s_flip_sync)
+		EXIT("Synchronized flipping requires atomic modesetting");
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
 
@@ -700,7 +902,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	draw_test_patterns(outputs);
+	if (!s_flip_mode)
+		draw_test_patterns(outputs);
 
 	print_outputs(outputs);
 
@@ -711,5 +914,8 @@ int main(int argc, char **argv)
 
 	printf("press enter to exit\n");
 
-	getchar();
+	if (s_flip_mode)
+		main_flip(card, outputs);
+	else
+		getchar();
 }

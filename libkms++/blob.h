@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drmobject.h"
+#include <vector>
 
 namespace kms
 {

@@ -2,6 +2,9 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
+
+#include "blob.h"
 
 namespace kms
 {
@@ -18,6 +21,8 @@ struct Videomode
 
 	uint32_t flags;		// DRM_MODE_FLAG_*
 	uint32_t type;		// DRM_MODE_TYPE_*
+
+	std::unique_ptr<Blob> to_blob(Card& card) const;
 };
 
 }

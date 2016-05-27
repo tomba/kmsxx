@@ -245,9 +245,7 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 
 static DumbFramebuffer* get_default_fb(Card& card, unsigned width, unsigned height)
 {
-	auto fb = new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888);
-	draw_test_pattern(*fb);
-	return fb;
+	return new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888);
 }
 
 static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
@@ -273,9 +271,7 @@ static DumbFramebuffer* parse_fb(Card& card, const string& fb_str, unsigned def_
 			format = FourCCToPixelFormat(sm[3]);
 	}
 
-	auto fb = new DumbFramebuffer(card, w, h, format);
-	draw_test_pattern(*fb);
-	return fb;
+	return new DumbFramebuffer(card, w, h, format);
 }
 
 static const char* usage_str =
@@ -562,6 +558,17 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 	}
 }
 
+static void draw_test_patterns(const vector<OutputInfo>& outputs)
+{
+	for (const OutputInfo& o : outputs) {
+		if (o.fb)
+			draw_test_pattern(*o.fb);
+
+		for (const PlaneInfo& p : o.planes)
+			draw_test_pattern(*p.fb);
+	}
+}
+
 static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 {
 	for (const OutputInfo& o : outputs) {
@@ -593,6 +600,8 @@ int main(int argc, char **argv)
 	Card card(s_device_path);
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
+
+	draw_test_patterns(outputs);
 
 	print_outputs(outputs);
 

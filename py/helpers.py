@@ -1,5 +1,7 @@
 import pykms
 
+silent = False
+
 def add_props(areq, ob, map):
     for key, value in map.items():
         areq.add(ob, key, value)
@@ -15,11 +17,14 @@ def set_prop(ob, prop, value):
     if ob.card.has_atomic:
         areq = pykms.AtomicReq(ob.card)
         areq.add(ob, prop, value)
-        if areq.commit_sync() != 0:
+        ret = areq.commit_sync()
+        if ret != 0 and not silent:
             print("commit failed")
     else:
-        if ob.set_prop_value(prop, value) != 0:
+        ret = ob.set_prop_value(prop, value)
+        if ret != 0 and not silent:
             print("setting property failed")
+    return ret
 
 def set_props(ob, map):
     if ob.card.has_atomic:
@@ -28,12 +33,17 @@ def set_props(ob, map):
         for key, value in map.items():
             areq.add(ob, key, value)
 
-        if areq.commit_sync() != 0:
+        ret = areq.commit_sync()
+        if ret != 0 and not silent:
             print("commit failed")
     else:
         for propid,propval in map.items():
-            if ob.set_prop_value(propid, propval) != 0:
-                print("setting property failed")
+            ret = ob.set_prop_value(propid, propval)
+            if ret != 0:
+                if not silent:
+                    print("setting property failed")
+                return ret
+    return ret
 
 red = pykms.RGB(255, 0, 0)
 green = pykms.RGB(0, 255, 0)
@@ -50,5 +60,6 @@ def disable_planes(card):
         areq.add(p, "FB_ID", 0)
         areq.add(p, "CRTC_ID", 0)
 
-    if areq.commit_sync() != 0:
+    ret = areq.commit_sync()
+    if ret != 0 and not silent:
         print("disabling planes failed")

@@ -588,7 +588,7 @@ static void draw_test_patterns(const vector<OutputInfo>& outputs)
 	}
 }
 
-static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
+static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outputs)
 {
 	for (const OutputInfo& o : outputs) {
 		auto conn = o.connector;
@@ -614,6 +614,75 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 	}
 }
 
+static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
+{
+	// Keep blobs here so that we keep ref to them until we have committed the req
+	vector<unique_ptr<Blob>> blobs;
+
+	AtomicReq req(card);
+
+	for (const OutputInfo& o : outputs) {
+		auto conn = o.connector;
+		auto crtc = o.crtc;
+
+		if (!o.fbs.empty()) {
+			auto fb = o.fbs[0];
+
+			blobs.emplace_back(o.mode.to_blob(card));
+			Blob* mode_blob = blobs.back().get();
+
+			req.add(conn, {
+					{ "CRTC_ID", crtc->id() },
+				});
+
+			req.add(crtc, {
+					{ "ACTIVE", 1 },
+					{ "MODE_ID", mode_blob->id() },
+				});
+
+			req.add(o.primary_plane, {
+					{ "FB_ID", fb->id() },
+					{ "CRTC_ID", crtc->id() },
+					{ "SRC_X", 0 << 16 },
+					{ "SRC_Y", 0 << 16 },
+					{ "SRC_W", fb->width() << 16 },
+					{ "SRC_H", fb->height() << 16 },
+					{ "CRTC_X", 0 },
+					{ "CRTC_Y", 0 },
+					{ "CRTC_W", fb->width() },
+					{ "CRTC_H", fb->height() },
+				});
+		}
+
+		for (const PlaneInfo& p : o.planes) {
+			auto fb = p.fbs[0];
+
+			req.add(p.plane, {
+					{ "FB_ID", fb->id() },
+					{ "CRTC_ID", crtc->id() },
+					{ "SRC_X", 0 << 16 },
+					{ "SRC_Y", 0 << 16 },
+					{ "SRC_W", fb->width() << 16 },
+					{ "SRC_H", fb->height() << 16 },
+					{ "CRTC_X", p.x },
+					{ "CRTC_Y", p.y },
+					{ "CRTC_W", p.w },
+					{ "CRTC_H", p.h },
+				});
+		}
+	}
+
+	int r;
+
+	r = req.test(true);
+	if (r)
+		EXIT("Atomic test failed: %d\n", r);
+
+	r = req.commit_sync(true);
+	if (r)
+		EXIT("Atomic commit failed: %d\n", r);
+}
+
 int main(int argc, char **argv)
 {
 	vector<Arg> output_args = parse_cmdline(argc, argv);
@@ -635,7 +704,10 @@ int main(int argc, char **argv)
 
 	print_outputs(outputs);
 
-	set_crtcs_n_planes(card, outputs);
+	if (card.has_atomic())
+		set_crtcs_n_planes(card, outputs);
+	else
+		set_crtcs_n_planes_legacy(card, outputs);
 
 	printf("press enter to exit\n");
 

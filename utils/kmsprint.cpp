@@ -1,142 +1,481 @@
 #include <cstdio>
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <unistd.h>
+#include <inttypes.h>
 
 #include "kms++.h"
 #include "opts.h"
+#include "kms++util.h"
+#include "strhelpers.h"
 
 using namespace std;
 using namespace kms;
 
-namespace kmsprint {
-
 static struct {
 	bool print_props;
 	bool print_modes;
-	bool recurse;
-} opts;
+	bool print_list;
+	bool x_modeline;
+} s_opts;
 
-string width(int w, string str)
+static string format_mode(const Videomode& m, unsigned idx)
 {
-	str.resize(w, ' ');
+	string str;
+
+	str = sformat("  %2u ", idx);
+
+	if (s_opts.x_modeline) {
+		str += sformat("%12s %6d %4u %4u %4u %4u %4u %4u %4u %4u  %2u %#x %#x",
+			       m.name.c_str(),
+			       m.clock,
+			       m.hdisplay, m.hsync_start, m.hsync_end, m.htotal,
+			       m.vdisplay, m.vsync_start, m.vsync_end, m.vtotal,
+			       m.vrefresh,
+			       m.flags,
+			       m.type);
+	} else {
+		string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
+		string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
+
+		str += sformat("%-12s %6d %-16s %-16s %2u %#10x %#6x",
+			       m.name.c_str(),
+			       m.clock,
+			       h.c_str(), v.c_str(),
+			       m.vrefresh,
+			       m.flags,
+			       m.type);
+	}
+
 	return str;
 }
 
-void print_mode(const Videomode &m, int ind)
+static string format_mode_short(const Videomode& m)
 {
-	printf("%s%s %6d %4d %4d %4d %4d %d %4d %4d %4d %4d %d  %2d 0x%04x %2d\n",
-	       width(ind, "").c_str(),
-	       m.name[0] == '\0' ? "" : width(11, m.name).c_str(),
-	       m.clock,
-	       m.hdisplay,
-	       m.hsync_start,
-	       m.hsync_end,
-	       m.htotal,
-	       m.hskew,
-	       m.vdisplay,
-	       m.vsync_start,
-	       m.vsync_end,
-	       m.vtotal,
-	       m.vscan,
-	       m.vrefresh,
-	       m.flags,
-	       m.type);
+	string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
+	string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
+
+	return sformat("%s %d %s %s %u",
+		       m.name.c_str(),
+		       m.clock,
+		       h.c_str(), v.c_str(),
+		       m.vrefresh);
 }
 
-void print_property(uint64_t val, const Property& p, int ind)
+static string format_connector(Connector& c)
 {
-	printf("%s%s (id %d) = %s\n", width(ind, "").c_str(),
-	       p.name().c_str(), p.id(), p.to_str(val).c_str());
+	string str;
+
+	str = sformat("Connector %u (%u) %s",
+		      c.idx(), c.id(), c.fullname().c_str());
+
+	if (c.connected())
+		str += " (connected)";
+
+	return str;
 }
 
-void print_properties(DrmPropObject& o, int ind)
+static string format_encoder(Encoder& e)
 {
-	auto pmap = o.get_prop_map();
-	printf("%sProperties, %u in total:\n", width(ind, "").c_str(),
-	       (unsigned) pmap.size());
+	return sformat("Encoder %u (%u) %s",
+		       e.idx(), e.id(), e.get_encoder_type().c_str());
+}
+
+static string format_crtc(Crtc& c)
+{
+	string str;
+
+	str = sformat("Crtc %u (%u)", c.idx(), c.id());
+
+	if (c.mode_valid())
+		str += " " + format_mode_short(c.mode());
+
+	return str;
+}
+
+static string format_plane(Plane& p)
+{
+	string str;
+
+	str = sformat("Plane %u (%u)", p.idx(), p.id());
+
+	if (p.fb_id())
+		str += sformat(" fb-id: %u", p.fb_id());
+
+	if (p.card().has_atomic()) {
+		str += sformat(" %u,%u %ux%u -> %u,%u %ux%u",
+			       (uint32_t)p.get_prop_value("SRC_X") >> 16,
+			       (uint32_t)p.get_prop_value("SRC_Y") >> 16,
+			       (uint32_t)p.get_prop_value("SRC_W") >> 16,
+			       (uint32_t)p.get_prop_value("SRC_H") >> 16,
+			       (uint32_t)p.get_prop_value("CRTC_X"),
+			       (uint32_t)p.get_prop_value("CRTC_Y"),
+			       (uint32_t)p.get_prop_value("CRTC_W"),
+			       (uint32_t)p.get_prop_value("CRTC_H"));
+	}
+
+	return str;
+}
+
+static string format_fb(Framebuffer& fb)
+{
+	return sformat("FB %u %ux%u",
+		       fb.id(), fb.width(), fb.height());
+}
+
+static string format_property(const Property* prop, uint64_t val)
+{
+	string ret = sformat("%s = ", prop->name().c_str());
+
+	switch (prop->type()) {
+	case PropertyType::Bitmask:
+	{
+		vector<string> v, vall;
+
+		for (auto kvp : prop->get_enums()) {
+			if (val & (1 << kvp.first))
+				v.push_back(kvp.second);
+			vall.push_back(kvp.second);
+		}
+
+		ret += sformat("%s (%s)", join(v, "|").c_str(), join(vall, "|").c_str());
+
+		break;
+	}
+
+	case PropertyType::Blob:
+	{
+		uint32_t blob_id = (uint32_t)val;
+
+		if (blob_id) {
+			Blob blob(prop->card(), blob_id);
+			auto data = blob.data();
+
+			ret += sformat("blob-id %u len %zu", blob_id, data.size());
+		} else {
+			ret += sformat("blob-id %u", blob_id);
+		}
+
+		break;
+	}
+
+	case PropertyType::Enum:
+	{
+		string cur;
+		vector<string> vall;
+
+		for (auto kvp : prop->get_enums()) {
+			if (val == kvp.first)
+				cur = kvp.second;
+			vall.push_back(kvp.second);
+		}
+
+		ret += sformat("%s (%s)", cur.c_str(), join(vall, "|").c_str());
+
+		break;
+	}
+
+	case PropertyType::Object:
+	{
+		ret += sformat("object id %u", (uint32_t)val);
+		break;
+	}
+
+	case PropertyType::Range:
+	{
+		auto values = prop->get_values();
+
+		ret += sformat("%" PRIu64 " [%" PRIu64 " - %" PRIu64 "]",
+			       val, values[0], values[1]);
+
+		break;
+	}
+
+	case PropertyType::SignedRange:
+	{
+		auto values = prop->get_values();
+
+		ret += sformat("%" PRIi64 " [%" PRIi64 " - %" PRIi64 "]",
+			       (int64_t)val, (int64_t)values[0], (int64_t)values[1]);
+
+		break;
+	}
+
+	}
+
+	if (prop->is_pending())
+		ret += " (pending)";
+	if (prop->is_immutable())
+		ret += " (immutable)";
+
+	return ret;
+}
+
+static vector<string> format_props(DrmPropObject* o)
+{
+	vector<string> lines;
+
+	auto pmap = o->get_prop_map();
 	for (auto pp : pmap) {
-		const Property& p = *o.card().get_prop(pp.first);
-		print_property(pp.second, p, ind + 2);
+		const Property* p = o->card().get_prop(pp.first);
+		lines.push_back(format_property(p, pp.second));
+	}
+
+	return lines;
+}
+
+static string format_ob(DrmObject* ob)
+{
+	if (auto o = dynamic_cast<Connector*>(ob))
+		return format_connector(*o);
+	else if (auto o = dynamic_cast<Encoder*>(ob))
+		return format_encoder(*o);
+	else if (auto o = dynamic_cast<Crtc*>(ob))
+		return format_crtc(*o);
+	else if (auto o = dynamic_cast<Plane*>(ob))
+		return format_plane(*o);
+	else if (auto o = dynamic_cast<Framebuffer*>(ob))
+		return format_fb(*o);
+	else
+		EXIT("Unkown DRM Object type\n");
+}
+
+template<class T>
+vector<T> filter(const vector<T>& sequence, function<bool(T)> predicate)
+{
+	vector<T> result;
+
+	for(auto it = sequence.begin(); it != sequence.end(); ++it)
+		if(predicate(*it))
+			result.push_back(*it);
+
+	return result;
+}
+
+struct Entry
+{
+	string title;
+	vector<string> lines;
+	vector<Entry> children;
+};
+
+static Entry& add_entry(vector<Entry>& entries)
+{
+	entries.emplace_back();
+	return entries.back();
+}
+/*
+static bool on_tty()
+{
+	return isatty(STDOUT_FILENO) > 0;
+}
+*/
+enum class TreeGlyphMode {
+	None,
+	ASCII,
+	UTF8,
+};
+
+static TreeGlyphMode s_glyph_mode = TreeGlyphMode::None;
+
+enum class TreeGlyph {
+	Vertical,
+	Branch,
+	Right,
+	Space,
+};
+
+static const map<TreeGlyph, string> glyphs_utf8 = {
+	{ TreeGlyph::Vertical, "│ " },
+	{ TreeGlyph::Branch, "├─" },
+	{ TreeGlyph::Right, "└─" },
+	{ TreeGlyph::Space, "  " },
+
+};
+
+static const map<TreeGlyph, string> glyphs_ascii = {
+	{ TreeGlyph::Vertical, "| " },
+	{ TreeGlyph::Branch, "|-" },
+	{ TreeGlyph::Right, "`-" },
+	{ TreeGlyph::Space, "  " },
+
+};
+
+const char* get_glyph(TreeGlyph glyph)
+{
+	if (s_glyph_mode == TreeGlyphMode::None)
+		return "  ";
+
+	const map<TreeGlyph, string>& glyphs = s_glyph_mode == TreeGlyphMode::UTF8 ? glyphs_utf8 : glyphs_ascii;
+
+	return glyphs.at(glyph).c_str();
+}
+
+static void print_entry(const Entry& e, const string& prefix, bool is_child, bool is_last)
+{
+	string prefix1;
+	string prefix2;
+
+	if (is_child) {
+		prefix1 = prefix + (is_last ? get_glyph(TreeGlyph::Right) : get_glyph(TreeGlyph::Branch));
+		prefix2 = prefix + (is_last ? get_glyph(TreeGlyph::Space) : get_glyph(TreeGlyph::Vertical));
+	}
+
+	printf("%s%s\n", prefix1.c_str(), e.title.c_str());
+
+	bool has_children = e.children.size() > 0;
+
+	string data_prefix = prefix2 + (has_children ? get_glyph(TreeGlyph::Vertical) : get_glyph(TreeGlyph::Space));
+
+	for (const string& str : e.lines) {
+		string p = data_prefix + get_glyph(TreeGlyph::Space);
+		printf("%s%s\n", p.c_str(), str.c_str());
+	}
+
+	for (const Entry& child : e.children) {
+		bool is_last = &child == &e.children.back();
+
+		print_entry(child, prefix2, true, is_last);
 	}
 }
 
-void print_plane(Plane& p, int ind)
+static void print_entries(const vector<Entry>& entries, const string& prefix)
 {
-	printf("%sPlane Id %d %d,%d -> %dx%d formats:", width(ind, "").c_str(),
-	       p.id(), p.crtc_x(), p.crtc_y(), p.x(), p.y());
-	for (auto f : p.get_formats())
-		printf(" %s", PixelFormatToFourCC(f).c_str());
-	printf("\n");
-
-	if (opts.print_props)
-		print_properties(p, ind+2);
-}
-
-void print_crtc(Crtc& cc, int ind)
-{
-	printf("%sCRTC Id %d BufferId %d %dx%d at %dx%d gamma_size %d\n",
-	       width(ind, "").c_str(), cc.id(), cc.buffer_id(), cc.width(),
-	       cc.height(), cc.x(), cc.y(), cc.gamma_size());
-
-	printf("%s   Mode ", width(ind, "").c_str());
-	print_mode(cc.mode(), 0);
-
-	if (opts.print_props)
-		print_properties(cc, ind+2);
-
-	if (opts.recurse)
-		for (auto p : cc.get_possible_planes())
-			print_plane(*p, ind + 2);
-}
-
-void print_encoder(Encoder& e, int ind)
-{
-	printf("%sEncoder Id %d type %s\n", width(ind, "").c_str(),
-	       e.id(), e.get_encoder_type().c_str());
-
-	if (opts.print_props)
-		print_properties(e, ind+2);
-
-	if (opts.recurse)
-		for (auto cc : e.get_possible_crtcs())
-			print_crtc(*cc, ind + 2);
-}
-
-void print_connector(Connector& c, int ind)
-{
-	printf("%sConnector %s Id %d %sconnected", width(ind, "").c_str(),
-	       c.fullname().c_str(), c.id(), c.connected() ? "" : "dis");
-	if (c.subpixel() != 0)
-		printf(" Subpixel: %s", c.subpixel_str().c_str());
-	printf("\n");
-
-	if (opts.print_props)
-		print_properties(c, ind+2);
-
-	if (opts.recurse)
-		for (auto enc : c.get_encoders())
-			print_encoder(*enc, ind + 2);
-
-	if (opts.print_modes) {
-		auto modes = c.get_modes();
-		printf("%sModes, %u in total:\n", width(ind + 2, "").c_str(),
-		       (unsigned) modes.size());
-		for (auto mode : modes)
-			print_mode(mode, ind + 3);
+	for (const Entry& e: entries) {
+		print_entry(e, "", false, false);
 	}
 }
 
+template<class T>
+static void append(vector<DrmObject*>& dst, const vector<T*>& src)
+{
+	dst.insert(dst.end(), src.begin(), src.end());
 }
 
-using namespace kmsprint;
+
+static void print_as_list(Card& card)
+{
+	vector<DrmPropObject*> obs;
+	vector<Framebuffer*> fbs;
+
+	for (Connector* conn : card.get_connectors()) {
+		obs.push_back(conn);
+	}
+
+	for (Encoder* enc : card.get_encoders()) {
+		obs.push_back(enc);
+	}
+
+	for (Crtc* crtc : card.get_crtcs()) {
+		obs.push_back(crtc);
+		if (crtc->buffer_id() && !card.has_has_universal_planes()) {
+			Framebuffer* fb = new Framebuffer(card, crtc->buffer_id());
+			fbs.push_back(fb);
+		}
+	}
+
+	for (Plane* plane : card.get_planes()) {
+		obs.push_back(plane);
+		if (plane->fb_id()) {
+			Framebuffer* fb = new Framebuffer(card, plane->fb_id());
+			fbs.push_back(fb);
+		}
+	}
+
+	for (DrmPropObject* ob: obs) {
+		printf("%s\n", format_ob(ob).c_str());
+
+		if (s_opts.print_props) {
+			for (string str : format_props(ob))
+				printf("    %s\n", str.c_str());
+		}
+	}
+
+	for (Framebuffer* fb: fbs) {
+		printf("%s\n", format_ob(fb).c_str());
+	}
+}
+
+static void print_as_tree(Card& card)
+{
+	vector<Entry> entries;
+
+	for (Connector* conn : card.get_connectors()) {
+		if (!conn->connected())
+			continue;
+
+		Entry& e1 = add_entry(entries);
+		e1.title = format_ob(conn);
+		if (s_opts.print_props)
+			e1.lines = format_props(conn);
+
+		for (Encoder* enc : conn->get_encoders()) {
+
+			Entry& e2 = add_entry(e1.children);
+			e2.title = format_ob(enc);
+			if (s_opts.print_props)
+				e2.lines = format_props(enc);
+
+			if (Crtc* crtc = enc->get_crtc()) {
+				Entry& e3 = add_entry(e2.children);
+				e3.title = format_ob(crtc);
+				if (s_opts.print_props)
+					e3.lines = format_props(crtc);
+
+				if (crtc->buffer_id() && !card.has_has_universal_planes()) {
+					Framebuffer fb(card, crtc->buffer_id());
+					Entry& e5 = add_entry(e3.children);
+
+					e5.title = format_ob(&fb);
+				}
+
+				for (Plane* plane : card.get_planes()) {
+					if (plane->crtc_id() != crtc->id())
+						continue;
+
+					Entry& e4 = add_entry(e3.children);
+					e4.title = format_ob(plane);
+					if (s_opts.print_props)
+						e4.lines = format_props(plane);
+
+					uint32_t fb_id = plane->fb_id();
+					if (fb_id) {
+						Framebuffer fb(card, fb_id);
+
+						Entry& e5 = add_entry(e4.children);
+
+						e5.title = format_ob(&fb);
+					}
+				}
+			}
+		}
+	}
+
+	print_entries(entries, "");
+}
+
+static void print_modes(Card& card)
+{
+	for (Connector* conn : card.get_connectors()) {
+		if (!conn->connected())
+			continue;
+
+		printf("%s\n", format_ob(conn).c_str());
+
+		auto modes = conn->get_modes();
+		for (unsigned i = 0; i < modes.size(); ++i)
+			printf("%s\n", format_mode(modes[i], i).c_str());
+	}
+}
 
 static const char* usage_str =
 		"Usage: kmsprint [OPTIONS]\n\n"
 		"Options:\n"
+		"  -l, --list        Print list instead of tree\n"
 		"  -m, --modes       Print modes\n"
+		"      --xmode       Print modes using X modeline\n"
 		"  -p, --props       Print properties\n"
-		"  -r, --recurse     Recursively print all related objects\n"
-		"      --id=<ID>     Print object <ID>\n"
 		;
 
 static void usage()
@@ -146,33 +485,29 @@ static void usage()
 
 int main(int argc, char **argv)
 {
-	string dev_path;
-	unsigned id = 0;
+	string dev_path = "/dev/dri/card0";
 
 	OptionSet optionset = {
-		Option("|device=",
-		[&](string s)
+		Option("|device=", [&dev_path](string s)
 		{
 			dev_path = s;
 		}),
-		Option("|id=",
-		[&](string s)
+		Option("l|list", []()
 		{
-			id = stoul(s);
+			s_opts.print_list = true;
 		}),
-		Option("p", [&](string s)
+		Option("m|modes", []()
 		{
-			opts.print_props = true;
+			s_opts.print_modes = true;
 		}),
-		Option("m", [&](string s)
+		Option("p|props", []()
 		{
-			opts.print_modes = true;
+			s_opts.print_props = true;
 		}),
-		Option("r", [&](string s)
-		{
-			opts.recurse = true;
+		Option("|xmode", []() {
+			s_opts.x_modeline = true;
 		}),
-		Option("h|help", [&]()
+		Option("h|help", []()
 		{
 			usage();
 			exit(-1);
@@ -186,36 +521,15 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
-	Card card;
+	Card card(dev_path);
 
-	/* No options impliles recursion */
-	if (id == 0) {
-		opts.recurse = true;
-		for (auto conn : card.get_connectors())
-			print_connector(*conn, 0);
-		return 0;
-	} else {
-		auto ob = card.get_object(id);
-		if (!ob) {
-			cerr << "kmsprint" << ": Object id " <<
-				id << " not found." << endl;
-			return -1;
-		}
-
-		if (auto co = dynamic_cast<Connector*>(ob))
-			print_connector(*co, 0);
-		else if (auto en = dynamic_cast<Encoder*>(ob))
-			print_encoder(*en, 0);
-		else if (auto cr = dynamic_cast<Crtc*>(ob))
-			print_crtc(*cr, 0);
-		else if (auto pl = dynamic_cast<Plane*>(ob))
-			print_plane(*pl, 0);
-		else {
-			cerr << "kmsprint" << ": Unkown DRM Object type" <<
-				endl;
-			return -1;
-		}
-
+	if (s_opts.print_modes) {
+		print_modes(card);
 		return 0;
 	}
+
+	if (s_opts.print_list)
+		print_as_list(card);
+	else
+		print_as_tree(card);
 }

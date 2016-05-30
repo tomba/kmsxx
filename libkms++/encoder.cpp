@@ -27,6 +27,7 @@ static const map<int, string> encoder_types = {
 	DEF_ENC(TVDAC),
 	DEF_ENC(VIRTUAL),
 	DEF_ENC(DSI),
+	{ 7, "DPMST" },
 #undef DEF_ENC
 };
 

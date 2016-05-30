@@ -62,23 +62,32 @@ void AtomicReq::add(DrmObject* ob, const map<string, uint64_t>& values)
 		add(ob, kvp.first, kvp.second);
 }
 
-int AtomicReq::test()
+int AtomicReq::test(bool allow_modeset)
 {
 	uint32_t flags = DRM_MODE_ATOMIC_TEST_ONLY;
+
+	if (allow_modeset)
+		flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
 
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, 0);
 }
 
-int AtomicReq::commit(void* data)
+int AtomicReq::commit(void* data, bool allow_modeset)
 {
 	uint32_t flags = DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_NONBLOCK;
+
+	if (allow_modeset)
+		flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
 
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, data);
 }
 
-int AtomicReq::commit_sync()
+int AtomicReq::commit_sync(bool allow_modeset)
 {
 	uint32_t flags = 0;
+
+	if (allow_modeset)
+		flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
 
 	return drmModeAtomicCommit(m_card.fd(), m_req, flags, 0);
 }

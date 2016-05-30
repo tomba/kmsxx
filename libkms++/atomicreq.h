@@ -24,9 +24,9 @@ public:
 	void add(DrmObject *ob, const std::string& prop, uint64_t value);
 	void add(DrmObject *ob, const std::map<std::string, uint64_t>& values);
 
-	int test();
-	int commit(void* data);
-	int commit_sync();
+	int test(bool allow_modeset = false);
+	int commit(void* data, bool allow_modeset = false);
+	int commit_sync(bool allow_modeset = false);
 
 private:
 	Card& m_card;

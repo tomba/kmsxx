@@ -6,7 +6,3 @@ Proper error checks and use of exceptions
 Free drmModeConnectorPtr (and similar for other drm objects) after use, instead
 of storing it.
 
-Add double-buffering test app that uses crtc+planes simultaneously.
-
-Add triple buffering support for db.
-

@@ -575,7 +575,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 		       videomode_to_string(o.mode).c_str());
 		if (!o.fbs.empty()) {
 			auto fb = o.fbs[0];
-			printf("    Fb %ux%u-%s\n", fb->width(), fb->height(),
+			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
 			       PixelFormatToFourCC(fb->format()).c_str());
 		}
 
@@ -584,7 +584,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 			auto fb = p.fbs[0];
 			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->id(), p.plane->idx(),
 			       p.x, p.y, p.w, p.h);
-			printf("    Fb %ux%u-%s\n", fb->width(), fb->height(),
+			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
 			       PixelFormatToFourCC(fb->format()).c_str());
 		}
 	}

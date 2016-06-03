@@ -23,6 +23,14 @@ struct Videomode
 	uint32_t type;		// DRM_MODE_TYPE_*
 
 	std::unique_ptr<Blob> to_blob(Card& card) const;
+
+	uint16_t hfp() const { return hsync_start - hdisplay; }
+	uint16_t hsw() const { return hsync_end - hsync_start; }
+	uint16_t hbp() const { return htotal - hsync_end; }
+
+	uint16_t vfp() const { return vsync_start - vdisplay; }
+	uint16_t vsw() const { return vsync_end - vsync_start; }
+	uint16_t vbp() const { return vtotal - vsync_end; }
 };
 
 }

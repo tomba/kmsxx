@@ -165,7 +165,10 @@ Connector* Card::get_first_connected_connector() const
 
 DrmObject* Card::get_object(uint32_t id) const
 {
-	return m_obmap.at(id);
+	auto iter = m_obmap.find(id);
+	if (iter != m_obmap.end())
+		return iter->second;
+	return nullptr;
 }
 
 const vector<DrmObject*> Card::get_objects() const

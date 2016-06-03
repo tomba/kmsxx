@@ -1,5 +1,7 @@
 #pragma once
 
+#include <kms++.h>
+
 #include "color.h"
 #include <cstdio>
 #include <cstdlib>
@@ -13,6 +15,8 @@ void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width);
 void draw_test_pattern(IMappedFramebuffer &fb);
 
 void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color);
+
+Connector* resolve_connector(Card& card, const std::string& str);
 }
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

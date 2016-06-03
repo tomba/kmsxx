@@ -179,11 +179,6 @@ const vector<DrmObject*> Card::get_objects() const
 	return v;
 }
 
-Crtc* Card::get_crtc_by_index(uint32_t idx) const
-{
-	return m_crtcs[idx];
-}
-
 Connector* Card::get_connector(uint32_t id) const { return dynamic_cast<Connector*>(get_object(id)); }
 Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
 Encoder* Card::get_encoder(uint32_t id) const { return dynamic_cast<Encoder*>(get_object(id)); }

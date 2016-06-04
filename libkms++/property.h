@@ -25,8 +25,6 @@ class Property : public DrmObject
 public:
 	const std::string& name() const;
 
-	const std::string to_str(uint64_t val) const;
-
 	bool is_immutable() const;
 	bool is_pending() const;
 

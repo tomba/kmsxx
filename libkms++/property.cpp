@@ -84,44 +84,4 @@ vector<uint32_t> Property::get_blob_ids() const
 	drmModePropertyPtr p = m_priv->drm_prop;
 	return vector<uint32_t>(p->blob_ids, p->blob_ids + p->count_blobs);
 }
-
-const std::string Property::to_str(uint64_t val) const
-{
-	drmModePropertyPtr p = m_priv->drm_prop;
-	string ret;
-
-	if (p->flags & DRM_MODE_PROP_ENUM) {
-		for (int i = 0; i < p->count_enums; i++) {
-			if (p->enums[i].value == val) {
-				ret += string("\"") + p->enums[i].name + "\"";
-				break;
-			}
-		}
-		ret += " (enum: " + to_string(val) + ")";
-	} else if (p->flags & DRM_MODE_PROP_RANGE) {
-		ret += to_string(val);
-		if (p->count_values == 2)
-			ret += " [" + to_string(p->values[0]) + "-" +
-				to_string(p->values[1]) + "]";
-		else
-			ret += " <broken range>";
-	} else if (p->flags & DRM_MODE_PROP_BLOB) {
-		ret += "Blob id: " + to_string(val);
-
-		auto blob = drmModeGetPropertyBlob(card().fd(), (uint32_t) val);
-		if (blob) {
-			ret += " length: " + to_string(blob->length);
-			drmModeFreePropertyBlob(blob);
-		}
-	} else {
-		ret += to_string(val);
-	}
-
-	if (p->flags & DRM_MODE_PROP_PENDING)
-		ret += " (pendig)";
-	if (p->flags & DRM_MODE_PROP_IMMUTABLE)
-		ret += " (immutable)";
-
-	return ret;
-}
 }

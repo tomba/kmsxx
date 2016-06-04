@@ -1,7 +1,6 @@
 
 //#define DRAW_PERF_PRINT
 
-#include <chrono>
 #include <cstring>
 #include <cassert>
 #include <thread>
@@ -9,6 +8,7 @@
 #include <kms++.h>
 #include <kms++util.h>
 #include <cpuframebuffer.h>
+#include "stopwatch.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
@@ -292,18 +292,15 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 void draw_test_pattern(IMappedFramebuffer &fb)
 {
 #ifdef DRAW_PERF_PRINT
-	using namespace std::chrono;
-
-	auto t1 = high_resolution_clock::now();
+	Stopwatch sw;
+	sw.start();
 #endif
 
 	draw_test_pattern_impl(fb);
 
 #ifdef DRAW_PERF_PRINT
-	auto t2 = high_resolution_clock::now();
-	auto time_span = duration_cast<microseconds>(t2 - t1);
-
-	printf("draw took %u us\n", (unsigned)time_span.count());
+	double us = sw.elapsed_us();
+	printf("draw took %u us\n", (unsigned)us);
 #endif
 }
 

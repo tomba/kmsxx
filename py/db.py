@@ -3,6 +3,7 @@
 import sys
 import pykms
 import selectors
+from helpers import *
 
 bar_width = 20
 bar_speed = 8
@@ -42,7 +43,7 @@ class FlipHandler(pykms.PageFlipHandlerBase):
 card = pykms.Card()
 conn = card.get_first_connected_connector()
 mode = conn.get_default_mode()
-crtc = conn.get_current_crtc()
+crtc = get_crtc_for_connector(conn)
 
 fliphandler = FlipHandler()
 

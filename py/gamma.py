@@ -11,8 +11,7 @@ card = pykms.Card()
 
 conn = card.get_first_connected_connector()
 mode = conn.get_default_mode()
-crtc = conn.get_current_crtc()
-mode = conn.get_default_mode()
+crtc = get_crtc_for_connector(conn)
 
 fb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 pykms.draw_test_pattern(fb);

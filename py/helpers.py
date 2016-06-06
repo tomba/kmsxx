@@ -52,3 +52,15 @@ def disable_planes(card):
 
     if areq.commit_sync() != 0:
         print("disabling planes failed")
+
+def get_crtc_for_connector(conn):
+    crtc = conn.get_current_crtc()
+
+    if crtc != None:
+        return crtc
+
+    for crtc in conn.get_possible_crtcs():
+        if crtc.mode_valid == False:
+            return crtc
+
+    raise RuntimeError("No free crtc found")

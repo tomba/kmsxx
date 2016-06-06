@@ -17,7 +17,7 @@ mode = conn.get_default_mode()
 fb = pykms.DumbFramebuffer(card, 200, 200, "XR24");
 pykms.draw_test_pattern(fb);
 
-crtc = conn.get_current_crtc()
+crtc = get_crtc_for_connector(conn)
 
 #crtc.set_mode(conn, fb, mode)
 

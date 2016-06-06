@@ -40,6 +40,7 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("fullname", &Connector::fullname)
 			.def("get_default_mode", &Connector::get_default_mode)
 			.def("get_current_crtc", &Connector::get_current_crtc)
+			.def("get_possible_crtcs", &Connector::get_possible_crtcs)
 			.def("get_modes", &Connector::get_modes)
 			.def("__repr__", [](const Connector& o) { return "<pykms.Connector " + to_string(o.id()) + ">"; })
 			;
@@ -50,6 +51,8 @@ void init_pykmsbase(py::module &m)
 			.def("set_plane", &Crtc::set_plane)
 			.def_property_readonly("possible_planes", &Crtc::get_possible_planes)
 			.def_property_readonly("primary_plane", &Crtc::get_primary_plane)
+			.def_property_readonly("mode", &Crtc::mode)
+			.def_property_readonly("mode_valid", &Crtc::mode_valid)
 			.def("__repr__", [](const Crtc& o) { return "<pykms.Crtc " + to_string(o.id()) + ">"; })
 			;
 

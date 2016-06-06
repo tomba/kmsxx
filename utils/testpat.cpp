@@ -65,36 +65,7 @@ static void get_default_connector(Card& card, OutputInfo& output)
 
 static void parse_connector(Card& card, const string& str, OutputInfo& output)
 {
-	Connector* conn = nullptr;
-
-	auto connectors = card.get_connectors();
-
-	if (str[0] == '@') {
-		char* endptr;
-		unsigned idx = strtoul(str.c_str() + 1, &endptr, 10);
-		if (*endptr == 0) {
-			if (idx >= connectors.size())
-				EXIT("Bad connector number '%u'", idx);
-
-			conn = connectors[idx];
-		}
-	} else {
-		char* endptr;
-		unsigned id = strtoul(str.c_str(), &endptr, 10);
-		if (*endptr == 0) {
-			Connector* c = card.get_connector(id);
-			if (!c)
-				EXIT("Bad connector id '%u'", id);
-
-			conn = c;
-		}
-	}
-
-	if (!conn) {
-		auto iter = find_if(connectors.begin(), connectors.end(), [&str](Connector *c) { return c->fullname() == str; });
-		if (iter != connectors.end())
-			conn = *iter;
-	}
+	Connector* conn = resolve_connector(card, str);
 
 	if (!conn)
 		EXIT("No connector '%s'", str.c_str());
@@ -137,22 +108,22 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 		EXIT("Failed to parse crtc option '%s'", crtc_str.c_str());
 
 	if (sm[2].matched) {
-		bool use_idx = sm[1].length() == 1;
+		bool use_id = sm[1].length() == 1;
 		unsigned num = stoul(sm[2].str());
 
-		if (use_idx) {
+		if (use_id) {
+			Crtc* c = card.get_crtc(num);
+			if (!c)
+				EXIT("Bad crtc id '%u'", num);
+
+			output.crtc = c;
+		} else {
 			auto crtcs = card.get_crtcs();
 
 			if (num >= crtcs.size())
 				EXIT("Bad crtc number '%u'", num);
 
 			output.crtc = crtcs[num];
-		} else {
-			Crtc* c = card.get_crtc(num);
-			if (!c)
-				EXIT("Bad crtc id '%u'", num);
-
-			output.crtc = c;
 		}
 	} else {
 		output.crtc = output.connector->get_current_crtc();
@@ -200,22 +171,22 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 		EXIT("Failed to parse plane option '%s'", plane_str.c_str());
 
 	if (sm[2].matched) {
-		bool use_idx = sm[1].length() == 1;
+		bool use_id = sm[1].length() == 1;
 		unsigned num = stoul(sm[2].str());
 
-		if (use_idx) {
+		if (use_id) {
+			Plane* p = card.get_plane(num);
+			if (!p)
+				EXIT("Bad plane id '%u'", num);
+
+			pinfo.plane = p;
+		} else {
 			auto planes = card.get_planes();
 
 			if (num >= planes.size())
 				EXIT("Bad plane number '%u'", num);
 
 			pinfo.plane = planes[num];
-		} else {
-			Plane* p = card.get_plane(num);
-			if (!p)
-				EXIT("Bad plane id '%u'", num);
-
-			pinfo.plane = p;
 		}
 	} else {
 		for (Plane* p : output.crtc->get_possible_planes()) {
@@ -303,7 +274,7 @@ static const char* usage_str =
 		"      --flip                Do page flipping for each output\n"
 		"      --sync                Synchronize page flipping\n"
 		"\n"
-		"<connector>, <crtc> and <plane> can be given by id (<id>) or index (@<idx>).\n"
+		"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (<id>).\n"
 		"<connector> can also be given by name.\n"
 		"\n"
 		"Options can be given multiple times to set up multiple displays or planes.\n"
@@ -320,7 +291,7 @@ static const char* usage_str =
 		"XR24 framebuffer on a 400x400 plane on the first connected connector in the default mode:\n"
 		"    testpat -p 400x400 -f XR24\n\n"
 		"Test pattern on the second connector with default mode:\n"
-		"    testpat -c @1\n"
+		"    testpat -c 1\n"
 		;
 
 static void usage()

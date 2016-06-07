@@ -4,6 +4,7 @@
 
 #include <kms++.h>
 #include <kms++util.h>
+#include <opts.h>
 
 using namespace std;
 using namespace kms;
@@ -23,20 +24,53 @@ static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* pla
 	ASSERT(r == 0);
 }
 
+static const char* usage_str =
+		"Usage: kmsview [-t <ms>] <file> <width> <height> <fourcc>\n\n"
+		"Options:\n"
+		"  -t, --time        Milliseconds to sleep between frames\n"
+		;
+
+static void usage()
+{
+	puts(usage_str);
+}
+
 int main(int argc, char** argv)
 {
-	if (argc != 5) {
-		printf("Usage: %s <file> <width> <height> <fourcc>\n", argv[0]);
-		return -1;
+	uint32_t time = 0;
+	string dev_path = "/dev/dri/card0";
+
+	OptionSet optionset = {
+		Option("|device=", [&dev_path](string s)
+		{
+			dev_path = s;
+		}),
+		Option("t|time=", [&time](const string& str)
+		{
+			time = stoul(str);
+		}),
+		Option("h|help", []()
+		{
+			usage();
+			exit(-1);
+		}),
+	};
+
+	optionset.parse(argc, argv);
+
+	vector<string> params = optionset.params();
+
+	if (params.size() != 4) {
+		usage();
+		exit(-1);
 	}
 
-	string filename = argv[1];
-	uint32_t w = stoi(argv[2]);
-	uint32_t h = stoi(argv[3]);
-	string modestr = argv[4];
+	string filename = params[0];
+	uint32_t w = stoi(params[1]);
+	uint32_t h = stoi(params[2]);
+	string modestr = params[3];
 
 	auto pixfmt = FourCCToPixelFormat(modestr);
-
 
 	ifstream is(filename, ifstream::binary);
 
@@ -45,7 +79,7 @@ int main(int argc, char** argv)
 	is.seekg(0);
 
 
-	Card card;
+	Card card(dev_path);
 
 	auto conn = card.get_first_connected_connector();
 	auto crtc = conn->get_current_crtc();
@@ -76,16 +110,22 @@ int main(int argc, char** argv)
 	printf("file size %u, frame size %u, frames %u\n", fsize, frame_size, num_frames);
 
 	for (unsigned i = 0; i < num_frames; ++i) {
-		printf("frame %d\n", i);
+		printf("frame %d", i); fflush(stdout);
 		read_frame(is, fb, crtc, plane);
-		usleep(1000*50);
+		if (!time) {
+			getchar();
+		} else {
+			usleep(time * 1000);
+			printf("\n");
+		}
 	}
-
-	printf("press enter to exit\n");
 
 	is.close();
 
-	getchar();
+	if (time) {
+		printf("press enter to exit\n");
+		getchar();
+	}
 
 	delete fb;
 }

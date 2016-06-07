@@ -10,11 +10,15 @@ namespace kms
 {
 class IMappedFramebuffer;
 
+void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color);
+void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2);
+void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
+				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4);
+void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color);
+
 void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width);
 
 void draw_test_pattern(IMappedFramebuffer &fb);
-
-void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color);
 
 Connector* resolve_connector(Card& card, const std::string& str);
 }

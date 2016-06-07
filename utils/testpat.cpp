@@ -721,6 +721,7 @@ private:
 		int new_xpos = get_bar_pos(fb, frame_num);
 
 		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
+		draw_text(*fb, fb->width() / 2, 0, to_string(frame_num), RGB(255, 255, 255));
 	}
 
 	static void do_flip_output(AtomicReq& req, unsigned frame_num, const OutputInfo& o)

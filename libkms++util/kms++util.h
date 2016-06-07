@@ -15,6 +15,7 @@ void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV
 void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
 				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4);
 void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color);
+void draw_text(IMappedFramebuffer& buf, uint32_t x, uint32_t y, const std::string& str, RGB color);
 
 void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width);
 

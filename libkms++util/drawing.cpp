@@ -130,4 +130,25 @@ void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint3
 	}
 }
 
+static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
+{
+#include "font_8x8.h"
+
+	for (uint32_t y = 0; y < 8; y++) {
+		uint8_t bits = fontdata_8x8[8 * c + y];
+
+		for (uint32_t x = 0; x < 8; x++) {
+			bool bit = (bits >> (7 - x)) & 1;
+
+			draw_rgb_pixel(buf, xpos + x, ypos + y, bit ? color : RGB());
+		}
+	}
+}
+
+void draw_text(IMappedFramebuffer& buf, uint32_t x, uint32_t y, const string& str, RGB color)
+{
+	for(unsigned i = 0; i < str.size(); i++)
+		draw_char(buf, (x + 8 * i), y, str[i], color);
+}
+
 }

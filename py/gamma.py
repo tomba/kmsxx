@@ -19,15 +19,16 @@ pykms.draw_test_pattern(fb);
 
 crtc.set_mode(conn, fb, mode)
 
-arr = bytearray(256*2*4)
+len=256
+arr = bytearray(len*2*4)
 view = memoryview(arr).cast("H")
 
-for i in range(256):
-    g = round(255 * pow(i / 255.0, 1 / 2.2))
+for i in range(len):
+    g = round(65535 * pow(i / float(len), 1 / 2.2))
 
-    view[i * 4 + 0] = g << 8
-    view[i * 4 + 1] = g << 8
-    view[i * 4 + 2] = g << 8
+    view[i * 4 + 0] = g
+    view[i * 4 + 1] = g
+    view[i * 4 + 2] = g
     view[i * 4 + 3] = 0
 
 gamma = pykms.Blob(card, arr);

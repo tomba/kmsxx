@@ -115,6 +115,10 @@ static string format_plane(Plane& p)
 			       (uint32_t)p.get_prop_value("CRTC_H"));
 	}
 
+	string fmts = join<PixelFormat>(p.get_formats(), " ", [](PixelFormat fmt) { return PixelFormatToFourCC(fmt); });
+
+	str += sformat(" (%s)", fmts.c_str());
+
 	return str;
 }
 

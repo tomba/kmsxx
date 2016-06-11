@@ -6,9 +6,7 @@
 #include <thread>
 
 #include <kms++/kms++.h>
-#include <kms++util.h>
-#include <cpuframebuffer.h>
-#include "stopwatch.h"
+#include <kms++util/kms++util.h>
 
 using namespace std;
 

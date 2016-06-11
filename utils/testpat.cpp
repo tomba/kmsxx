@@ -8,8 +8,7 @@
 #include <kms++/kms++.h>
 #include <kms++/modedb.h>
 
-#include <kms++util.h>
-#include <opts.h>
+#include <kms++util/kms++util.h>
 
 using namespace std;
 using namespace kms;

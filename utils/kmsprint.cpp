@@ -6,9 +6,7 @@
 #include <inttypes.h>
 
 #include <kms++/kms++.h>
-#include "opts.h"
-#include "kms++util.h"
-#include "strhelpers.h"
+#include <kms++util/kms++util.h>
 
 using namespace std;
 using namespace kms;

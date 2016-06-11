@@ -1,5 +1,4 @@
-#include "kms++util.h"
-#include "strhelpers.h"
+#include <kms++util/kms++util.h>
 
 using namespace std;
 

@@ -1,4 +1,4 @@
-#include "color.h"
+#include <kms++util/color.h>
 
 namespace kms
 {

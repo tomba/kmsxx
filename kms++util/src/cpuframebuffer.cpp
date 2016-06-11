@@ -1,6 +1,6 @@
 #include <map>
 
-#include "cpuframebuffer.h"
+#include <kms++util/cpuframebuffer.h>
 
 using namespace std;
 

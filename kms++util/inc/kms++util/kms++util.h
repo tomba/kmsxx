@@ -2,7 +2,13 @@
 
 #include <kms++/kms++.h>
 
-#include "color.h"
+#include <kms++util/color.h>
+#include <kms++util/strhelpers.h>
+#include <kms++util/cpuframebuffer.h>
+#include <kms++util/extcpuframebuffer.h>
+#include <kms++util/stopwatch.h>
+#include <kms++util/opts.h>
+
 #include <cstdio>
 #include <cstdlib>
 

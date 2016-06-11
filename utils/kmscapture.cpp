@@ -10,8 +10,7 @@
 #include <glob.h>
 
 #include <kms++/kms++.h>
-#include <kms++util.h>
-#include <opts.h>
+#include <kms++util/kms++util.h>
 
 #define CAMERA_BUF_QUEUE_SIZE	3
 #define MAX_CAMERA		9

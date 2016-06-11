@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "opts.h"
+#include <kms++util/opts.h>
 
 using namespace std;
 

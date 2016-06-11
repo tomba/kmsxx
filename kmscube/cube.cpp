@@ -26,8 +26,7 @@
 /* Based on a egl cube test app originally written by Arvin Schnell */
 
 #include "cube.h"
-#include <opts.h>
-#include <kms++util.h>
+#include <kms++util/kms++util.h>
 
 using namespace std;
 

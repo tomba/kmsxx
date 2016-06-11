@@ -4,3 +4,4 @@
 build
 *.txt.user
 *.patch
+py/__pycache__

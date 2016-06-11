@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <algorithm>
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 #include "opts.h"
 

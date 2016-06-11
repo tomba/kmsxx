@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 
 #include "color.h"
 #include <cstdio>

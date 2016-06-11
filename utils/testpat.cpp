@@ -5,8 +5,8 @@
 #include <set>
 #include <chrono>
 
-#include <kms++.h>
-#include <modedb.h>
+#include <kms++/kms++.h>
+#include <kms++/modedb.h>
 
 #include <kms++util.h>
 #include <opts.h>

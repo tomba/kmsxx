@@ -1,7 +1,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "videomode.h"
+#include <kms++/kms++.h>
 #include "helpers.h"
 
 using namespace std;

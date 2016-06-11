@@ -5,7 +5,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "kms++.h"
+#include <kms++/kms++.h>
 
 using namespace std;
 

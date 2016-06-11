@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-#include "kms++.h"
+#include <kms++/kms++.h>
 #include "opts.h"
 #include "kms++util.h"
 #include "strhelpers.h"

@@ -9,7 +9,7 @@
 #include <xf86drmMode.h>
 #include <gbm.h>
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 #include "cube-egl.h"
 #include "cube-gles2.h"

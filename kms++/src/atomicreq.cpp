@@ -4,9 +4,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "atomicreq.h"
-#include "property.h"
-#include "card.h"
+#include <kms++/kms++.h>
 
 #ifndef DRM_CLIENT_CAP_ATOMIC
 

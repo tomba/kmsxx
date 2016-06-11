@@ -1,5 +1,5 @@
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 
 using namespace std;

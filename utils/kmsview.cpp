@@ -2,7 +2,7 @@
 #include <fstream>
 #include <unistd.h>
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 #include <opts.h>
 

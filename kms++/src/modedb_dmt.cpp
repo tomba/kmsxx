@@ -29,7 +29,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "modedb.h"
+#include <kms++/modedb.h>
 
 #include <xf86drm.h>
 

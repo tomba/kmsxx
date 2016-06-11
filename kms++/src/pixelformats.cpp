@@ -1,6 +1,6 @@
 #include <map>
 
-#include "pixelformats.h"
+#include <kms++/pixelformats.h>
 
 using namespace std;
 

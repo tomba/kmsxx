@@ -1,8 +1,7 @@
 #include <xf86drm.h>
 #include <stdexcept>
 
-#include "modedb.h"
-#include "videomode.h"
+#include <kms++/modedb.h>
 
 using namespace std;
 

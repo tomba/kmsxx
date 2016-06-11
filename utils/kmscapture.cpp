@@ -9,7 +9,7 @@
 #include <xf86drm.h>
 #include <glob.h>
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 #include <opts.h>
 

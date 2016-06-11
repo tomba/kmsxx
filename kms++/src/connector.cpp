@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <cassert>
 
-#include "kms++.h"
+#include <kms++/kms++.h>
 #include "helpers.h"
 
 using namespace std;

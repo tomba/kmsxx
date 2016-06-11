@@ -5,7 +5,7 @@
 #include <cassert>
 #include <thread>
 
-#include <kms++.h>
+#include <kms++/kms++.h>
 #include <kms++util.h>
 #include <cpuframebuffer.h>
 #include "stopwatch.h"

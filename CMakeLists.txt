@@ -11,6 +11,8 @@ ENDIF()
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
+option(BUILD_SHARED_LIBS "Build shared libs" FALSE)
+
 set(LIBKMS_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
 set(LIBKMS_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 

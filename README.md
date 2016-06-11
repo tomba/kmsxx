@@ -54,6 +54,7 @@ You can use the following cmake flags to control the build. Use `-DFLAG=VALUE` t
 Option name           | Values        | Default  | Notes
 --------------------- | ------------- | -------- | --------
 CMAKE_BUILD_TYPE      | Release/Debug | Release  |
+BUILD_SHARED_LIBS     | ON/OFF        | OFF      |
 LIBKMS_ENABLE_PYTHON  | ON/OFF        | ON       |
 LIBKMS_ENABLE_KMSCUBE | ON/OFF        | OFF      |
 

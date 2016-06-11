@@ -18,3 +18,6 @@ target_link_libraries(kmscapture kms++ kms++util ${LIBDRM_LIBRARIES})
 
 add_executable (kmsblank kmsblank.cpp)
 target_link_libraries(kmsblank kms++ kms++util ${LIBDRM_LIBRARIES})
+
+add_executable (wbcap wbcap.cpp)
+target_link_libraries(wbcap kms++ kms++util ${LIBDRM_LIBRARIES})

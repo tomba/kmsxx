@@ -9,6 +9,7 @@ using namespace std;
 
 void init_pykmstest(py::module &m);
 void init_pykmsbase(py::module &m);
+void init_pyvid(py::module &m);
 
 class PyPageFlipHandlerBase : PageFlipHandlerBase
 {
@@ -38,6 +39,8 @@ PYBIND11_PLUGIN(pykms) {
 			;
 
 	init_pykmstest(m);
+
+	init_pyvid(m);
 
 	return m.ptr();
 }

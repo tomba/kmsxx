@@ -1,8 +1,8 @@
-# libkms++ - C++ library for kernel mode setting
+# kms++ - C++ library for kernel mode setting
 
-libkms++ is a C++11 library for kernel mode setting.
+kms++ is a C++11 library for kernel mode setting.
 
-Also included are some simple utilities for KMS and python bindings for libkms++.
+Also included are some simple utilities for KMS and python bindings for kms++.
 
 ## Utilities
 
@@ -55,14 +55,14 @@ Option name           | Values        | Default  | Notes
 --------------------- | ------------- | -------- | --------
 CMAKE_BUILD_TYPE      | Release/Debug | Release  |
 BUILD_SHARED_LIBS     | ON/OFF        | OFF      |
-LIBKMS_ENABLE_PYTHON  | ON/OFF        | ON       |
-LIBKMS_ENABLE_KMSCUBE | ON/OFF        | OFF      |
+KMSXX_ENABLE_PYTHON   | ON/OFF        | ON       |
+KMSXX_ENABLE_KMSCUBE  | ON/OFF        | OFF      |
 
 ## Env variables
 
-You can use the following runtime environmental variables to control the behavior of libkms.
+You can use the following runtime environmental variables to control the behavior of kms++.
 
 Variable                          | Description
 --------------------------------- | -------------
-LIBKMSXX_DISABLE_UNIVERSAL_PLANES | Set to disable the use of universal planes
-LIBKMSXX_DISABLE_ATOMIC           | Set to disable the use of atomic modesetting
+KMSXX_DISABLE_UNIVERSAL_PLANES    | Set to disable the use of universal planes
+KMSXX_DISABLE_ATOMIC              | Set to disable the use of atomic modesetting

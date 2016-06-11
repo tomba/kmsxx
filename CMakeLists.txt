@@ -13,8 +13,8 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
 option(BUILD_SHARED_LIBS "Build shared libs" FALSE)
 
-set(LIBKMS_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
-set(LIBKMS_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
+set(KMSXX_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
+set(KMSXX_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wno-unused-parameter")
@@ -50,10 +50,10 @@ add_subdirectory(kms++)
 add_subdirectory(kms++util)
 add_subdirectory(utils)
 
-if(LIBKMS_ENABLE_KMSCUBE)
+if(KMSXX_ENABLE_KMSCUBE)
 	add_subdirectory(kmscube)
 endif()
 
-if(LIBKMS_ENABLE_PYTHON)
+if(KMSXX_ENABLE_PYTHON)
         add_subdirectory(py)
 endif()

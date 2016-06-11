@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -i
 
-# This is a base script for interactive libkms python environment
+# This is a base script for interactive kms++ python environment
 
 import pykms
 from time import sleep

@@ -34,7 +34,7 @@ Card::Card(const std::string& device)
 	r = drmSetMaster(fd);
 	m_master = r == 0;
 
-	if (getenv("LIBKMSXX_DISABLE_UNIVERSAL_PLANES") == 0) {
+	if (getenv("KMSXX_DISABLE_UNIVERSAL_PLANES") == 0) {
 		r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
 		m_has_universal_planes = r == 0;
 	} else {
@@ -42,7 +42,7 @@ Card::Card(const std::string& device)
 	}
 
 #ifdef DRM_CLIENT_CAP_ATOMIC
-	if (getenv("LIBKMSXX_DISABLE_ATOMIC") == 0) {
+	if (getenv("KMSXX_DISABLE_ATOMIC") == 0) {
 		r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_ATOMIC, 1);
 		m_has_atomic = r == 0;
 	} else {

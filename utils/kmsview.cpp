@@ -79,27 +79,14 @@ int main(int argc, char** argv)
 
 
 	Card card(dev_path);
+	ResourceManager res(card);
 
-	auto conn = card.get_first_connected_connector();
-	auto crtc = conn->get_current_crtc();
-
-	auto fb = new DumbFramebuffer(card, w, h, pixfmt);
-
-	Plane* plane = 0;
-
-	for (Plane* p : crtc->get_possible_planes()) {
-		if (p->plane_type() != PlaneType::Overlay)
-			continue;
-
-		if (!p->supports_format(pixfmt))
-			continue;
-
-		plane = p;
-		break;
-	}
-
+	auto conn = res.reserve_connector();
+	auto crtc = res.reserve_crtc(conn);
+	auto plane = res.reserve_overlay_plane(crtc, pixfmt);
 	FAIL_IF(!plane, "available plane not found");
 
+	auto fb = new DumbFramebuffer(card, w, h, pixfmt);
 
 	unsigned frame_size = 0;
 	for (unsigned i = 0; i < fb->num_planes(); ++i)

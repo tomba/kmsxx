@@ -9,15 +9,14 @@ from math import cos
 from helpers import *
 
 card = pykms.Card()
-
-conn = card.get_first_connected_connector()
+res = pykms.ResourceManager(card)
+conn = res.reserve_connector()
+crtc = res.reserve_crtc(conn)
 
 mode = conn.get_default_mode()
 
 fb = pykms.DumbFramebuffer(card, 200, 200, "XR24");
 pykms.draw_test_pattern(fb);
-
-crtc = get_crtc_for_connector(conn)
 
 #crtc.set_mode(conn, fb, mode)
 

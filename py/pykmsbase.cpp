@@ -99,8 +99,22 @@ void init_pykmsbase(py::module &m)
 			;
 
 	py::enum_<PixelFormat>(m, "PixelFormat")
-			.value("XRGB8888", PixelFormat::XRGB8888)
+			.value("Undefined", PixelFormat::Undefined)
+
+			.value("NV12", PixelFormat::NV12)
+			.value("NV21", PixelFormat::NV21)
+
+			.value("UYVY", PixelFormat::UYVY)
 			.value("YUYV", PixelFormat::YUYV)
+			.value("YVYU", PixelFormat::YVYU)
+			.value("VYUY", PixelFormat::VYUY)
+
+			.value("XRGB8888", PixelFormat::XRGB8888)
+			.value("XBGR8888", PixelFormat::XBGR8888)
+			.value("ARGB8888", PixelFormat::ARGB8888)
+			.value("ABGR8888", PixelFormat::ABGR8888)
+
+			.value("RGB565", PixelFormat::RGB565)
 			;
 
 	py::class_<Videomode>(m, "Videomode")

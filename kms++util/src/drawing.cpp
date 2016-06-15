@@ -80,7 +80,7 @@ void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV
 }
 
 void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
-				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
+			    YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
 	ASSERT((x & 1) == 0);
 	ASSERT((y & 1) == 0);
@@ -130,18 +130,68 @@ void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint3
 	}
 }
 
-static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
+static bool get_char_pixel(char c, uint32_t x, uint32_t y)
 {
 #include "font_8x8.h"
 
-	for (uint32_t y = 0; y < 8; y++) {
-		uint8_t bits = fontdata_8x8[8 * c + y];
+	uint8_t bits = fontdata_8x8[8 * c + y];
+	bool bit = (bits >> (7 - x)) & 1;
 
-		for (uint32_t x = 0; x < 8; x++) {
-			bool bit = (bits >> (7 - x)) & 1;
+	return bit;
+}
 
-			draw_rgb_pixel(buf, xpos + x, ypos + y, bit ? color : RGB());
+static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
+{
+	unsigned x, y;
+	YUV yuvcolor = color.yuv();
+
+	switch (buf.format()) {
+	case PixelFormat::XRGB8888:
+	case PixelFormat::XBGR8888:
+	case PixelFormat::ARGB8888:
+	case PixelFormat::ABGR8888:
+	case PixelFormat::RGB565:
+		for (y = 0; y < 8; y++) {
+			for (x = 0; x < 8; x++) {
+				bool b = get_char_pixel(c, x, y);
+
+				draw_rgb_pixel(buf, xpos + x, ypos + y, b ? color : RGB());
+			}
 		}
+		break;
+
+	case PixelFormat::UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::YVYU:
+	case PixelFormat::VYUY:
+		for (y = 0; y < 8; y++) {
+			for (x = 0; x < 8; x += 2) {
+				bool b0 = get_char_pixel(c, x, y);
+				bool b1 = get_char_pixel(c, x + 1, y);
+
+				draw_yuv422_macropixel(buf, xpos + x, ypos + y,
+						       b0 ? yuvcolor : YUV(), b1 ? yuvcolor : YUV());
+			}
+		}
+		break;
+
+	case PixelFormat::NV12:
+	case PixelFormat::NV21:
+		for (y = 0; y < 8; y += 2) {
+			for (x = 0; x < 8; x += 2) {
+				bool b00 = get_char_pixel(c, x, y);
+				bool b10 = get_char_pixel(c, x + 1, y);
+				bool b01 = get_char_pixel(c, x, y + 1);
+				bool b11 = get_char_pixel(c, x + 1, y + 1);
+
+				draw_yuv420_macropixel(buf, xpos + x, ypos + y,
+						       b00 ? yuvcolor : YUV(), b10 ? yuvcolor : YUV(),
+						       b01 ? yuvcolor : YUV(), b11 ? yuvcolor : YUV());
+			}
+		}
+		break;
+	default:
+		throw std::invalid_argument("unknown pixelformat");
 	}
 }
 

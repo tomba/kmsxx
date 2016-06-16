@@ -104,6 +104,7 @@ static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, uns
 	case PixelFormat::XBGR8888:
 	case PixelFormat::ARGB8888:
 	case PixelFormat::ABGR8888:
+	case PixelFormat::RGB888:
 	case PixelFormat::RGB565:
 		for (y = start_y; y < end_y; y++) {
 			for (x = 0; x < w; x++) {

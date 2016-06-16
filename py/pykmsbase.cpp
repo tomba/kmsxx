@@ -114,6 +114,8 @@ void init_pykmsbase(py::module &m)
 			.value("ARGB8888", PixelFormat::ARGB8888)
 			.value("ABGR8888", PixelFormat::ABGR8888)
 
+			.value("RGB888", PixelFormat::RGB888)
+
 			.value("RGB565", PixelFormat::RGB565)
 			;
 

@@ -27,6 +27,8 @@ enum class PixelFormat : uint32_t
 	ARGB8888 = MakeFourCC("AR24"),
 	ABGR8888 = MakeFourCC("AB24"),
 
+	RGB888 = MakeFourCC("RG24"),
+
 	RGB565 = MakeFourCC("RG16"),
 };
 

@@ -23,6 +23,14 @@ void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		*p = color.abgr8888();
 		break;
 	}
+	case PixelFormat::RGB888:
+	{
+		uint8_t *p = buf.map(0) + buf.stride(0) * y + x * 3;
+		p[0] = color.r;
+		p[1] = color.g;
+		p[2] = color.b;
+		break;
+	}
 	case PixelFormat::RGB565:
 	{
 		uint16_t *p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
@@ -150,6 +158,7 @@ static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, cha
 	case PixelFormat::XBGR8888:
 	case PixelFormat::ARGB8888:
 	case PixelFormat::ABGR8888:
+	case PixelFormat::RGB888:
 	case PixelFormat::RGB565:
 		for (y = 0; y < 8; y++) {
 			for (x = 0; x < 8; x++) {

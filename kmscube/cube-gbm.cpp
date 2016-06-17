@@ -132,8 +132,13 @@ public:
 		uint32_t height = gbm_bo_get_height(bo);
 		uint32_t stride = gbm_bo_get_stride(bo);
 		uint32_t handle = gbm_bo_get_handle(bo).u32;
+		PixelFormat format = (PixelFormat)gbm_bo_get_format(bo);
 
-		fb = new ExtFramebuffer(card, width, height, 24, 32, stride, handle);
+		uint32_t handles[4] { handle };
+		uint32_t strides[4] { stride };
+		uint32_t offsets[4] { 0 };
+
+		fb = new ExtFramebuffer(card, width, height, format, handles, strides, offsets);
 
 		gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
 

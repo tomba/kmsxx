@@ -31,6 +31,16 @@ Framebuffer::Framebuffer(Card& card, uint32_t id)
 	card.m_framebuffers.push_back(this);
 }
 
+void Framebuffer::flush()
+{
+	drmModeClip clip { };
+	clip.x1 = clip.y1 = 0;
+	clip.x2 = width();
+	clip.y2 = height();
+
+	drmModeDirtyFB(card().fd(), id(), &clip, 1);
+}
+
 Framebuffer::~Framebuffer()
 {
 	auto& fbs = card().m_framebuffers;

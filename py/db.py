@@ -41,9 +41,10 @@ class FlipHandler(pykms.PageFlipHandlerBase):
 
 
 card = pykms.Card()
-conn = card.get_first_connected_connector()
+res = pykms.ResourceManager(card)
+conn = res.reserve_connector()
+crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
-crtc = get_crtc_for_connector(conn)
 
 fliphandler = FlipHandler()
 

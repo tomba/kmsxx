@@ -8,6 +8,7 @@
 #include <kms++util/extcpuframebuffer.h>
 #include <kms++util/stopwatch.h>
 #include <kms++util/opts.h>
+#include <kms++util/resourcemanager.h>
 
 #include <cstdio>
 #include <cstdlib>

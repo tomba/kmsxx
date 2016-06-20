@@ -20,6 +20,24 @@ void init_pykmstest(py::module &m)
 			.def_property_readonly("rgb565", &RGB::rgb565)
 			;
 
+	py::class_<ResourceManager>(m, "ResourceManager")
+			.def(py::init<Card&>())
+			.def("reset", &ResourceManager::reset)
+			.def("reserve_connector", &ResourceManager::reserve_connector,
+			     py::arg("name") = string())
+			.def("reserve_crtc", &ResourceManager::reserve_crtc)
+			.def("reserve_plane", &ResourceManager::reserve_plane,
+			     py::arg("crtc"),
+			     py::arg("type"),
+			     py::arg("format") = PixelFormat::Undefined)
+			.def("reserve_primary_plane", &ResourceManager::reserve_primary_plane,
+			     py::arg("crtc"),
+			     py::arg("format") = PixelFormat::Undefined)
+			.def("reserve_overlay_plane", &ResourceManager::reserve_overlay_plane,
+			     py::arg("crtc"),
+			     py::arg("format") = PixelFormat::Undefined)
+			;
+
 	// Use lambdas to handle IMappedFramebuffer
 	m.def("draw_test_pattern", [](DumbFramebuffer& fb) { draw_test_pattern(fb); } );
 	m.def("draw_color_bar", [](DumbFramebuffer& fb, int old_xpos, int xpos, int width) {

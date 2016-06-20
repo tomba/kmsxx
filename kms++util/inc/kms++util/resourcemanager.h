@@ -1,0 +1,27 @@
+#include <kms++/kms++.h>
+#include <vector>
+#include <string>
+
+namespace kms {
+
+class ResourceManager
+{
+public:
+	ResourceManager(Card& card);
+
+	void reset();
+
+	Connector* reserve_connector(const std::string& name = "");
+	Crtc* reserve_crtc(Connector* conn);
+	Plane* reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format = PixelFormat::Undefined);
+	Plane* reserve_primary_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);
+	Plane* reserve_overlay_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);
+
+private:
+	Card& m_card;
+	std::vector<Connector*> m_reserved_connectors;
+	std::vector<Crtc*> m_reserved_crtcs;
+	std::vector<Plane*> m_reserved_planes;
+};
+
+}

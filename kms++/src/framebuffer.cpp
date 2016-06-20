@@ -23,10 +23,14 @@ Framebuffer::Framebuffer(Card& card, uint32_t id)
 {
 	auto fb = drmModeGetFB(card.fd(), id);
 
-	m_width = fb->width;
-	m_height = fb->height;
+	if (fb) {
+		m_width = fb->width;
+		m_height = fb->height;
 
-	drmModeFreeFB(fb);
+		drmModeFreeFB(fb);
+	} else {
+		m_width = m_height = 0;
+	}
 
 	card.m_framebuffers.push_back(this);
 }

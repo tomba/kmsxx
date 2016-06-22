@@ -6,6 +6,7 @@
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <system_error>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>

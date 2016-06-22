@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
+#include <system_error>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>

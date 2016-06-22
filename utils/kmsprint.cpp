@@ -1,9 +1,9 @@
-#include <cstdio>
 #include <algorithm>
+#include <cinttypes>
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <unistd.h>
-#include <inttypes.h>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>

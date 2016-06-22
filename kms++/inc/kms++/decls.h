@@ -3,17 +3,18 @@
 namespace kms
 {
 class AtomicReq;
+class Blob;
 class Card;
 class Connector;
 class Crtc;
-class Encoder;
-class Framebuffer;
-class DumbFramebuffer;
-class ExtFramebuffer;
 class DrmObject;
+class DrmPropObject;
+class DumbFramebuffer;
+class Encoder;
+class ExtFramebuffer;
+class Framebuffer;
 class PageFlipHandlerBase;
 class Plane;
 class Property;
-class Blob;
 struct Videomode;
 }

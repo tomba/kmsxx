@@ -20,9 +20,9 @@ public:
 	AtomicReq& operator=(const AtomicReq& other) = delete;
 
 	void add(uint32_t ob_id, uint32_t prop_id, uint64_t value);
-	void add(DrmObject *ob, Property *prop, uint64_t value);
-	void add(DrmObject *ob, const std::string& prop, uint64_t value);
-	void add(DrmObject *ob, const std::map<std::string, uint64_t>& values);
+	void add(DrmPropObject *ob, Property *prop, uint64_t value);
+	void add(DrmPropObject *ob, const std::string& prop, uint64_t value);
+	void add(DrmPropObject *ob, const std::map<std::string, uint64_t>& values);
 
 	int test(bool allow_modeset = false);
 	int commit(void* data, bool allow_modeset = false);

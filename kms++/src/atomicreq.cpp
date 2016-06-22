@@ -44,17 +44,17 @@ void AtomicReq::add(uint32_t ob_id, uint32_t prop_id, uint64_t value)
 		throw std::invalid_argument("foo");
 }
 
-void AtomicReq::add(DrmObject *ob, Property *prop, uint64_t value)
+void AtomicReq::add(DrmPropObject* ob, Property *prop, uint64_t value)
 {
 	add(ob->id(), prop->id(), value);
 }
 
-void AtomicReq::add(DrmObject* ob, const string& prop, uint64_t value)
+void AtomicReq::add(kms::DrmPropObject* ob, const string& prop, uint64_t value)
 {
-	add(ob, m_card.get_prop(prop), value);
+	add(ob, ob->get_prop(prop), value);
 }
 
-void AtomicReq::add(DrmObject* ob, const map<string, uint64_t>& values)
+void AtomicReq::add(kms::DrmPropObject* ob, const map<string, uint64_t>& values)
 {
 	for(const auto& kvp : values)
 		add(ob, kvp.first, kvp.second);

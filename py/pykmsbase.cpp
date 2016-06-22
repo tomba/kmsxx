@@ -20,7 +20,6 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("has_atomic", &Card::has_atomic)
 			.def("call_page_flip_handlers", &Card::call_page_flip_handlers)
 			.def("get_prop", (Property* (Card::*)(uint32_t) const)&Card::get_prop)
-			.def("get_prop", (Property* (Card::*)(const string&) const)&Card::get_prop)
 			;
 
 	py::class_<DrmObject, DrmObject*>(m, "DrmObject")

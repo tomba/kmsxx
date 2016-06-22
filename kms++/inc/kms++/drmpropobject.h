@@ -14,6 +14,9 @@ class DrmPropObject : public DrmObject
 	friend class Card;
 public:
 	void refresh_props();
+
+	Property* get_prop(const std::string& name) const;
+
 	uint64_t get_prop_value(uint32_t id) const;
 	uint64_t get_prop_value(const std::string& name) const;
 	std::unique_ptr<Blob> get_prop_value_as_blob(const std::string& name) const;

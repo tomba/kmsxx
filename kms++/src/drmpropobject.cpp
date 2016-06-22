@@ -45,6 +45,18 @@ void DrmPropObject::refresh_props()
 	drmModeFreeObjectProperties(props);
 }
 
+Property* DrmPropObject::get_prop(const string& name) const
+{
+	for (auto pair : m_prop_values) {
+		auto prop = card().get_prop(pair.first);
+
+		if (name == prop->name())
+			return prop;
+	}
+
+	throw invalid_argument(string("property ") + name + " not found");
+}
+
 uint64_t DrmPropObject::get_prop_value(uint32_t id) const
 {
 	return m_prop_values.at(id);
@@ -75,7 +87,7 @@ int DrmPropObject::set_prop_value(uint32_t id, uint64_t value)
 
 int DrmPropObject::set_prop_value(const string &name, uint64_t value)
 {
-	Property* prop = card().get_prop(name);
+	Property* prop = get_prop(name);
 
 	if (prop == nullptr)
 		throw invalid_argument("property not found: " + name);

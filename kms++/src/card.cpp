@@ -143,16 +143,6 @@ void Card::restore_modes()
 		conn->restore_mode();
 }
 
-Property* Card::get_prop(const string& name) const
-{
-	for (auto prop : m_properties) {
-		if (name == prop->name())
-			return prop;
-	}
-
-	throw invalid_argument(string("Card property ") + name + " not found");
-}
-
 Connector* Card::get_first_connected_connector() const
 {
 	for(auto c : m_connectors) {

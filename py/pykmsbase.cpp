@@ -147,7 +147,7 @@ void init_pykmsbase(py::module &m)
 	py::class_<AtomicReq>(m, "AtomicReq")
 			.def(py::init<Card&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
-			.def("add", (void (AtomicReq::*)(DrmObject*, const string&, uint64_t)) &AtomicReq::add)
+			.def("add", (void (AtomicReq::*)(DrmPropObject*, const string&, uint64_t)) &AtomicReq::add)
 			.def("test", &AtomicReq::test, py::arg("allow_modeset") = false)
 			.def("commit", &AtomicReq::commit, py::arg("data"), py::arg("allow_modeset") = false)
 			.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false)

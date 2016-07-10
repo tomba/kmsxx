@@ -47,6 +47,25 @@ $ cmake -DCMAKE_TOOLCHAIN_FILE=<buildrootpath>/output/host/usr/share/buildroot/t
 $ make -j4
 ```
 
+Your environment may provide similar toolchainfile. If not, you can create a toolchainfile of your own, something along these lines:
+
+```
+SET(CMAKE_SYSTEM_NAME Linux)
+
+SET(BROOT "<buildroot>/output/")
+
+# specify the cross compiler
+SET(CMAKE_C_COMPILER   ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-gcc)
+SET(CMAKE_CXX_COMPILER ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-g++)
+
+# where is the target environment
+SET(CMAKE_FIND_ROOT_PATH ${BROOT}/target ${BROOT}/host)
+
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+```
+
 ## Build options
 
 You can use the following cmake flags to control the build. Use `-DFLAG=VALUE` to set them.

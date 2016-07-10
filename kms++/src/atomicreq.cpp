@@ -51,7 +51,7 @@ void AtomicReq::add(DrmPropObject* ob, Property *prop, uint64_t value)
 
 void AtomicReq::add(kms::DrmPropObject* ob, const string& prop, uint64_t value)
 {
-	add(ob, ob->get_prop(prop), value);
+	add(ob, m_card.get_prop(prop), value);
 }
 
 void AtomicReq::add(kms::DrmPropObject* ob, const map<string, uint64_t>& values)

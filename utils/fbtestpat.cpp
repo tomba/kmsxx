@@ -49,6 +49,7 @@ int main(int argc, char** argv)
 	       fix.line_length);
 
 	draw_test_pattern(buf);
+	draw_text(buf, buf.width() / 2, 0, fbdev, RGB(255, 255, 255));
 
 	for (unsigned y = 0; y < var.yres_virtual; ++y)
 		memcpy(ptr + fix.line_length * y, buf.map(0) + buf.stride(0) * y, buf.stride(0));

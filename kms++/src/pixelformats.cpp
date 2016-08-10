@@ -17,8 +17,10 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 	{ PixelFormat::NV21, { 2, { { 8, 1, 1, }, { 8, 2, 2 } }, } },
 	/* RGB16 */
 	{ PixelFormat::RGB565, { 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::BGR565, { 1, { { 16, 1, 1 } }, } },
 	/* RGB24 */
 	{ PixelFormat::RGB888, { 1, { { 24, 1, 1 } }, } },
+	{ PixelFormat::BGR888, { 1, { { 24, 1, 1 } }, } },
 	/* RGB32 */
 	{ PixelFormat::XRGB8888, { 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::XBGR8888, { 1, { { 32, 1, 1 } }, } },

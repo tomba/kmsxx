@@ -116,6 +116,11 @@ void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width)
 		drm_draw_color_bar_rgb565(buf, old_xpos, xpos, width);
 		break;
 
+	case PixelFormat::BGR565:
+		// XXX not right, red and blue are reversed
+		drm_draw_color_bar_rgb565(buf, old_xpos, xpos, width);
+		break;
+
 	case PixelFormat::XRGB8888:
 		drm_draw_color_bar_rgb888(buf, old_xpos, xpos, width);
 		break;

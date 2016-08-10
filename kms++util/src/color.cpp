@@ -34,6 +34,11 @@ uint32_t RGB::rgb888() const
 	return (r << 16) | (g << 8) | (b << 0);
 }
 
+uint32_t RGB::bgr888() const
+{
+	return (b << 16) | (g << 8) | (r << 0);
+}
+
 uint32_t RGB::argb8888() const
 {
 	return (a << 24) | (r << 16) | (g << 8) | (b << 0);
@@ -47,6 +52,11 @@ uint32_t RGB::abgr8888() const
 uint16_t RGB::rgb565() const
 {
 	return ((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3) << 0);
+}
+
+uint16_t RGB::bgr565() const
+{
+	return ((b >> 3) << 11) | ((g >> 2) << 5) | ((r >> 3) << 0);
 }
 
 YUV RGB::yuv() const

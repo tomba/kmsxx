@@ -28,8 +28,10 @@ enum class PixelFormat : uint32_t
 	ABGR8888 = MakeFourCC("AB24"),
 
 	RGB888 = MakeFourCC("RG24"),
+	BGR888 = MakeFourCC("BG24"),
 
 	RGB565 = MakeFourCC("RG16"),
+	BGR565 = MakeFourCC("BG16"),
 };
 
 static inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)

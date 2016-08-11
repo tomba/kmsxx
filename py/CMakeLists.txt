@@ -23,3 +23,6 @@ add_test(NAME pytest COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/functest.py")
 set_property(TEST pytest PROPERTY
         ENVIRONMENT "PYTHONPATH=." "LD_LIBRARY_PATH=."
 )
+
+# XXX Where should pykms.so be installed?
+#install(TARGETS pykms DESTINATION lib)

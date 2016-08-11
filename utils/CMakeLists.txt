@@ -24,3 +24,6 @@ target_link_libraries(wbcap kms++ kms++util ${LIBDRM_LIBRARIES})
 
 add_executable (wbm2m wbm2m.cpp)
 target_link_libraries(wbm2m kms++ kms++util ${LIBDRM_LIBRARIES})
+
+install(TARGETS testpat kmsprint fbtestpat
+    DESTINATION bin)

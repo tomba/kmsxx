@@ -138,10 +138,10 @@ static string format_property(const Property* prop, uint64_t val)
 		for (auto kvp : prop->get_enums()) {
 			if (val & (1 << kvp.first))
 				v.push_back(kvp.second);
-			vall.push_back(kvp.second);
+			vall.push_back(sformat("%s=0x%x", kvp.second.c_str(), 1 << kvp.first));
 		}
 
-		ret += sformat("%s (%s)", join(v, "|").c_str(), join(vall, "|").c_str());
+		ret += sformat("0x%llx (%s) [%s]", val, join(v, "|").c_str(), join(vall, "|").c_str());
 
 		break;
 	}
@@ -170,10 +170,10 @@ static string format_property(const Property* prop, uint64_t val)
 		for (auto kvp : prop->get_enums()) {
 			if (val == kvp.first)
 				cur = kvp.second;
-			vall.push_back(kvp.second);
+			vall.push_back(sformat("%s=%llu", kvp.second.c_str(), kvp.first));
 		}
 
-		ret += sformat("%s (%s)", cur.c_str(), join(vall, "|").c_str());
+		ret += sformat("%llu (%s) [%s]", val, cur.c_str(), join(vall, "|").c_str());
 
 		break;
 	}

@@ -40,7 +40,8 @@ int main(int argc, char** argv)
 
 	FAIL_IF(ptr == MAP_FAILED, "mmap failed");
 
-	ExtCPUFramebuffer buf(var.xres, var.yres_virtual, PixelFormat::XRGB8888, ptr, fix.line_length);
+	ExtCPUFramebuffer buf(var.xres, var.yres, PixelFormat::XRGB8888,
+			      ptr, var.yres_virtual * fix.line_length, fix.line_length, 0);
 
 	printf("%s: res %dx%d, virtual %dx%d, line_len %d\n",
 	       fbdev,

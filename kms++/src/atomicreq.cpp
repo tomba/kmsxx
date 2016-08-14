@@ -60,6 +60,31 @@ void AtomicReq::add(kms::DrmPropObject* ob, const map<string, uint64_t>& values)
 		add(ob, kvp.first, kvp.second);
 }
 
+void AtomicReq::add_display(Connector* conn, Crtc* crtc, Blob* videomode, Plane* primary, Framebuffer* fb)
+{
+	add(conn, {
+		    { "CRTC_ID", crtc->id() },
+	    });
+
+	add(crtc, {
+		    { "ACTIVE", 1 },
+		    { "MODE_ID", videomode->id() },
+	    });
+
+	add(primary, {
+		    { "FB_ID", fb->id() },
+		    { "CRTC_ID", crtc->id() },
+		    { "SRC_X", 0 << 16 },
+		    { "SRC_Y", 0 << 16 },
+		    { "SRC_W", fb->width() << 16 },
+		    { "SRC_H", fb->height() << 16 },
+		    { "CRTC_X", 0 },
+		    { "CRTC_Y", 0 },
+		    { "CRTC_W", fb->width() },
+		    { "CRTC_H", fb->height() },
+	    });
+}
+
 int AtomicReq::test(bool allow_modeset)
 {
 	uint32_t flags = DRM_MODE_ATOMIC_TEST_ONLY;

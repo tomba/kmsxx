@@ -24,6 +24,9 @@ public:
 	void add(DrmPropObject *ob, const std::string& prop, uint64_t value);
 	void add(DrmPropObject *ob, const std::map<std::string, uint64_t>& values);
 
+	void add_display(Connector* conn, Crtc* crtc, Blob* videomode,
+			 Plane* primary, Framebuffer* fb);
+
 	int test(bool allow_modeset = false);
 	int commit(void* data, bool allow_modeset = false);
 	int commit_sync(bool allow_modeset = false);

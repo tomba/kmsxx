@@ -11,6 +11,7 @@ public:
 
 	void reset();
 
+	Card& card() const { return m_card; }
 	Connector* reserve_connector(const std::string& name = "");
 	Crtc* reserve_crtc(Connector* conn);
 	Plane* reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format = PixelFormat::Undefined);

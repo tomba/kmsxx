@@ -42,7 +42,8 @@ namespace kms
 	.name = nm, .clock = (c), \
 	.hdisplay = (hd), .hsync_start = (hss), .hsync_end = (hse), .htotal = (ht), .hskew = (hsk), \
 	.vdisplay = (vd), .vsync_start = (vss), .vsync_end = (vse), .vtotal = (vt), .vscan = (vs), \
-	.vrefresh = DIV_ROUND(c * 1000, ht * vt), .flags = (f), .type = 0
+	.vrefresh = DIV_ROUND(c * 1000, ht * vt) * (((f) & DRM_MODE_FLAG_INTERLACE) ? 2 : 1), \
+	.flags = (f), .type = 0
 
 /*
  * Probably taken from CEA-861 spec.

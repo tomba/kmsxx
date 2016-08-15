@@ -31,6 +31,9 @@ struct Videomode
 	uint16_t vfp() const { return vsync_start - vdisplay; }
 	uint16_t vsw() const { return vsync_end - vsync_start; }
 	uint16_t vbp() const { return vtotal - vsync_end; }
+
+	bool interlace() const;
+	float calculated_vrefresh() const;
 };
 
 }

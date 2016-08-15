@@ -16,4 +16,14 @@ unique_ptr<Blob> Videomode::to_blob(Card& card) const
 	return unique_ptr<Blob>(new Blob(card, &drm_mode, sizeof(drm_mode)));
 }
 
+bool Videomode::interlace() const
+{
+	return flags & DRM_MODE_FLAG_INTERLACE;
+}
+
+float Videomode::calculated_vrefresh() const
+{
+	return (clock * 1000.0) / (htotal * vtotal) * (interlace() ? 2 : 1);
+}
+
 }

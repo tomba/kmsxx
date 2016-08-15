@@ -25,7 +25,7 @@ static string format_mode(const Videomode& m, unsigned idx)
 	str = sformat("  %2u ", idx);
 
 	if (s_opts.x_modeline) {
-		str += sformat("%12s %6d %4u %4u %4u %4u %4u %4u %4u %4u  %2u %#x %#x",
+		str += sformat("%12s %6u %4u %4u %4u %4u %4u %4u %4u %4u  %2u %#x %#x",
 			       m.name.c_str(),
 			       m.clock,
 			       m.hdisplay, m.hsync_start, m.hsync_end, m.htotal,
@@ -37,11 +37,11 @@ static string format_mode(const Videomode& m, unsigned idx)
 		string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
 		string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
 
-		str += sformat("%-12s %6d %-16s %-16s %2u %#10x %#6x",
+		str += sformat("%-12s %7.3f %-16s %-16s %2u (%.2f) %#10x %#6x",
 			       m.name.c_str(),
-			       m.clock,
+			       m.clock / 1000.0,
 			       h.c_str(), v.c_str(),
-			       m.vrefresh,
+			       m.vrefresh, m.calculated_vrefresh(),
 			       m.flags,
 			       m.type);
 	}
@@ -54,11 +54,11 @@ static string format_mode_short(const Videomode& m)
 	string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
 	string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
 
-	return sformat("%s %d %s %s %u",
+	return sformat("%s %.3f %s %s %u (%.2f)",
 		       m.name.c_str(),
-		       m.clock,
+		       m.clock / 1000.0,
 		       h.c_str(), v.c_str(),
-		       m.vrefresh);
+		       m.vrefresh, m.calculated_vrefresh());
 }
 
 static string format_connector(Connector& c)

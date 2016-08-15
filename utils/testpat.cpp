@@ -507,29 +507,18 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 	return outputs;
 }
 
-static std::string videomode_to_string(const Videomode& mode)
+static std::string videomode_to_string(const Videomode& m)
 {
-	unsigned hfp = mode.hsync_start - mode.hdisplay;
-	unsigned hsw = mode.hsync_end - mode.hsync_start;
-	unsigned hbp = mode.htotal - mode.hsync_end;
+	string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
+	string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
 
-	unsigned vfp = mode.vsync_start - mode.vdisplay;
-	unsigned vsw = mode.vsync_end - mode.vsync_start;
-	unsigned vbp = mode.vtotal - mode.vsync_end;
-
-	float hz = (mode.clock * 1000.0) / (mode.htotal * mode.vtotal);
-	if (mode.flags & (1<<4)) // XXX interlace
-		hz *= 2;
-
-	char buf[256];
-
-	sprintf(buf, "%.2f MHz %u/%u/%u/%u %u/%u/%u/%u %uHz (%.2fHz)",
-		mode.clock / 1000.0,
-		mode.hdisplay, hfp, hsw, hbp,
-		mode.vdisplay, vfp, vsw, vbp,
-		mode.vrefresh, hz);
-
-	return std::string(buf);
+	return sformat("%s %.3f %s %s %u (%.2f) %#x %#x",
+		       m.name.c_str(),
+		       m.clock / 1000.0,
+		       h.c_str(), v.c_str(),
+		       m.vrefresh, m.calculated_vrefresh(),
+		       m.flags,
+		       m.type);
 }
 
 static void print_outputs(const vector<OutputInfo>& outputs)
@@ -537,14 +526,12 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 	for (unsigned i = 0; i < outputs.size(); ++i) {
 		const OutputInfo& o = outputs[i];
 
-		printf("Connector %u/@%u: %s\n", o.connector->id(), o.connector->idx(),
+		printf("Connector %u/@%u: %s\n", o.connector->idx(), o.connector->id(),
 		       o.connector->fullname().c_str());
-		printf("  Crtc %u/@%u", o.crtc->id(), o.crtc->idx());
+		printf("  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
 		if (o.primary_plane)
-			printf(" (plane %u/@%u)", o.primary_plane->id(), o.primary_plane->idx());
-		printf(": %ux%u-%u (%s)\n",
-		       o.mode.hdisplay, o.mode.vdisplay, o.mode.vrefresh,
-		       videomode_to_string(o.mode).c_str());
+			printf(" (plane %u/@%u)", o.primary_plane->idx(), o.primary_plane->id());
+		printf(": %s\n", videomode_to_string(o.mode).c_str());
 		if (!o.fbs.empty()) {
 			auto fb = o.fbs[0];
 			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
@@ -554,7 +541,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
 			const PlaneInfo& p = o.planes[j];
 			auto fb = p.fbs[0];
-			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->id(), p.plane->idx(),
+			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->idx(), p.plane->id(),
 			       p.x, p.y, p.w, p.h);
 			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
 			       PixelFormatToFourCC(fb->format()).c_str());

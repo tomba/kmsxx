@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cassert>
+#include <cmath>
 
 #include <kms++/kms++.h>
 #include "helpers.h"
@@ -118,23 +119,23 @@ Videomode Connector::get_mode(const string& mode) const
         throw invalid_argument(mode + ": mode not found");
 }
 
-Videomode Connector::get_mode(unsigned xres, unsigned yres, unsigned refresh, bool ilace) const
+Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool ilace) const
 {
 	auto c = m_priv->drm_connector;
 
 	for (int i = 0; i < c->count_modes; i++) {
-		drmModeModeInfo& m = c->modes[i];
+		Videomode m = drm_mode_to_video_mode(c->modes[i]);
 
 		if (m.hdisplay != xres || m.vdisplay != yres)
 			continue;
 
-		if (refresh && m.vrefresh != refresh)
+		if (ilace != m.interlace())
 			continue;
 
-		if (ilace != !!(m.flags & DRM_MODE_FLAG_INTERLACE))
+		if (vrefresh && std::abs(m.calculated_vrefresh() - vrefresh) >= 0.001)
 			continue;
 
-		return drm_mode_to_video_mode(c->modes[i]);
+		return m;
 	}
 
 	throw invalid_argument("mode not found");

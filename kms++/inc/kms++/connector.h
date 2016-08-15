@@ -17,7 +17,7 @@ public:
 	Videomode get_default_mode() const;
 
 	Videomode get_mode(const std::string& mode) const;
-	Videomode get_mode(unsigned xres, unsigned yres, unsigned refresh, bool ilace) const;
+	Videomode get_mode(unsigned xres, unsigned yres, float vrefresh, bool ilace) const;
 
 	Crtc* get_current_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;

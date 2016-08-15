@@ -42,7 +42,7 @@ void init_pykmsbase(py::module &m)
 			.def("get_possible_crtcs", &Connector::get_possible_crtcs)
 			.def("get_modes", &Connector::get_modes)
 			.def("get_mode", (Videomode (Connector::*)(const string& mode) const)&Connector::get_mode)
-			.def("get_mode", (Videomode (Connector::*)(unsigned xres, unsigned yres, unsigned refresh, bool ilace) const)&Connector::get_mode)
+			.def("get_mode", (Videomode (Connector::*)(unsigned xres, unsigned yres, float refresh, bool ilace) const)&Connector::get_mode)
 			.def("__repr__", [](const Connector& o) { return "<pykms.Connector " + to_string(o.id()) + ">"; })
 			;
 

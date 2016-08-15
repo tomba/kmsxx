@@ -1,5 +1,6 @@
 #include <xf86drm.h>
 #include <stdexcept>
+#include <cmath>
 
 #include <kms++/modedb.h>
 
@@ -8,7 +9,7 @@ using namespace std;
 namespace kms
 {
 
-static const Videomode& find_from_table(const Videomode* modes, uint32_t width, uint32_t height, uint32_t refresh, bool ilace)
+static const Videomode& find_from_table(const Videomode* modes, uint32_t width, uint32_t height, float vrefresh, bool ilace)
 {
 	for (unsigned i = 0; modes[i].clock; ++i) {
 		const Videomode& m = modes[i];
@@ -16,10 +17,10 @@ static const Videomode& find_from_table(const Videomode* modes, uint32_t width, 
 		if (m.hdisplay != width || m.vdisplay != height)
 			continue;
 
-		if (refresh && m.vrefresh != refresh)
+		if (ilace != m.interlace())
 			continue;
 
-		if (ilace != !!(m.flags & DRM_MODE_FLAG_INTERLACE))
+		if (vrefresh && std::abs(m.calculated_vrefresh() - vrefresh) >= 0.001)
 			continue;
 
 		return m;
@@ -28,14 +29,14 @@ static const Videomode& find_from_table(const Videomode* modes, uint32_t width, 
 	throw invalid_argument("mode not found");
 }
 
-const Videomode& find_dmt(uint32_t width, uint32_t height, uint32_t refresh, bool ilace)
+const Videomode& find_dmt(uint32_t width, uint32_t height, float vrefresh, bool ilace)
 {
-	return find_from_table(dmt_modes, width, height, refresh, ilace);
+	return find_from_table(dmt_modes, width, height, vrefresh, ilace);
 }
 
-const Videomode& find_cea(uint32_t width, uint32_t height, uint32_t refresh, bool ilace)
+const Videomode& find_cea(uint32_t width, uint32_t height, float vrefresh, bool ilace)
 {
-	return find_from_table(cea_modes, width, height, refresh, ilace);
+	return find_from_table(cea_modes, width, height, vrefresh, ilace);
 }
 
 }

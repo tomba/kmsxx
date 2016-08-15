@@ -102,7 +102,7 @@ static void get_default_crtc(Card& card, OutputInfo& output)
 static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 {
 	// @12:1920x1200@60
-	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:@(\\d+))?");
+	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:@([\\d\\.]+))?");
 
 	smatch sm;
 	if (!regex_match(crtc_str, sm, mode_re))
@@ -133,7 +133,7 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 	unsigned w = stoul(sm[3]);
 	unsigned h = stoul(sm[4]);
 	bool ilace = sm[5].matched ? true : false;
-	unsigned refresh = sm[6].matched ? stoul(sm[6]) : 0;
+	float refresh = sm[6].matched ? stof(sm[6]) : 0;
 
 	bool found_mode = false;
 

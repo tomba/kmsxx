@@ -26,17 +26,17 @@ void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	case PixelFormat::RGB888:
 	{
 		uint8_t *p = buf.map(0) + buf.stride(0) * y + x * 3;
-		p[0] = color.r;
+		p[0] = color.b;
 		p[1] = color.g;
-		p[2] = color.b;
+		p[2] = color.r;
 		break;
 	}
 	case PixelFormat::BGR888:
 	{
 		uint8_t *p = buf.map(0) + buf.stride(0) * y + x * 3;
-		p[0] = color.b;
+		p[0] = color.r;
 		p[1] = color.g;
-		p[2] = color.r;
+		p[2] = color.b;
 		break;
 	}
 	case PixelFormat::RGB565:

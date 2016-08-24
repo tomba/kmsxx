@@ -262,7 +262,7 @@ static vector<DumbFramebuffer*> parse_fb(Card& card, const string& fb_str, unsig
 }
 
 static const char* usage_str =
-		"Usage: testpat [OPTION]...\n\n"
+		"Usage: kmstest [OPTION]...\n\n"
 		"Show a test pattern on a display or plane\n\n"
 		"Options:\n"
 		"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
@@ -281,18 +281,18 @@ static const char* usage_str =
 		"Options can be given multiple times to set up multiple displays or planes.\n"
 		"Options may apply to previous options, e.g. a plane will be set on a crtc set in\n"
 		"an earlier option.\n"
-		"If you omit parameters, testpat tries to guess what you mean\n"
+		"If you omit parameters, kmstest tries to guess what you mean\n"
 		"\n"
 		"Examples:\n"
 		"\n"
 		"Set eDP-1 mode to 1920x1080@60, show XR24 framebuffer on the crtc, and a 400x400 XB24 plane:\n"
-		"    testpat -c eDP-1 -r 1920x1080@60 -f XR24 -p 400x400 -f XB24\n\n"
+		"    kmstest -c eDP-1 -r 1920x1080@60 -f XR24 -p 400x400 -f XB24\n\n"
 		"XR24 framebuffer on first connected connector in the default mode:\n"
-		"    testpat -f XR24\n\n"
+		"    kmstest -f XR24\n\n"
 		"XR24 framebuffer on a 400x400 plane on the first connected connector in the default mode:\n"
-		"    testpat -p 400x400 -f XR24\n\n"
+		"    kmstest -p 400x400 -f XR24\n\n"
 		"Test pattern on the second connector with default mode:\n"
-		"    testpat -c 1\n"
+		"    kmstest -c 1\n"
 		;
 
 static void usage()

@@ -6,7 +6,7 @@ Also included are some simple utilities for KMS and python bindings for kms++.
 
 ## Utilities
 
-- testpat - set modes and planes and show test pattern on crtcs/planes, and test page flips
+- kmstest - set modes and planes and show test pattern on crtcs/planes, and test page flips
 - kmsprint - print information about DRM objects
 - kmsview - view raw images
 - kmscube - rotating 3D cube on crtcs/planes

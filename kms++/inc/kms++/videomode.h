@@ -9,6 +9,13 @@
 namespace kms
 {
 
+enum class SyncPolarity
+{
+	Undefined,
+	Positive,
+	Negative,
+};
+
 struct Videomode
 {
 	std::string name;
@@ -32,8 +39,18 @@ struct Videomode
 	uint16_t vsw() const { return vsync_end - vsync_start; }
 	uint16_t vbp() const { return vtotal - vsync_end; }
 
-	bool interlace() const;
 	float calculated_vrefresh() const;
+
+	bool interlace() const;
+	SyncPolarity hsync() const;
+	SyncPolarity vsync() const;
+
+	void set_interlace(bool ilace);
+	void set_hsync(SyncPolarity pol);
+	void set_vsync(SyncPolarity pol);
 };
 
+struct Videomode videomode_from_timings(uint32_t clock_khz,
+					uint16_t hact, uint16_t hfp, uint16_t hsw, uint16_t hbp,
+					uint16_t vact, uint16_t vfp, uint16_t vsw, uint16_t vbp);
 }

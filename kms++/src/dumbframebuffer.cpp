@@ -54,7 +54,7 @@ void DumbFramebuffer::Create()
 		creq.bpp = pi.bitspp;
 		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
-			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed") + strerror(errno));
+			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed: ") + strerror(errno));
 
 		plane.handle = creq.handle;
 		plane.stride = creq.pitch;
@@ -110,7 +110,7 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 	mreq.handle = p.handle;
 	int r = drmIoctl(card().fd(), DRM_IOCTL_MODE_MAP_DUMB, &mreq);
 	if (r)
-		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed") + strerror(errno));
+		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed: ") + strerror(errno));
 
 	/* perform actual memory mapping */
 	p.map = (uint8_t *)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,

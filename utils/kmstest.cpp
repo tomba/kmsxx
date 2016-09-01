@@ -101,67 +101,131 @@ static void get_default_crtc(Card& card, OutputInfo& output)
 
 static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 {
-	// @12:1920x1200@60
-	const regex mode_re("(?:(@?)(\\d+):)?"		// @12:
-			    "(?:(\\d+)x(\\d+)(i)?)"	// 1920x1200i
-			    "(?:@([\\d\\.]+))?");	// @60
+	// @12:1920x1200i@60
+	// @12:33000000,800/210/30/16/-,480/22/13/10/-,i
+
+	const regex modename_re("(?:(@?)(\\d+):)?"	// @12:
+				"(?:(\\d+)x(\\d+)(i)?)"	// 1920x1200i
+				"(?:@([\\d\\.]+))?");	// @60
+
+	const regex modeline_re("(?:(@?)(\\d+):)?"			// @12:
+				"(\\d+),"				// 33000000,
+				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-]),"	// 800/210/30/16/-,
+				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-])"	// 480/22/13/10/-
+				"(?:,([i]+))?"				// ,i
+				);
 
 	smatch sm;
-	if (!regex_match(crtc_str, sm, mode_re))
-		EXIT("Failed to parse crtc option '%s'", crtc_str.c_str());
+	if (regex_match(crtc_str, sm, modename_re)) {
+		if (sm[2].matched) {
+			bool use_id = sm[1].length() == 1;
+			unsigned num = stoul(sm[2].str());
 
-	if (sm[2].matched) {
-		bool use_id = sm[1].length() == 1;
-		unsigned num = stoul(sm[2].str());
+			if (use_id) {
+				Crtc* c = card.get_crtc(num);
+				if (!c)
+					EXIT("Bad crtc id '%u'", num);
 
-		if (use_id) {
-			Crtc* c = card.get_crtc(num);
-			if (!c)
-				EXIT("Bad crtc id '%u'", num);
+				output.crtc = c;
+			} else {
+				auto crtcs = card.get_crtcs();
 
-			output.crtc = c;
+				if (num >= crtcs.size())
+					EXIT("Bad crtc number '%u'", num);
+
+				output.crtc = crtcs[num];
+			}
 		} else {
-			auto crtcs = card.get_crtcs();
+			output.crtc = output.connector->get_current_crtc();
+		}
 
-			if (num >= crtcs.size())
-				EXIT("Bad crtc number '%u'", num);
+		unsigned w = stoul(sm[3]);
+		unsigned h = stoul(sm[4]);
+		bool ilace = sm[5].matched ? true : false;
+		float refresh = sm[6].matched ? stof(sm[6]) : 0;
 
-			output.crtc = crtcs[num];
+		bool found_mode = false;
+
+		try {
+			output.mode = output.connector->get_mode(w, h, refresh, ilace);
+			found_mode = true;
+		} catch (exception& e) { }
+
+		if (!found_mode && s_use_dmt) {
+			try {
+				output.mode = find_dmt(w, h, refresh, ilace);
+				found_mode = true;
+				printf("Found mode from DMT\n");
+			} catch (exception& e) { }
+		}
+
+		if (!found_mode && s_use_cea) {
+			try {
+				output.mode = find_cea(w, h, refresh, ilace);
+				found_mode = true;
+				printf("Found mode from CEA\n");
+			} catch (exception& e) { }
+		}
+
+		if (!found_mode)
+			throw invalid_argument("Mode not found");
+	} else if (regex_match(crtc_str, sm, modeline_re)) {
+		if (sm[2].matched) {
+			bool use_id = sm[1].length() == 1;
+			unsigned num = stoul(sm[2].str());
+
+			if (use_id) {
+				Crtc* c = card.get_crtc(num);
+				if (!c)
+					EXIT("Bad crtc id '%u'", num);
+
+				output.crtc = c;
+			} else {
+				auto crtcs = card.get_crtcs();
+
+				if (num >= crtcs.size())
+					EXIT("Bad crtc number '%u'", num);
+
+				output.crtc = crtcs[num];
+			}
+		} else {
+			output.crtc = output.connector->get_current_crtc();
+		}
+
+		unsigned clock = stoul(sm[3]);
+
+		unsigned hact = stoul(sm[4]);
+		unsigned hfp = stoul(sm[5]);
+		unsigned hsw = stoul(sm[6]);
+		unsigned hbp = stoul(sm[7]);
+		bool h_pos_sync = sm[8] == "+" ? true : false;
+
+		unsigned vact = stoul(sm[9]);
+		unsigned vfp = stoul(sm[10]);
+		unsigned vsw = stoul(sm[11]);
+		unsigned vbp = stoul(sm[12]);
+		bool v_pos_sync = sm[13] == "+" ? true : false;
+
+		output.mode = videomode_from_timings(clock / 1000, hact, hfp, hsw, hbp, vact, vfp, vsw, vbp);
+		output.mode.set_hsync(h_pos_sync ? SyncPolarity::Positive : SyncPolarity::Negative);
+		output.mode.set_vsync(v_pos_sync ? SyncPolarity::Positive : SyncPolarity::Negative);
+
+		if (sm[14].matched) {
+			for (int i = 0; i < sm[14].length(); ++i) {
+				char f = string(sm[14])[i];
+
+				switch (f) {
+				case 'i':
+					output.mode.set_interlace(true);
+					break;
+				default:
+					EXIT("Bad mode flag %c", f);
+				}
+			}
 		}
 	} else {
-		output.crtc = output.connector->get_current_crtc();
+		EXIT("Failed to parse crtc option '%s'", crtc_str.c_str());
 	}
-
-	unsigned w = stoul(sm[3]);
-	unsigned h = stoul(sm[4]);
-	bool ilace = sm[5].matched ? true : false;
-	float refresh = sm[6].matched ? stof(sm[6]) : 0;
-
-	bool found_mode = false;
-
-	try {
-		output.mode = output.connector->get_mode(w, h, refresh, ilace);
-		found_mode = true;
-	} catch (exception& e) { }
-
-	if (!found_mode && s_use_dmt) {
-		try {
-			output.mode = find_dmt(w, h, refresh, ilace);
-			found_mode = true;
-			printf("Found mode from DMT\n");
-		} catch (exception& e) { }
-	}
-
-	if (!found_mode && s_use_cea) {
-		try {
-			output.mode = find_cea(w, h, refresh, ilace);
-			found_mode = true;
-			printf("Found mode from CEA\n");
-		} catch (exception& e) { }
-	}
-
-	if (!found_mode)
-		throw invalid_argument("Mode not found");
 }
 
 static void parse_plane(Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)
@@ -274,6 +338,8 @@ static const char* usage_str =
 		"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
 		"  -c, --connector=CONN      CONN is <connector>\n"
 		"  -r, --crtc=CRTC           CRTC is [<crtc>:]<w>x<h>[@<Hz>]\n"
+		"                            or\n"
+		"                            [<crtc>:]<pclk>,<hact>/<hfp>/<hsw>/<hbp>/<hsp>,<vact>/<vfp>/<vsw>/<vbp>/<vsp>[,i]\n"
 		"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"

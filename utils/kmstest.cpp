@@ -102,7 +102,9 @@ static void get_default_crtc(Card& card, OutputInfo& output)
 static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 {
 	// @12:1920x1200@60
-	const regex mode_re("(?:(@?)(\\d+):)?(?:(\\d+)x(\\d+)(i)?)(?:@([\\d\\.]+))?");
+	const regex mode_re("(?:(@?)(\\d+):)?"		// @12:
+			    "(?:(\\d+)x(\\d+)(i)?)"	// 1920x1200i
+			    "(?:@([\\d\\.]+))?");	// @60
 
 	smatch sm;
 	if (!regex_match(crtc_str, sm, mode_re))
@@ -165,7 +167,9 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 static void parse_plane(Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)
 {
 	// 3:400,400-400x400
-	const regex plane_re("(?:(@?)(\\d+):)?(?:(\\d+),(\\d+)-)?(\\d+)x(\\d+)");
+	const regex plane_re("(?:(@?)(\\d+):)?"		// 3:
+			     "(?:(\\d+),(\\d+)-)?"	// 400,400-
+			     "(\\d+)x(\\d+)");		// 400x400
 
 	smatch sm;
 	if (!regex_match(plane_str, sm, plane_re))
@@ -239,7 +243,9 @@ static vector<DumbFramebuffer*> parse_fb(Card& card, const string& fb_str, unsig
 	if (!fb_str.empty()) {
 		// XXX the regexp is not quite correct
 		// 400x400-NV12
-		const regex fb_re("(?:(\\d+)x(\\d+))?(?:-)?(\\w\\w\\w\\w)?");
+		const regex fb_re("(?:(\\d+)x(\\d+))?"		// 400x400
+				  "(?:-)?"			// -
+				  "(\\w\\w\\w\\w)?");		// NV12
 
 		smatch sm;
 		if (!regex_match(fb_str, sm, fb_re))

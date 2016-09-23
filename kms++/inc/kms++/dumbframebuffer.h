@@ -1,11 +1,12 @@
 #pragma once
 
-#include "framebuffer.h"
+#include "mappedframebuffer.h"
 #include "pixelformats.h"
 
 namespace kms
 {
-class DumbFramebuffer : public Framebuffer, public IMappedFramebuffer
+
+class DumbFramebuffer : public MappedFramebuffer
 {
 public:
 	DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const std::string& fourcc);

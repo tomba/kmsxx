@@ -25,7 +25,7 @@ struct PlaneInfo
 	unsigned w;
 	unsigned h;
 
-	vector<DumbFramebuffer*> fbs;
+	vector<MappedFramebuffer*> fbs;
 };
 
 struct OutputInfo
@@ -36,7 +36,7 @@ struct OutputInfo
 	Plane* primary_plane;
 	Videomode mode;
 	bool user_set_crtc;
-	vector<DumbFramebuffer*> fbs;
+	vector<MappedFramebuffer*> fbs;
 
 	vector<PlaneInfo> planes;
 };
@@ -288,9 +288,9 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }
 
-static vector<DumbFramebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
+static vector<MappedFramebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
 {
-	vector<DumbFramebuffer*> v;
+	vector<MappedFramebuffer*> v;
 
 	for (unsigned i = 0; i < s_num_buffers; ++i)
 		v.push_back(new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888));
@@ -298,7 +298,7 @@ static vector<DumbFramebuffer*> get_default_fb(Card& card, unsigned width, unsig
 	return v;
 }
 
-static vector<DumbFramebuffer*> parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
+static vector<MappedFramebuffer*> parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
 {
 	unsigned w = def_w;
 	unsigned h = def_h;
@@ -323,7 +323,7 @@ static vector<DumbFramebuffer*> parse_fb(Card& card, const string& fb_str, unsig
 			format = FourCCToPixelFormat(sm[3]);
 	}
 
-	vector<DumbFramebuffer*> v;
+	vector<MappedFramebuffer*> v;
 
 	for (unsigned i = 0; i < s_num_buffers; ++i)
 		v.push_back(new DumbFramebuffer(card, w, h, format));
@@ -784,12 +784,12 @@ private:
 		queue_next();
 	}
 
-	static unsigned get_bar_pos(DumbFramebuffer* fb, unsigned frame_num)
+	static unsigned get_bar_pos(MappedFramebuffer* fb, unsigned frame_num)
 	{
 		return (frame_num * bar_speed) % (fb->width() - bar_width + 1);
 	}
 
-	static void draw_bar(DumbFramebuffer* fb, unsigned frame_num)
+	static void draw_bar(MappedFramebuffer* fb, unsigned frame_num)
 	{
 		int old_xpos = frame_num < s_num_buffers ? -1 : get_bar_pos(fb, frame_num - s_num_buffers);
 		int new_xpos = get_bar_pos(fb, frame_num);

@@ -15,7 +15,7 @@ class Card
 public:
 	Card();
 	Card(const std::string& device);
-	~Card();
+	virtual ~Card();
 
 	Card(const Card& other) = delete;
 	Card& operator=(const Card& other) = delete;

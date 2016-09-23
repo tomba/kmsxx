@@ -59,6 +59,7 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDRM libdrm>=2.4.64 REQUIRED)
+pkg_check_modules(LIBDRM_OMAP libdrm_omap)
 
 enable_testing()
 

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(kms++)
 
+include(LTO.cmake)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -35,34 +37,13 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 # static link libc
 # set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
-if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG AND NOT DEFINED HAS_LTO_FLAG)
-    CHECK_CXX_COMPILER_FLAG("-flto" HAS_LTO_FLAG)
+check_lto()
 
-    if (HAS_LTO_FLAG)
-        find_program(LTO_AR NAMES "${CMAKE_C_COMPILER}-ar" gcc-ar)
-        find_program(LTO_RANLIB NAMES "${CMAKE_C_COMPILER}-ranlib" gcc-ranlib)
-
-        if (LTO_AR)
-            EXECUTE_PROCESS(COMMAND "${LTO_AR}" --version RESULT_VARIABLE ret OUTPUT_QUIET ERROR_QUIET)
-            if (ret)
-               unset(LTO_AR CACHE)
-            endif()
-        endif()
-
-        if (LTO_RANLIB)
-            EXECUTE_PROCESS(COMMAND "${LTO_RANLIB}" --version RESULT_VARIABLE ret OUTPUT_QUIET ERROR_QUIET)
-            if (ret)
-               unset(LTO_RANLIB CACHE)
-            endif()
-        endif()
-
-        if (LTO_AR AND LTO_RANLIB)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
-            set(CMAKE_AR "${LTO_AR}")
-            set(CMAKE_RANLIB "${LTO_RANLIB}")
-        else()
-            message(STATUS "gcc-ar or gcc-ranlib not found, disabling LTO")
-        endif()
+if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
+    if (LTO_WORKS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+        set(CMAKE_AR "${LTO_AR}")
+        set(CMAKE_RANLIB "${LTO_RANLIB}")
     endif()
 endif()
 

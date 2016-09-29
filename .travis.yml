@@ -1,0 +1,31 @@
+# Ubuntu 14.04 Trusty support
+sudo: required
+dist: trusty
+
+addons:
+    apt:
+        sources:
+            - llvm-toolchain-precise-3.8
+            - ubuntu-toolchain-r-test
+        packages:
+            - clang-3.8
+            - g++-5
+            - gcc-5
+
+install:
+    - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+    - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
+
+# Enable C++ support
+language: cpp
+
+# Compiler selection
+compiler:
+  - gcc
+  - clang
+
+# Build steps
+script:
+  - mkdir build
+  - cd build
+  - cmake .. && make

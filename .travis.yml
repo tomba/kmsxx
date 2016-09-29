@@ -11,6 +11,12 @@ addons:
             - clang-3.8
             - g++-5
             - gcc-5
+            - libegl1-mesa-dev
+            - libgles2-mesa-dev
+            - libwayland-dev
+            - libx11-xcb-dev
+            - libx11-dev
+            - libgbm-dev
 
 install:
     - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
@@ -28,4 +34,4 @@ compiler:
 script:
   - mkdir build
   - cd build
-  - cmake .. && make
+  - cmake -DKMSXX_ENABLE_KMSCUBE=1 -DKMSXX_ENABLE_PYTHON=1 .. && make

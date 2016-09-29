@@ -1,5 +1,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <math.h>
 
 #include <kms++/kms++.h>
 #include "helpers.h"
@@ -18,7 +19,8 @@ unique_ptr<Blob> Videomode::to_blob(Card& card) const
 
 float Videomode::calculated_vrefresh() const
 {
-	return (clock * 1000.0) / (htotal * vtotal) * (interlace() ? 2 : 1);
+	float refresh = (clock * 1000.0) / (htotal * vtotal) * (interlace() ? 2 : 1);
+	return roundf(refresh * 100.0) / 100.0;
 }
 
 bool Videomode::interlace() const

@@ -132,7 +132,24 @@ Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool
 		if (ilace != m.interlace())
 			continue;
 
-		if (vrefresh && std::abs(m.calculated_vrefresh() - vrefresh) >= 0.001)
+		if (vrefresh && vrefresh != m.calculated_vrefresh())
+			continue;
+
+		return m;
+	}
+
+	// If not found, do another round using rounded vrefresh
+
+	for (int i = 0; i < c->count_modes; i++) {
+		Videomode m = drm_mode_to_video_mode(c->modes[i]);
+
+		if (m.hdisplay != xres || m.vdisplay != yres)
+			continue;
+
+		if (ilace != m.interlace())
+			continue;
+
+		if (vrefresh && vrefresh != roundf(m.calculated_vrefresh()))
 			continue;
 
 		return m;

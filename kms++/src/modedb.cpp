@@ -20,7 +20,24 @@ static const Videomode& find_from_table(const Videomode* modes, uint32_t width, 
 		if (ilace != m.interlace())
 			continue;
 
-		if (vrefresh && std::abs(m.calculated_vrefresh() - vrefresh) >= 0.001)
+		if (vrefresh && vrefresh != m.calculated_vrefresh())
+			continue;
+
+		return m;
+	}
+
+	// If not found, do another round using rounded vrefresh
+
+	for (unsigned i = 0; modes[i].clock; ++i) {
+		const Videomode& m = modes[i];
+
+		if (m.hdisplay != width || m.vdisplay != height)
+			continue;
+
+		if (ilace != m.interlace())
+			continue;
+
+		if (vrefresh && vrefresh != roundf(m.calculated_vrefresh()))
 			continue;
 
 		return m;

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tomba/kmsxx.svg?branch=master)](https://travis-ci.org/tomba/kmsxx)
+
 # kms++ - C++ library for kernel mode setting
 
 kms++ is a C++11 library for kernel mode setting.

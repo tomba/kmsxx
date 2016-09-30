@@ -670,20 +670,20 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 		auto conn = o.connector;
 		auto crtc = o.crtc;
 
+		blobs.emplace_back(o.mode.to_blob(card));
+		Blob* mode_blob = blobs.back().get();
+
+		req.add(conn, {
+				{ "CRTC_ID", crtc->id() },
+			});
+
+		req.add(crtc, {
+				{ "ACTIVE", 1 },
+				{ "MODE_ID", mode_blob->id() },
+			});
+
 		if (!o.fbs.empty()) {
 			auto fb = o.fbs[0];
-
-			blobs.emplace_back(o.mode.to_blob(card));
-			Blob* mode_blob = blobs.back().get();
-
-			req.add(conn, {
-					{ "CRTC_ID", crtc->id() },
-				});
-
-			req.add(crtc, {
-					{ "ACTIVE", 1 },
-					{ "MODE_ID", mode_blob->id() },
-				});
 
 			req.add(o.primary_plane, {
 					{ "FB_ID", fb->id() },

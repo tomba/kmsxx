@@ -5,6 +5,18 @@ dist: trusty
 # Enable C++ support
 language: cpp
 
+addons:
+  apt:
+    sources: &sources
+      - ubuntu-toolchain-r-test
+    packages: &packages
+      - libegl1-mesa-dev
+      - libgles2-mesa-dev
+      - libwayland-dev
+      - libx11-xcb-dev
+      - libx11-dev
+      - libgbm-dev
+
 # Need MYCC and MYCXX as travis overwrites CC and CXX
 
 matrix:
@@ -12,29 +24,29 @@ matrix:
     - compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.8', 'libegl1-mesa-dev', 'libgles2-mesa-dev', 'libwayland-dev',  'libx11-xcb-dev',  'libx11-dev',  'libgbm-dev']
+          sources: *sources
+          packages: [*packages, 'g++-4.8']
       env: MYCC=gcc-4.8 MYCXX=g++-4.8
 
     - compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.9', 'libegl1-mesa-dev', 'libgles2-mesa-dev', 'libwayland-dev',  'libx11-xcb-dev',  'libx11-dev',  'libgbm-dev']
+          sources: *sources
+          packages: [*packages, 'g++-4.9']
       env: MYCC=gcc-4.9 MYCXX=g++-4.9
 
     - compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-5', 'libegl1-mesa-dev', 'libgles2-mesa-dev', 'libwayland-dev',  'libx11-xcb-dev',  'libx11-dev',  'libgbm-dev']
+          sources: *sources
+          packages: [*packages, 'g++-5']
       env: MYCC=gcc-5 MYCXX=g++-5
 
     - compiler: clang
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-precise-3.8']
-          packages: ['clang-3.8', 'libegl1-mesa-dev', 'libgles2-mesa-dev', 'libwayland-dev',  'libx11-xcb-dev',  'libx11-dev',  'libgbm-dev']
+          sources: [*sources, 'llvm-toolchain-precise-3.8']
+          packages: [*packages, 'clang-3.8']
       env: MYCC=clang-3.8 MYCXX=clang++-3.8
 
 # Build steps

@@ -54,3 +54,7 @@ script:
   - mkdir build
   - cd build
   - CC=$MYCC CXX=$MYCXX cmake -DKMSXX_ENABLE_KMSCUBE=1 -DKMSXX_ENABLE_PYTHON=1 .. && make
+
+notifications:
+  email:
+    - tomi.valkeinen@iki.fi

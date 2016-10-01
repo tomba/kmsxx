@@ -18,6 +18,7 @@ ENDIF()
 string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
 option(BUILD_SHARED_LIBS "Build shared libs" FALSE)
+option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" FALSE)
 
 set(KMSXX_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
 set(KMSXX_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
@@ -37,6 +38,11 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+if (TREAT_WARNINGS_AS_ERRORS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+endif()
 
 # static link libc
 # set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")

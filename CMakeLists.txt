@@ -32,6 +32,10 @@ if (CMAKE_COMPILER_IS_GNUCC)
     endif()
 endif()
 
+# HACK: cmake always adds "-rdynamic", this removes it
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # static link libc

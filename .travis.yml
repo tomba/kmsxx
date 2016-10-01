@@ -33,7 +33,8 @@ matrix:
         apt:
           sources: *sources
           packages: [*packages, 'g++-4.9']
-      env: MYCC=gcc-4.9 MYCXX=g++-4.9
+      # g++-4.9 gives a warning, disable it
+      env: MYCC=gcc-4.9 MYCXX=g++-4.9 CXXFLAGS=-Wno-maybe-uninitialized
 
     - compiler: gcc
       addons:

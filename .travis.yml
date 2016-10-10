@@ -2,6 +2,12 @@
 sudo: required
 dist: trusty
 
+# Only build test master & travis
+branches:
+  only:
+  - master
+  - travis
+
 # Enable C++ support
 language: cpp
 

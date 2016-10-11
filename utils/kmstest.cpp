@@ -148,38 +148,27 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 		bool ilace = sm[5].matched ? true : false;
 		float refresh = sm[6].matched ? stof(sm[6]) : 0;
 
-		bool found_mode = false;
-
 		if (s_cvt) {
 			output.mode = videomode_from_cvt(w, h, refresh, ilace, s_cvt_v2, s_cvt_vid_opt);
-			found_mode = true;
-		}
-
-		if (!found_mode) {
-			try {
-				output.mode = output.connector->get_mode(w, h, refresh, ilace);
-				found_mode = true;
-			} catch (exception& e) { }
-		}
-
-		if (!found_mode && s_use_dmt) {
+		} else if (s_use_dmt) {
 			try {
 				output.mode = find_dmt(w, h, refresh, ilace);
-				found_mode = true;
-				printf("Found mode from DMT\n");
-			} catch (exception& e) { }
-		}
-
-		if (!found_mode && s_use_cea) {
+			} catch (exception& e) {
+				EXIT("Mode not found from DMT tables\n");
+			}
+		} else if (s_use_cea) {
 			try {
 				output.mode = find_cea(w, h, refresh, ilace);
-				found_mode = true;
-				printf("Found mode from CEA\n");
-			} catch (exception& e) { }
+			} catch (exception& e) {
+				EXIT("Mode not found from CEA tables\n");
+			}
+		} else {
+			try {
+				output.mode = output.connector->get_mode(w, h, refresh, ilace);
+			} catch (exception& e) {
+				EXIT("Mode not found from the connector\n");
+			}
 		}
-
-		if (!found_mode)
-			throw invalid_argument("Mode not found");
 	} else if (regex_match(crtc_str, sm, modeline_re)) {
 		if (sm[2].matched) {
 			bool use_id = sm[1].length() == 1;

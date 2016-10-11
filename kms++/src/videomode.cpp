@@ -19,6 +19,7 @@ unique_ptr<Blob> Videomode::to_blob(Card& card) const
 
 float Videomode::calculated_vrefresh() const
 {
+	// XXX interlace should only halve visible vertical lines, not blanking
 	float refresh = (clock * 1000.0) / (htotal * vtotal) * (interlace() ? 2 : 1);
 	return roundf(refresh * 100.0) / 100.0;
 }

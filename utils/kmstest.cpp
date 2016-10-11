@@ -9,6 +9,7 @@
 
 #include <kms++/kms++.h>
 #include <kms++/modedb.h>
+#include <kms++/mode_cvt.h>
 
 #include <kms++util/kms++util.h>
 
@@ -45,6 +46,9 @@ static bool s_use_cea;
 static unsigned s_num_buffers = 1;
 static bool s_flip_mode;
 static bool s_flip_sync;
+static bool s_cvt;
+static bool s_cvt_v2;
+static bool s_cvt_vid_opt;
 
 static set<Crtc*> s_used_crtcs;
 static set<Plane*> s_used_planes;
@@ -146,10 +150,17 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 
 		bool found_mode = false;
 
-		try {
-			output.mode = output.connector->get_mode(w, h, refresh, ilace);
+		if (s_cvt) {
+			output.mode = videomode_from_cvt(w, h, refresh, ilace, s_cvt_v2, s_cvt_vid_opt);
 			found_mode = true;
-		} catch (exception& e) { }
+		}
+
+		if (!found_mode) {
+			try {
+				output.mode = output.connector->get_mode(w, h, refresh, ilace);
+				found_mode = true;
+			} catch (exception& e) { }
+		}
 
 		if (!found_mode && s_use_dmt) {
 			try {
@@ -344,6 +355,7 @@ static const char* usage_str =
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
+		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
 		"      --flip                Do page flipping for each output\n"
 		"      --sync                Synchronize page flipping\n"
 		"\n"
@@ -431,6 +443,19 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("|sync", []()
 		{
 			s_flip_sync = true;
+		}),
+		Option("|cvt=", [&](string s)
+		{
+			if (s == "v1")
+				s_cvt = true;
+			else if (s == "v2")
+				s_cvt = s_cvt_v2 = true;
+			else if (s == "v2o")
+				s_cvt = s_cvt_v2 = s_cvt_vid_opt = true;
+			else {
+				usage();
+				exit(-1);
+			}
 		}),
 		Option("h|help", [&]()
 		{

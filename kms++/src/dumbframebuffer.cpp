@@ -127,7 +127,7 @@ int DumbFramebuffer::prime_fd(unsigned int plane)
 		return m_planes[plane].prime_fd;
 
 	int r = drmPrimeHandleToFD(card().fd(), m_planes[plane].handle,
-				   DRM_CLOEXEC, &m_planes[plane].prime_fd);
+				   DRM_CLOEXEC | O_RDWR, &m_planes[plane].prime_fd);
 	if (r)
 		throw std::runtime_error("drmPrimeHandleToFD failed");
 

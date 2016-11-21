@@ -32,6 +32,9 @@ struct PlaneInfo
 	unsigned view_h;
 
 	vector<MappedFramebuffer*> fbs;
+
+	unsigned rotation;
+
 };
 
 struct OutputInfo
@@ -233,7 +236,8 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 	// 3:400,400-400x400
 	const regex plane_re("(?:(@?)(\\d+):)?"		// 3:
 			     "(?:(\\d+),(\\d+)-)?"	// 400,400-
-			     "(\\d+)x(\\d+)");		// 400x400
+			     "(\\d+)x(\\d+)"		// 400x400
+			     "(?:@(\\d+))?");
 
 	smatch sm;
 	if (!regex_match(plane_str, sm, plane_re))
@@ -286,6 +290,9 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 		pinfo.y = stoul(sm[4]);
 	else
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
+
+	if (sm[7].matched)
+		pinfo.rotation = stoul(sm[7]);
 }
 
 static vector<MappedFramebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
@@ -584,6 +591,9 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			if (current_plane) {
 				def_w = current_plane->w;
 				def_h = current_plane->h;
+
+				if (current_plane->rotation == 90 || current_plane->rotation == 270)
+					swap(def_w, def_h);
 			} else {
 				def_w = current_output->mode.hdisplay;
 				def_h = current_output->mode.vdisplay;
@@ -788,11 +798,21 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 					{ "CRTC_Y", 0 },
 					{ "CRTC_W", fb->width() },
 					{ "CRTC_H", fb->height() },
+					{ "rotation", 0x1 },
 				});
 		}
 
 		for (const PlaneInfo& p : o.planes) {
 			auto fb = p.fbs[0];
+			uint32_t rot;
+
+			switch (p.rotation) {
+			case 0: rot = 0x1; break;
+			case 90: rot = 0x2; break;
+			case 180: rot = 0x4; break;
+			case 270: rot = 0x8; break;
+			default: throw invalid_argument("bad rot");
+			}
 
 			req.add(p.plane, {
 					{ "FB_ID", fb->id() },
@@ -805,6 +825,7 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 					{ "CRTC_Y", p.y },
 					{ "CRTC_W", p.w },
 					{ "CRTC_H", p.h },
+					{ "rotation", rot },
 				});
 		}
 	}

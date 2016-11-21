@@ -22,15 +22,15 @@ using namespace std;
 namespace kms
 {
 
-OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const string& fourcc)
-	: OmapFramebuffer(card, width, height, FourCCToPixelFormat(fourcc))
+OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const string& fourcc, bool tiled)
+	: OmapFramebuffer(card, width, height, FourCCToPixelFormat(fourcc), tiled)
 {
 }
 
-OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format)
-	: MappedFramebuffer(card, width, height), m_omap_card(card), m_format(format)
+OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, bool tiled)
+	:MappedFramebuffer(card, width, height), m_omap_card(card), m_format(format)
 {
-	Create();
+	Create(tiled);
 }
 
 OmapFramebuffer::~OmapFramebuffer()
@@ -38,8 +38,10 @@ OmapFramebuffer::~OmapFramebuffer()
 	Destroy();
 }
 
-void OmapFramebuffer::Create()
+void OmapFramebuffer::Create(bool tiled)
 {
+	int r;
+
 	const PixelFormatInfo& format_info = get_pixel_format_info(m_format);
 
 	m_num_planes = format_info.num_planes;
@@ -50,13 +52,59 @@ void OmapFramebuffer::Create()
 
 		uint32_t flags = OMAP_BO_SCANOUT | OMAP_BO_WC;
 
-		uint32_t size = width() * height() * pi.bitspp / 8;
+		struct omap_bo* bo;
 
-		struct omap_bo* bo =  omap_bo_new(m_omap_card.dev(), size, flags);
-		if (!bo)
-			throw invalid_argument(string("omap_bo_new failed: ") + strerror(errno));
+		uint32_t stride;
 
-		uint32_t stride = width() * pi.bitspp / 8;
+		if (!tiled) {
+			stride = width() * pi.bitspp / 8;
+
+			uint32_t size = stride * height() / pi.ysub;
+
+			bo = omap_bo_new(m_omap_card.dev(), size, flags);
+			if (!bo)
+				throw invalid_argument(string("omap_bo_new failed: ") + strerror(errno));
+
+			printf("omap_bo_new: %s plane %d, %ux%u, size %u, stride %u\n",
+			       PixelFormatToFourCC(m_format).c_str(), i, width(), height(), omap_bo_size(bo), stride);
+		} else {
+			unsigned bitspermacro;
+
+			switch (m_format) {
+			case PixelFormat::NV12:
+				bitspermacro = i == 0 ? 8 : 16; break;
+			case PixelFormat::YUYV:
+				bitspermacro = 16; break;
+			case PixelFormat::XRGB8888:
+				bitspermacro = 32; break;
+			case PixelFormat::RGB565:
+				bitspermacro = 16; break;
+			default:
+				throw invalid_argument("unimplemented format");
+			}
+
+			switch (bitspermacro) {
+			case 8: flags |= OMAP_BO_TILED_8; break;
+			case 16: flags |= OMAP_BO_TILED_16; break;
+			case 32: flags |= OMAP_BO_TILED_32; break;
+			default:
+				throw invalid_argument("bad bitspermacro");
+			}
+
+			bo = omap_bo_new_tiled(m_omap_card.dev(), width(), height(), flags);
+			if (!bo)
+				throw invalid_argument(string("omap_bo_new_tiled failed: ") + strerror(errno));
+
+			// XXX how does this go...
+			stride = width() * pi.bitspp / 8;
+			if (stride > 4096)
+				stride = 4096 * 2;
+			else
+				stride = 4096;
+
+			printf("omap_bo_new_tiled: %s plane %d, %ux%u, OMAP_BO_TILED_%u, size %u, stride %u\n",
+			       PixelFormatToFourCC(m_format).c_str(), i, width(), height(), bitspermacro, omap_bo_size(bo), stride);
+		}
 
 		plane.omap_bo = bo;
 		plane.handle = omap_bo_handle(bo);
@@ -72,7 +120,7 @@ void OmapFramebuffer::Create()
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
 	uint32_t offsets[4] = { m_planes[0].offset, m_planes[1].offset };
 	uint32_t id;
-	int r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
+	r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
@@ -82,6 +130,7 @@ void OmapFramebuffer::Create()
 
 void OmapFramebuffer::Destroy()
 {
+	/* delete framebuffer */
 	drmModeRmFB(card().fd(), id());
 
 	for (uint i = 0; i < m_num_planes; ++i) {
@@ -126,6 +175,32 @@ int OmapFramebuffer::prime_fd(unsigned int plane)
 	p.prime_fd = fd;
 
 	return fd;
+}
+
+void OmapFramebuffer::prep()
+{
+	//OMAP_GEM_READ = 0x01,
+	//OMAP_GEM_WRITE = 0x02,
+
+	for (uint i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes[i];
+
+		printf("prep %d\n", i);
+		int r = omap_bo_cpu_prep(plane.omap_bo, (omap_gem_op)(OMAP_GEM_WRITE | OMAP_GEM_READ));
+		if (r)
+			throw std::runtime_error("prep failed");
+	}
+}
+
+void OmapFramebuffer::unprep()
+{
+	for (uint i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes[i];
+
+		int r = omap_bo_cpu_fini(plane.omap_bo, (omap_gem_op)(OMAP_GEM_WRITE | OMAP_GEM_READ));
+		if (r)
+			throw std::runtime_error("unprep failed");
+	}
 }
 
 }

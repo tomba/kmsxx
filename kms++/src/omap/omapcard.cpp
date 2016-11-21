@@ -19,6 +19,7 @@ OmapCard::OmapCard(const string& device)
 	: Card(device)
 {
 	m_omap_dev = omap_device_new(fd());
+
 }
 
 OmapCard::~OmapCard()

@@ -294,7 +294,7 @@ static vector<MappedFramebuffer*> get_default_fb(Card& card, unsigned width, uns
 
 	for (unsigned i = 0; i < s_num_buffers; ++i) {
 		auto& omapcard = dynamic_cast<OmapCard&>(card);
-		v.push_back(new OmapFramebuffer(omapcard, width, height, PixelFormat::XRGB8888));
+		v.push_back(new OmapFramebuffer(omapcard, width, height, PixelFormat::XRGB8888, true));
 	}
 
 	return v;
@@ -329,7 +329,7 @@ static vector<MappedFramebuffer*> parse_fb(Card& card, const string& fb_str, uns
 
 	for (unsigned i = 0; i < s_num_buffers; ++i) {
 		auto& omapcard = static_cast<OmapCard&>(card);
-		v.push_back(new OmapFramebuffer(omapcard, w, h, format));
+		v.push_back(new OmapFramebuffer(omapcard, w, h, format, true));
 	}
 
 	return v;

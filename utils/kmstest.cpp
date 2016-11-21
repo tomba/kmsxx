@@ -10,6 +10,7 @@
 #include <kms++/kms++.h>
 #include <kms++/modedb.h>
 #include <kms++/mode_cvt.h>
+#include <kms++/omap/omapkms++.h>
 
 #include <kms++util/kms++util.h>
 
@@ -291,8 +292,10 @@ static vector<MappedFramebuffer*> get_default_fb(Card& card, unsigned width, uns
 {
 	vector<MappedFramebuffer*> v;
 
-	for (unsigned i = 0; i < s_num_buffers; ++i)
-		v.push_back(new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888));
+	for (unsigned i = 0; i < s_num_buffers; ++i) {
+		auto& omapcard = dynamic_cast<OmapCard&>(card);
+		v.push_back(new OmapFramebuffer(omapcard, width, height, PixelFormat::XRGB8888));
+	}
 
 	return v;
 }
@@ -324,8 +327,10 @@ static vector<MappedFramebuffer*> parse_fb(Card& card, const string& fb_str, uns
 
 	vector<MappedFramebuffer*> v;
 
-	for (unsigned i = 0; i < s_num_buffers; ++i)
-		v.push_back(new DumbFramebuffer(card, w, h, format));
+	for (unsigned i = 0; i < s_num_buffers; ++i) {
+		auto& omapcard = static_cast<OmapCard&>(card);
+		v.push_back(new OmapFramebuffer(omapcard, w, h, format));
+	}
 
 	return v;
 }
@@ -1011,7 +1016,7 @@ int main(int argc, char **argv)
 {
 	vector<Arg> output_args = parse_cmdline(argc, argv);
 
-	Card card(s_device_path);
+	OmapCard card(s_device_path);
 
 	if (!card.has_atomic() && s_flip_sync)
 		EXIT("Synchronized flipping requires atomic modesetting");

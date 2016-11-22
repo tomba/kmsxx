@@ -11,6 +11,10 @@ void init_pykmstest(py::module &m);
 void init_pykmsbase(py::module &m);
 void init_pyvid(py::module &m);
 
+#if HAS_LIBDRM_OMAP
+void init_pykmsomap(py::module &m);
+#endif
+
 class PyPageFlipHandlerBase : PageFlipHandlerBase
 {
 public:
@@ -42,5 +46,8 @@ PYBIND11_PLUGIN(pykms) {
 
 	init_pyvid(m);
 
+#if HAS_LIBDRM_OMAP
+	init_pykmsomap(m);
+#endif
 	return m.ptr();
 }

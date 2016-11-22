@@ -10,7 +10,13 @@ endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/ext/pybind11/include)
 
-add_library(pykms SHARED pykms.cpp pykmsbase.cpp pykmsutil.cpp pyvid.cpp)
+set(SRCS pykms.cpp pykmsbase.cpp pykmsutil.cpp pyvid.cpp)
+
+if(LIBDRM_OMAP_FOUND)
+    set(SRCS ${SRCS} pykmsomap.cpp)
+endif()
+
+add_library(pykms SHARED ${SRCS})
 target_link_libraries(pykms kms++ kms++util ${LIBDRM_LIBRARIES})
 
 # Don't add a 'lib' prefix to the shared library

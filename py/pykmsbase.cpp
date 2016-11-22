@@ -87,10 +87,13 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("data", &Blob::data)
 			;
 
-	py::class_<Framebuffer>(m, "Framebuffer",  py::base<DrmObject>())
+	py::class_<Framebuffer>(m, "Framebuffer", py::base<DrmObject>())
 			;
 
-	py::class_<DumbFramebuffer>(m, "DumbFramebuffer",  py::base<Framebuffer>())
+	py::class_<MappedFramebuffer>(m, "MappedFramebuffer", py::base<Framebuffer>())
+			;
+
+	py::class_<DumbFramebuffer>(m, "DumbFramebuffer", py::base<MappedFramebuffer>())
 			.def(py::init<Card&, uint32_t, uint32_t, const string&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),

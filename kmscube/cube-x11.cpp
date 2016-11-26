@@ -41,7 +41,7 @@ static void main_loop(Display* dpy, xcb_connection_t *c, xcb_window_t window, ui
 				handled = true;
 
 				xcb_key_press_event_t *kp = (xcb_key_press_event_t *)event;
-				if (kp->detail == 24) {
+				if (kp->detail == 24 || kp->detail == 9) {
 					printf("Exit due to keypress\n");
 					need_exit = true;
 				}
@@ -128,18 +128,19 @@ void main_x11()
 			   xcb_window_attrib_mask,
 			   xcb_window_attrib_list);
 
-#if 0 // Doesn't work
-	if (s_fullscreen) {
+	if (s_fullscreen)
+	{
+		const char *net_wm_state = "_NET_WM_STATE";
+		const char *net_wm_state_fullscreen = "_NET_WM_STATE_FULLSCREEN";
 
-		xcb_intern_atom_cookie_t cookie = xcb_intern_atom(c, 0, 12, "_NET_WM_STATE");
+		xcb_intern_atom_cookie_t cookie = xcb_intern_atom(c, 0, strlen(net_wm_state), net_wm_state);
 		xcb_intern_atom_reply_t* reply = xcb_intern_atom_reply(c, cookie, 0);
 
-		xcb_intern_atom_cookie_t cookie2 = xcb_intern_atom(c, 0, 24, "_NET_WM_STATE_FULLSCREEN");
+		xcb_intern_atom_cookie_t cookie2 = xcb_intern_atom(c, 0, strlen(net_wm_state_fullscreen), net_wm_state_fullscreen);
 		xcb_intern_atom_reply_t* reply2 = xcb_intern_atom_reply(c, cookie2, 0);
 
 		xcb_change_property(c, XCB_PROP_MODE_REPLACE, window, reply->atom, XCB_ATOM_ATOM , 32, 1, (void*)&reply2->atom);
 	}
-#endif
 
 	xcb_map_window (c, window);
 	xcb_flush (c);

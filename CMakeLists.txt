@@ -23,6 +23,9 @@ option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" FALSE)
 set(KMSXX_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
 set(KMSXX_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra -Wno-unused-parameter")
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -Wno-unused-parameter")
 
@@ -51,6 +54,7 @@ check_lto()
 
 if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
     if (LTO_WORKS)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
         set(CMAKE_AR "${LTO_AR}")
         set(CMAKE_RANLIB "${LTO_RANLIB}")

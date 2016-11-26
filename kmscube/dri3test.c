@@ -13,6 +13,10 @@
 #include <drm_mode.h>
 #include <gbm.h>
 
+#ifdef HAS_LIBDRM_ETNAVIV
+#include <libdrm/etnaviv_drmif.h>
+#endif
+
 #define FAIL(fmt, ...) \
 	do { \
 	fprintf(stderr, "%s:%d: %s:\n" fmt "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \
@@ -35,7 +39,6 @@ struct display
 	xcb_window_t window;
 	xcb_connection_t *connection;
 	xcb_screen_t *screen;
-	struct gbm_device *gbm;
 
 	xcb_special_event_t *special_ev;
 	uint32_t special_ev_stamp;
@@ -44,6 +47,15 @@ struct display
 	struct drawable *drawable;
 
 	uint32_t current_msc;
+
+	int drm_fd;
+
+	union {
+		struct gbm_device *gbm;
+#ifdef HAS_LIBDRM_ETNAVIV
+		struct etna_device *etna_dev;
+#endif
+	};
 };
 
 struct drawable
@@ -65,10 +77,165 @@ struct buffer
 	bool busy;
 
 	xcb_pixmap_t pixmap;
+
+	int dmabuf_fd;
+
+	union {
+		struct gbm_bo *gbm_bo;
+#ifdef HAS_LIBDRM_ETNAVIV
+		struct etna_bo *etna_bo;
+#endif
+	};
 };
 
-// XXX just one display
-static struct display *s_display;
+struct buf_ops
+{
+	void (*create_device)(struct display *display);
+	void (*create_pixmap)(struct buffer *buffer);
+	void (*destroy_pixmap)(struct buffer *buffer);
+};
+
+static const struct buf_ops *s_buf_ops;
+
+#ifdef HAS_LIBDRM_ETNAVIV
+
+static void create_etnaviv_device(struct display *display)
+{
+	display->etna_dev = etna_device_new(display->drm_fd);
+	FAIL_IF(!display->etna_dev, "no etna device");
+}
+
+static void create_etnaviv_pixmap(struct buffer *buffer)
+{
+	struct drawable *drawable = buffer->drawable;
+	struct display *display = drawable->display;
+	struct etna_bo* bo;
+
+	bo = etna_bo_new(display->etna_dev, drawable->width * drawable->height * 4, DRM_ETNA_GEM_CACHE_WC);
+	FAIL_IF(!bo, "bo fail");
+
+	int bo_fd = etna_bo_dmabuf(bo);
+	FAIL_IF(bo_fd < 0, "dmabuf fail");
+
+	uint32_t width = drawable->width;
+	uint32_t height = drawable->height;
+	uint32_t stride = width * 4;
+
+	xcb_pixmap_t pixmap = xcb_generate_id(display->connection);
+	xcb_void_cookie_t pixmap_cookie = xcb_dri3_pixmap_from_buffer_checked(display->connection, pixmap, display->screen->root,
+									      stride * height,
+									      width, height,
+									      stride, 24, 32, bo_fd);
+	xcb_generic_error_t *error;
+	if ((error = xcb_request_check(display->connection, pixmap_cookie))) {
+		FAIL("create pixmap failed");
+	}
+
+	buffer->etna_bo = bo;
+	buffer->dmabuf_fd = bo_fd;
+	buffer->pixmap = pixmap;
+}
+
+static void destroy_etnaviv_pixmap(struct buffer *buffer)
+{
+	xcb_free_pixmap(buffer->drawable->display->connection, buffer->pixmap);
+	close(buffer->dmabuf_fd);
+	etna_bo_del(buffer->etna_bo);
+}
+
+static const struct buf_ops etnaviv_buf_ops = {
+	.create_device = create_etnaviv_device,
+	.create_pixmap = create_etnaviv_pixmap,
+	.destroy_pixmap = destroy_etnaviv_pixmap,
+};
+#endif
+
+static void create_x11_device(struct display *display)
+{
+
+}
+
+static void create_x11_pixmap(struct buffer *buffer)
+{
+	struct drawable *drawable = buffer->drawable;
+	struct display *display = drawable->display;
+	struct xcb_connection_t *c = display->connection;
+
+	uint32_t width = drawable->width;
+	uint32_t height = drawable->height;
+
+	xcb_pixmap_t pixmap = xcb_generate_id(c);
+	xcb_create_pixmap(c, 24, pixmap, display->window, width, height);
+
+	buffer->pixmap = pixmap;
+}
+
+static void destroy_x11_pixmap(struct buffer *buffer)
+{
+	xcb_free_pixmap(buffer->drawable->display->connection, buffer->pixmap);
+}
+
+static const struct buf_ops x11_buf_ops = {
+	.create_device = create_x11_device,
+	.create_pixmap = create_x11_pixmap,
+	.destroy_pixmap = destroy_x11_pixmap,
+};
+
+static void create_gbm_device(struct display *display)
+{
+	display->gbm = gbm_create_device(display->drm_fd);
+}
+
+static void create_gbm_pixmap(struct buffer *buffer)
+{
+	struct drawable *drawable = buffer->drawable;
+	struct display *display = drawable->display;
+	struct xcb_connection_t *c = display->connection;
+	struct gbm_device *gbm = display->gbm;
+
+	uint32_t width = drawable->width;
+	uint32_t height = drawable->height;
+
+	struct gbm_bo *bo = gbm_bo_create(gbm, width, height, GBM_FORMAT_XRGB8888, GBM_BO_USE_RENDERING);
+	FAIL_IF(!bo, "no bo");
+
+	uint32_t stride = gbm_bo_get_stride(bo);
+
+	int bo_fd = gbm_bo_get_fd(bo);
+	FAIL_IF(bo_fd < 0, "bad bo fd %d: %s\n", bo_fd, strerror(errno));
+
+	printf("BO fd %d, %ux%u, stride %u\n", bo_fd, width, height, gbm_bo_get_stride(bo));
+
+	xcb_pixmap_t pixmap = xcb_generate_id(c);
+
+	xcb_void_cookie_t pixmap_cookie = xcb_dri3_pixmap_from_buffer_checked(c, pixmap, display->screen->root,
+									      stride * height,
+									      width, height,
+									      stride, 24, 32, bo_fd);
+	xcb_generic_error_t *error;
+	if ((error = xcb_request_check(c, pixmap_cookie))) {
+		FAIL("create pixmap failed");
+	}
+
+	buffer->dmabuf_fd = bo_fd;
+	buffer->gbm_bo = bo;
+	buffer->pixmap = pixmap;
+}
+
+static void destroy_gbm_pixmap(struct buffer *buffer)
+{
+	xcb_free_pixmap(buffer->drawable->display->connection, buffer->pixmap);
+	close(buffer->dmabuf_fd);
+	gbm_bo_destroy(buffer->gbm_bo);
+}
+
+static const struct buf_ops gbm_buf_ops = {
+	.create_device = create_gbm_device,
+	.create_pixmap = create_gbm_pixmap,
+	.destroy_pixmap = destroy_gbm_pixmap,
+};
+
+
 
 static void check_dri3_ext(xcb_connection_t *c, xcb_screen_t *screen)
 {
@@ -171,43 +338,7 @@ static xcb_window_t create_window(xcb_connection_t *c, xcb_screen_t *screen, uin
 	return window;
 }
 
-static xcb_pixmap_t create_x11_pixmap(xcb_connection_t *c, xcb_screen_t *screen, xcb_window_t window,
-				      uint32_t width, uint32_t height)
-{
-	/* create X11 pixmap */
 
-	xcb_pixmap_t pixmap = xcb_generate_id(c);
-	xcb_create_pixmap(c, 24, pixmap, window, width, height);
-
-	return pixmap;
-}
-
-static xcb_pixmap_t create_dri3_gbm_pixmap(xcb_connection_t *c, xcb_screen_t *screen, xcb_window_t window, struct gbm_device *gbm,
-					   uint32_t width, uint32_t height)
-{
-	/* create DRM DRI3 pixmap */
-
-	struct gbm_bo *bo = gbm_bo_create(gbm, width, height, GBM_FORMAT_XRGB8888, GBM_BO_USE_RENDERING);
-	FAIL_IF(!bo, "no bo");
-
-	xcb_pixmap_t pixmap = xcb_generate_id(c);
-
-	int bo_fd = gbm_bo_get_fd(bo);
-	FAIL_IF(bo_fd < 0, "bad bo fd %d: %s\n", bo_fd, strerror(errno));
-
-	printf("BO fd %d, %ux%u, stride %u\n", bo_fd, width, height, gbm_bo_get_stride(bo));
-
-	xcb_void_cookie_t pixmap_cookie = xcb_dri3_pixmap_from_buffer_checked(c, pixmap, screen->root,
-									      gbm_bo_get_stride(bo) * height,
-									      width, height,
-									      gbm_bo_get_stride(bo), 24, 32, bo_fd);
-	xcb_generic_error_t *error;
-	if ((error = xcb_request_check(c, pixmap_cookie))) {
-		FAIL("create pixmap failed");
-	}
-
-	return pixmap;
-}
 
 static void draw_to_pixmap(xcb_connection_t *c, xcb_screen_t *screen, xcb_pixmap_t pixmap, uint32_t i)
 {
@@ -231,30 +362,20 @@ static void draw_to_pixmap(xcb_connection_t *c, xcb_screen_t *screen, xcb_pixmap
 static struct buffer *create_buffer(struct drawable *drawable, int i)
 {
 	struct display *display = drawable->display;
-	uint32_t width = drawable->width;
-	uint32_t height = drawable->height;
 
 	struct buffer *buffer = calloc(1, sizeof(struct buffer));
 	buffer->drawable = drawable;
 
-	xcb_pixmap_t pixmap;
+	s_buf_ops->create_pixmap(buffer);
 
-	// CREATE X11 PIXMAP
-	//pixmap = create_x11_pixmap(display->connection, display->screen, display->window, width, height);
-
-	// CREATE DRI3 GBM PIXMAP
-	pixmap = create_dri3_gbm_pixmap(display->connection, display->screen, display->window, display->gbm, width, height);
-
-	draw_to_pixmap(display->connection, display->screen, pixmap, i);
-
-	buffer->pixmap = pixmap;
+	draw_to_pixmap(display->connection, display->screen, buffer->pixmap, i);
 
 	return buffer;
 }
 
 static void destroy_buffer(struct buffer *buffer)
 {
-	xcb_free_pixmap(buffer->drawable->display->connection, buffer->pixmap);
+	s_buf_ops->destroy_pixmap(buffer);
 
 	free(buffer);
 }
@@ -277,9 +398,9 @@ static void create_buffers(struct drawable *drawable)
 
 static void present_next(struct drawable *drawable);
 
-static void handle_event(xcb_present_generic_event_t *ge)
+static void handle_event(struct display *display, xcb_present_generic_event_t *ge)
 {
-	struct drawable *drawable = s_display->drawable;
+	struct drawable *drawable = display->drawable;
 
 	switch (ge->evtype) {
 	case XCB_PRESENT_COMPLETE_NOTIFY: {
@@ -345,7 +466,7 @@ static void poll_special_events(struct display *display)
 	xcb_generic_event_t *ev;
 
 	while ((ev = xcb_poll_for_special_event(display->connection, display->special_ev)))
-		handle_event((xcb_present_generic_event_t*)ev);
+		handle_event(display, (xcb_present_generic_event_t*)ev);
 }
 
 static void wait_special_event(struct display *display)
@@ -353,10 +474,10 @@ static void wait_special_event(struct display *display)
 	xcb_generic_event_t *ev;
 
 	ev = xcb_wait_for_special_event(display->connection, display->special_ev);
-	handle_event((xcb_present_generic_event_t*)ev);
+	handle_event(display, (xcb_present_generic_event_t*)ev);
 
 	while ((ev = xcb_poll_for_special_event(display->connection, display->special_ev)))
-		handle_event((xcb_present_generic_event_t*)ev);
+		handle_event(display, (xcb_present_generic_event_t*)ev);
 }
 
 static void get_window_data(xcb_connection_t *c, xcb_window_t window, uint32_t *width, uint32_t *height)
@@ -403,8 +524,6 @@ static struct display *init_display()
 	drmVersion* ver = drmGetVersion(drm_fd);
 	printf("driver %s (%s)\n", ver->name, ver->desc);
 
-	struct gbm_device *gbm = gbm_create_device(drm_fd);
-
 
 	uint32_t width;
 	uint32_t height;
@@ -424,7 +543,9 @@ static struct display *init_display()
 	display->connection = c;
 	display->screen = screen;
 	display->window = window;
-	display->gbm = gbm;
+	display->drm_fd = drm_fd;
+
+	s_buf_ops->create_device(display);
 
 	return display;
 }
@@ -521,7 +642,6 @@ static void present_next(struct drawable *drawable)
 static void main_loop(struct display *display)
 {
 	xcb_connection_t *c = display->connection;
-	xcb_special_event_t *special_ev = display->special_ev;
 	struct drawable *drawable = display->drawable;
 
 	xcb_generic_event_t *e;
@@ -531,7 +651,7 @@ static void main_loop(struct display *display)
 
 		switch (e->response_type & ~0x80) {
 		case XCB_EXPOSE: {
-			xcb_expose_event_t* ee = (xcb_expose_event_t *)e;
+			//xcb_expose_event_t* ee = (xcb_expose_event_t *)e;
 			printf("EXPOSE\n");
 			done = true;
 			break;
@@ -575,11 +695,26 @@ static void main_loop(struct display *display)
 
 int main(int argc, char **argv)
 {
-	if (argc == 2)
-		s_fullscreen = true;
+	s_buf_ops = &gbm_buf_ops;
+
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-f") == 0)
+			s_fullscreen = true;
+		else if (strcmp(argv[i], "gbm") == 0)
+			s_buf_ops = &gbm_buf_ops;
+		else if (strcmp(argv[i], "x11") == 0)
+			s_buf_ops = &x11_buf_ops;
+#ifdef HAS_LIBDRM_ETNAVIV
+		else if (strcmp(argv[i], "etna"))
+			s_buf_ops = &etnaviv_buf_ops;
+#endif
+		else {
+			printf("unknown param %s\n", argv[i]);
+			exit(-1);
+		}
+	}
 
 	struct display *display = init_display();
-	s_display = display;
 
 	/* setup special event queue */
 	display->special_ev = init_special_event_queue(display, &display->special_ev_stamp);
@@ -590,7 +725,6 @@ int main(int argc, char **argv)
 	struct drawable *drawable = display->drawable;
 
 	uint32_t width, height;
-
 	get_window_data(display->connection, display->window, &width, &height);
 
 	drawable->width = width;

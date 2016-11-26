@@ -51,6 +51,7 @@ target_link_libraries(kmscube kms++ kms++util
 add_executable(dri3test dri3test.c)
 target_link_libraries(dri3test
     ${LIBDRM_LIBRARIES}
+    ${LIBDRM_ETNAVIV_LIBRARIES}
     ${GBM_LIBRARIES}
     ${X11_LIBRARIES}
     ${XCB_LIBRARIES}

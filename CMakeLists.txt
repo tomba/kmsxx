@@ -69,6 +69,11 @@ if(LIBDRM_OMAP_FOUND)
     add_definitions(-DHAS_LIBDRM_OMAP)
 endif()
 
+pkg_check_modules(LIBDRM_ETNAVIV libdrm_etnaviv)
+if(LIBDRM_ETNAVIV_FOUND)
+    add_definitions(-DHAS_LIBDRM_ETNAVIV)
+endif()
+
 enable_testing()
 
 add_subdirectory(kms++)

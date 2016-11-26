@@ -7,6 +7,8 @@ pkg_check_modules(XCB xcb REQUIRED)
 pkg_check_modules(X11XCB x11-xcb REQUIRED)
 pkg_check_modules(WL wayland-client REQUIRED)
 pkg_check_modules(WL_EGL wayland-egl REQUIRED)
+pkg_check_modules(XCBDRI3 xcb-dri3 REQUIRED)
+pkg_check_modules(XCBPRESENT xcb-present REQUIRED)
 
 
 include_directories(
@@ -42,4 +44,17 @@ target_link_libraries(kmscube kms++ kms++util
     ${X11XCB_LIBRARIES}
     ${WL_LIBRARIES}
     ${WL_EGL_LIBRARIES}
+    ${XCBDRI3_LIBRARIES}
+    ${XCBPRESENT_LIBRARIES}
+)
+
+add_executable(dri3test dri3test.c)
+target_link_libraries(dri3test
+    ${LIBDRM_LIBRARIES}
+    ${GBM_LIBRARIES}
+    ${X11_LIBRARIES}
+    ${XCB_LIBRARIES}
+    ${X11XCB_LIBRARIES}
+    ${XCBDRI3_LIBRARIES}
+    ${XCBPRESENT_LIBRARIES}
 )

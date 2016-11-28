@@ -30,6 +30,8 @@
 	}
 
 static bool s_fullscreen = false;
+static bool s_no_draw = false;
+static uint32_t s_frame_num;
 
 struct buffer;
 struct drawable;
@@ -235,7 +237,23 @@ static const struct buf_ops gbm_buf_ops = {
 	.destroy_pixmap = destroy_gbm_pixmap,
 };
 
+static void get_x_drawable_data(xcb_connection_t *c, xcb_drawable_t x_drawable, uint32_t *width, uint32_t *height)
+{
+	xcb_get_geometry_cookie_t cookie;
+	xcb_get_geometry_reply_t *reply;
 
+	cookie = xcb_get_geometry(c, x_drawable);
+	reply = xcb_get_geometry_reply(c, cookie, NULL);
+	FAIL_IF(!reply, "failed to get geometry");
+
+	*width = reply->width;
+	*height = reply->height;
+
+	uint32_t depth = reply->depth;
+	FAIL_IF(depth != 24 && depth != 32, "bad depth %d", depth);
+
+	free(reply);
+}
 
 static void check_dri3_ext(xcb_connection_t *c, xcb_screen_t *screen)
 {
@@ -342,21 +360,48 @@ static xcb_window_t create_window(xcb_connection_t *c, xcb_screen_t *screen, uin
 
 static void draw_to_pixmap(xcb_connection_t *c, xcb_screen_t *screen, xcb_pixmap_t pixmap, uint32_t i)
 {
-	xcb_gcontext_t    foreground;
-	uint32_t          mask;
-	uint32_t          values[2];
+	uint32_t width, height;
 
-	foreground = xcb_generate_id (c);
-	mask = XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
-	values[0] = screen->white_pixel;
-	values[1] = 0;
-	xcb_create_gc (c, foreground, screen->root, mask, values);
+	get_x_drawable_data(c, pixmap, &width, &height);
+
+	static xcb_gcontext_t erase_gc = 0;
+
+	if (!erase_gc) {
+		erase_gc = xcb_generate_id (c);
+		uint32_t mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_GRAPHICS_EXPOSURES;
+		uint32_t values[] = {
+			screen->black_pixel,
+			screen->black_pixel,
+			0,
+		};
+		xcb_create_gc (c, erase_gc, screen->root, mask, values);
+	}
+
+	xcb_rectangle_t erase_rectangles[] = {
+		{ (i-3) % (width - 20), 0, 20, height },
+	};
+
+	xcb_poly_fill_rectangle(c, pixmap, erase_gc, 1, erase_rectangles);
+
+
+	static xcb_gcontext_t draw_gc = 0;
+
+	if (!draw_gc) {
+		draw_gc = xcb_generate_id (c);
+		uint32_t mask = XCB_GC_FOREGROUND | XCB_GC_BACKGROUND | XCB_GC_GRAPHICS_EXPOSURES;
+		uint32_t values[] = {
+			screen->white_pixel,
+			screen->white_pixel,
+			0,
+		};
+		xcb_create_gc (c, draw_gc, screen->root, mask, values);
+	}
 
 	xcb_rectangle_t rectangles[] = {
-		{ 10 * i, 50, 40, 20},
-		{ 80 * i, 50, 10, 40}};
+		{ i % (width - 20), 0, 20, height },
+	};
 
-	xcb_poly_rectangle (c, pixmap, foreground, 2, rectangles);
+	xcb_poly_fill_rectangle(c, pixmap, draw_gc, 1, rectangles);
 }
 
 static struct buffer *create_buffer(struct drawable *drawable, int i)
@@ -368,7 +413,8 @@ static struct buffer *create_buffer(struct drawable *drawable, int i)
 
 	s_buf_ops->create_pixmap(buffer);
 
-	draw_to_pixmap(display->connection, display->screen, buffer->pixmap, i);
+	if (s_no_draw)
+		draw_to_pixmap(display->connection, display->screen, buffer->pixmap, i * 20);
 
 	return buffer;
 }
@@ -480,24 +526,6 @@ static void wait_special_event(struct display *display)
 		handle_event(display, (xcb_present_generic_event_t*)ev);
 }
 
-static void get_window_data(xcb_connection_t *c, xcb_window_t window, uint32_t *width, uint32_t *height)
-{
-	xcb_get_geometry_cookie_t cookie;
-	xcb_get_geometry_reply_t *reply;
-
-	cookie = xcb_get_geometry(c, window);
-	reply = xcb_get_geometry_reply(c, cookie, NULL);
-	FAIL_IF(!reply, "failed to get geometry");
-
-	*width = reply->width;
-	*height = reply->height;
-
-	uint32_t depth = reply->depth;
-	FAIL_IF(depth != 24 && depth != 32, "bad depth %d", depth);
-
-	free(reply);
-}
-
 static struct display *init_display()
 {
 	Display* dpy = XOpenDisplay(NULL);
@@ -601,6 +629,9 @@ static void present_next(struct drawable *drawable)
 
 	xcb_pixmap_t pixmap = buffer->pixmap;
 
+	if (!s_no_draw)
+		draw_to_pixmap(drawable->display->connection, drawable->display->screen, pixmap, s_frame_num++);
+
 	uint32_t options = XCB_PRESENT_OPTION_NONE;
 	//if (swap_interval == 0)
 	//options |= XCB_PRESENT_OPTION_ASYNC;
@@ -700,6 +731,8 @@ int main(int argc, char **argv)
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp(argv[i], "-f") == 0)
 			s_fullscreen = true;
+		else if (strcmp(argv[i], "-d") == 0)
+			s_no_draw = true;
 		else if (strcmp(argv[i], "gbm") == 0)
 			s_buf_ops = &gbm_buf_ops;
 		else if (strcmp(argv[i], "x11") == 0)
@@ -725,7 +758,7 @@ int main(int argc, char **argv)
 	struct drawable *drawable = display->drawable;
 
 	uint32_t width, height;
-	get_window_data(display->connection, display->window, &width, &height);
+	get_x_drawable_data(display->connection, display->window, &width, &height);
 
 	drawable->width = width;
 	drawable->height = height;

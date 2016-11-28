@@ -532,8 +532,8 @@ static struct display *init_display()
 		width = screen->width_in_pixels;
 		height = screen->height_in_pixels;
 	} else {
-		width = 600;
-		height = 600;
+		width = 300;
+		height = 300;
 	}
 
 	xcb_window_t window = create_window(c, screen, width, height);

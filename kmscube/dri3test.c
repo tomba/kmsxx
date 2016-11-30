@@ -465,7 +465,8 @@ static void handle_event(struct display *display, xcb_present_generic_event_t *g
 			break;
 		}
 
-		printf("PRESENT COMPLETE NOTIFY %u, %s, msc %lu, ust %lu\n", ce->serial, mode_str, ce->msc, ce->ust);
+		printf("PRESENT COMPLETE NOTIFY %u, %s, msc %llu, ust %llu\n", ce->serial, mode_str,
+		       (unsigned long long)ce->msc, (unsigned long long)ce->ust);
 
 		drawable->display->current_msc = ce->msc;
 

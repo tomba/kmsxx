@@ -48,6 +48,8 @@ target_link_libraries(kmscube kms++ kms++util
     ${XCBPRESENT_LIBRARIES}
 )
 
+add_definitions(-D_XOPEN_SOURCE=700)
+
 add_executable(dri3test dri3test.c)
 target_link_libraries(dri3test
     ${LIBDRM_LIBRARIES}

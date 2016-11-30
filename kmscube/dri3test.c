@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlibint.h>
 #include <xcb/dri3.h>
@@ -32,6 +34,8 @@
 static bool s_fullscreen = false;
 static bool s_no_draw = false;
 static uint32_t s_frame_num;
+static bool s_import_hack;
+static int s_omap_fd;
 
 struct buffer;
 struct drawable;
@@ -122,6 +126,18 @@ static void create_etnaviv_pixmap(struct buffer *buffer)
 	uint32_t width = drawable->width;
 	uint32_t height = drawable->height;
 	uint32_t stride = width * 4;
+
+	if (s_import_hack) {
+		printf("IMPORT etna_bo %d to omapdrm\n", bo_fd);
+
+		uint32_t handle;
+		int r = drmPrimeFDToHandle(s_omap_fd, bo_fd, &handle);
+		FAIL_IF(r, "drmPrimeFDToHandle failed %s", strerror(errno));
+
+		uint32_t id;
+		r = drmModeAddFB(s_omap_fd, drawable->width, drawable->height, 24, 32, drawable->width * 4, handle, &id);
+		FAIL_IF(r, "drmModeAddFB failed");
+	}
 
 	xcb_pixmap_t pixmap = xcb_generate_id(display->connection);
 	xcb_void_cookie_t pixmap_cookie = xcb_dri3_pixmap_from_buffer_checked(display->connection, pixmap, display->screen->root,
@@ -734,6 +750,8 @@ int main(int argc, char **argv)
 			s_fullscreen = true;
 		else if (strcmp(argv[i], "-d") == 0)
 			s_no_draw = true;
+		else if (strcmp(argv[i], "-i") == 0)
+			s_import_hack = true;
 		else if (strcmp(argv[i], "gbm") == 0)
 			s_buf_ops = &gbm_buf_ops;
 		else if (strcmp(argv[i], "x11") == 0)
@@ -746,6 +764,11 @@ int main(int argc, char **argv)
 			printf("unknown param %s\n", argv[i]);
 			exit(-1);
 		}
+	}
+
+	if (s_import_hack) {
+		s_omap_fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
+		FAIL_IF(s_omap_fd < 0, "couldn't open omapdrm");
 	}
 
 	struct display *display = init_display();

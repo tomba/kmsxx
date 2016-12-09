@@ -5,6 +5,23 @@
 
 using namespace std;
 
+static void print_egl_config(EGLDisplay dpy, EGLConfig cfg)
+{
+	auto getconf = [dpy, cfg](EGLint a) { EGLint v = -1; eglGetConfigAttrib(dpy, cfg, a, &v); return v; };
+
+	printf("EGL Config %d: color buf %d/%d/%d/%d = %d, depth %d, stencil %d, native visualid %d, native visualtype %d\n",
+	       getconf(EGL_CONFIG_ID),
+	       getconf(EGL_ALPHA_SIZE),
+	       getconf(EGL_RED_SIZE),
+	       getconf(EGL_GREEN_SIZE),
+	       getconf(EGL_BLUE_SIZE),
+	       getconf(EGL_BUFFER_SIZE),
+	       getconf(EGL_DEPTH_SIZE),
+	       getconf(EGL_STENCIL_SIZE),
+	       getconf(EGL_NATIVE_VISUAL_ID),
+	       getconf(EGL_NATIVE_VISUAL_TYPE));
+}
+
 EglState::EglState(void *native_display)
 {
 	EGLBoolean b;
@@ -43,21 +60,27 @@ EglState::EglState(void *native_display)
 	b = eglBindAPI(EGL_OPENGL_ES_API);
 	FAIL_IF(!b, "failed to bind api EGL_OPENGL_ES_API");
 
+
+	if (s_verbose) {
+		EGLint numConfigs;
+		b = eglGetConfigs(m_display, nullptr, 0, &numConfigs);
+		FAIL_IF(!b, "failed to get number of configs");
+
+		EGLConfig configs[numConfigs];
+		b = eglGetConfigs(m_display, configs, numConfigs, &numConfigs);
+
+		printf("Available configs:\n");
+
+		for (int i = 0; i < numConfigs; ++i)
+			print_egl_config(m_display, configs[i]);
+	}
+
 	b = eglChooseConfig(m_display, config_attribs, &m_config, 1, &n);
 	FAIL_IF(!b || n != 1, "failed to choose config");
 
-	auto getconf = [this](EGLint a) { EGLint v = -1; eglGetConfigAttrib(m_display, m_config, a, &v); return v; };
-
 	if (s_verbose) {
-		printf("EGL Config %d: color buf %d/%d/%d/%d = %d, depth %d, stencil %d\n",
-		       getconf(EGL_CONFIG_ID),
-		       getconf(EGL_ALPHA_SIZE),
-		       getconf(EGL_RED_SIZE),
-		       getconf(EGL_GREEN_SIZE),
-		       getconf(EGL_BLUE_SIZE),
-		       getconf(EGL_BUFFER_SIZE),
-		       getconf(EGL_DEPTH_SIZE),
-		       getconf(EGL_STENCIL_SIZE));
+		printf("Chosen config:\n");
+		print_egl_config(m_display, m_config);
 	}
 
 	m_context = eglCreateContext(m_display, m_config, EGL_NO_CONTEXT, context_attribs);

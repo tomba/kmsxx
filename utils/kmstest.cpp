@@ -939,9 +939,11 @@ int main(int argc, char **argv)
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
 
+	ResourceManager resman(card);
+
 	if (card.has_atomic()) {
 		for (OutputInfo& o : outputs) {
-			o.primary_plane = o.crtc->get_primary_plane();
+			o.primary_plane = resman.reserve_primary_plane(o.crtc);
 
 			if (!o.fbs.empty() && !o.primary_plane)
 				EXIT("Could not get primary plane for crtc '%u'", o.crtc->id());

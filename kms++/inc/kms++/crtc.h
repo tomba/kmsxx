@@ -21,6 +21,7 @@ public:
 	int set_plane(Plane *plane, Framebuffer &fb,
 		      int32_t dst_x, int32_t dst_y, uint32_t dst_w, uint32_t dst_h,
 		      float src_x, float src_y, float src_w, float src_h);
+	int disable_mode();
 
 	int disable_plane(Plane* plane);
 

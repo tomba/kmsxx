@@ -60,6 +60,11 @@ int Crtc::set_mode(Connector* conn, Framebuffer& fb, const Videomode& mode)
 			      conns, 1, &drmmode);
 }
 
+int Crtc::disable_mode()
+{
+	return drmModeSetCrtc(card().fd(), id(), 0, 0, 0, 0, 0, 0);
+}
+
 static inline uint32_t conv(float x)
 {
 	// XXX fix the conversion for fractional part

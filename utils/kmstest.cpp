@@ -649,6 +649,14 @@ static void draw_test_patterns(const vector<OutputInfo>& outputs)
 
 static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outputs)
 {
+	// Disable unused crtcs
+	for (Crtc* crtc : card.get_crtcs()) {
+		if (find_if(outputs.begin(), outputs.end(), [crtc](const OutputInfo& o) { return o.crtc == crtc; }) != outputs.end())
+			continue;
+
+		crtc->disable_mode();
+	}
+
 	for (const OutputInfo& o : outputs) {
 		auto conn = o.connector;
 		auto crtc = o.crtc;
@@ -673,8 +681,42 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 	}
 }
 
-static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
+static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outputs)
 {
+	int r;
+
+	// XXX DRM framework doesn't allow moving an active plane from one crtc to another.
+	// See drm_atomic.c::plane_switching_crtc().
+	// For the time being, disable all crtcs and planes here.
+
+	AtomicReq disable_req(card);
+
+	// Disable unused crtcs
+	for (Crtc* crtc : card.get_crtcs()) {
+		//if (find_if(outputs.begin(), outputs.end(), [crtc](const OutputInfo& o) { return o.crtc == crtc; }) != outputs.end())
+		//	continue;
+
+		disable_req.add(crtc, {
+				{ "ACTIVE", 0 },
+			});
+	}
+
+	// Disable unused planes
+	for (Plane* plane : card.get_planes()) {
+		//if (find_if(outputs.begin(), outputs.end(), [plane](const OutputInfo& o) { return o.primary_plane == plane; }) != outputs.end())
+		//	continue;
+
+		disable_req.add(plane, {
+				{ "FB_ID", 0 },
+				{ "CRTC_ID", 0 },
+			});
+	}
+
+	r = disable_req.commit_sync(true);
+	if (r)
+		EXIT("Atomic commit failed when disabling: %d\n", r);
+
+
 	// Keep blobs here so that we keep ref to them until we have committed the req
 	vector<unique_ptr<Blob>> blobs;
 
@@ -731,8 +773,6 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 		}
 	}
 
-	int r;
-
 	r = req.test(true);
 	if (r)
 		EXIT("Atomic test failed: %d\n", r);
@@ -740,6 +780,14 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 	r = req.commit_sync(true);
 	if (r)
 		EXIT("Atomic commit failed: %d\n", r);
+}
+
+static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
+{
+	if (card.has_atomic())
+		set_crtcs_n_planes_atomic(card, outputs);
+	else
+		set_crtcs_n_planes_legacy(card, outputs);
 }
 
 class FlipState : private PageFlipHandlerBase
@@ -955,10 +1003,7 @@ int main(int argc, char **argv)
 
 	print_outputs(outputs);
 
-	if (card.has_atomic())
-		set_crtcs_n_planes(card, outputs);
-	else
-		set_crtcs_n_planes_legacy(card, outputs);
+	set_crtcs_n_planes(card, outputs);
 
 	printf("press enter to exit\n");
 

@@ -577,7 +577,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 	// create default framebuffers if needed
 	for (OutputInfo& o : outputs) {
 		if (!o.crtc) {
-			get_default_crtc(card, *current_output);
+			get_default_crtc(card, o);
 			o.user_set_crtc = true;
 		}
 

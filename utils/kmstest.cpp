@@ -991,9 +991,12 @@ int main(int argc, char **argv)
 
 	if (card.has_atomic()) {
 		for (OutputInfo& o : outputs) {
+			if (o.fbs.empty())
+				continue;
+
 			o.primary_plane = resman.reserve_primary_plane(o.crtc);
 
-			if (!o.fbs.empty() && !o.primary_plane)
+			if (!o.primary_plane)
 				EXIT("Could not get primary plane for crtc '%u'", o.crtc->id());
 		}
 	}

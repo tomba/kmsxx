@@ -51,11 +51,11 @@ crtc.set_mode(conn, fliphandler.fb1, mode)
 
 fliphandler.handle_page_flip(0, 0)
 
-def readdrm(conn, mask):
+def readdrm(fileobj, mask):
     #print("EVENT");
     card.call_page_flip_handlers()
 
-def readkey(conn, mask):
+def readkey(fileobj, mask):
     #print("KEY EVENT");
     sys.stdin.readline()
     exit(0)

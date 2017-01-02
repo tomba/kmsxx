@@ -14,8 +14,26 @@ class FlipHandler(pykms.PageFlipHandlerBase):
         self.front_buf = 0
         self.fb1 = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
         self.fb2 = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+        self.flips = 0
+        self.frames = 0
+        self.time = 0
 
     def handle_page_flip(self, frame, time):
+        self.flips += 1
+        if self.time == 0:
+            self.frames = frame
+            self.time = time
+
+        time_delta = time - self.time
+        if time_delta >= 5:
+            frame_delta = frame - self.frames
+            print("Frame rate: %f (%u/%u frames in %f s)" %
+                  (frame_delta / time_delta, self.flips, frame_delta, time_delta))
+
+            self.flips = 0
+            self.frames = frame
+            self.time = time
+
         if self.front_buf == 0:
             fb = self.fb2
         else:

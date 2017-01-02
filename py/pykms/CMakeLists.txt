@@ -21,6 +21,10 @@ target_link_libraries(pykms kms++ kms++util ${LIBDRM_LIBRARIES})
 
 # Don't add a 'lib' prefix to the shared library
 set_target_properties(pykms PROPERTIES PREFIX "")
+set_target_properties(pykms PROPERTIES LIBRARY_OUTPUT_DIRECTORY "")
 
-# XXX Where should pykms.so be installed?
-#install(TARGETS pykms DESTINATION lib)
+configure_file(__init__.py __init__.py COPYONLY)
+
+set(PY_DESTDIR lib/python${PYTHON_VERSION}/site-packages/pykms)
+install(FILES __init__.py DESTINATION ${PY_DESTDIR})
+install(TARGETS pykms DESTINATION ${PY_DESTDIR})

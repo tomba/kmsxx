@@ -6,7 +6,6 @@ import pykms
 from time import sleep
 from math import sin
 from math import cos
-from helpers import *
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)

@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import pykms
-from helpers import *
 import time
 
 # This hack makes drm initialize the fbcon, setting up the default connector
@@ -20,7 +19,7 @@ for p in card.planes:
         continue
     planes.append(p)
 
-disable_planes(card)
+card.disable_planes()
 
 w = mode.hdisplay
 h = mode.vdisplay
@@ -41,7 +40,7 @@ def test_am5_trans_dest():
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 250, 100, 200, 200, yellow)
 
-    set_props(crtc, {
+    crtc.set_props({
         "trans-key-mode": 1,
         "trans-key": purple.rgb888,
         "background": 0,
@@ -55,7 +54,7 @@ def test_am5_trans_dest():
 
         plane = planes[i]
         fb = fbs[i]
-        set_props(plane, {
+        plane.set_props({
             "FB_ID": fb.id,
             "CRTC_ID": crtc.id,
             "SRC_W": fb.width << 16,
@@ -80,7 +79,7 @@ def test_am5_trans_src():
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 100, 100, 500, 500, purple)
 
-    set_props(crtc, {
+    crtc.set_props({
         "trans-key-mode": 2,
         "trans-key": purple.rgb888,
         "background": 0,
@@ -94,7 +93,7 @@ def test_am5_trans_src():
 
         plane = planes[i]
         fb = fbs[i]
-        set_props(plane, {
+        plane.set_props({
             "FB_ID": fb.id,
             "CRTC_ID": crtc.id,
             "SRC_W": fb.width << 16,
@@ -123,7 +122,7 @@ def test_am4_normal_trans_dst():
     fb = fbs[2]
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
 
-    set_props(crtc, {
+    crtc.set_props({
         "trans-key-mode": 1,
         "trans-key": purple.rgb888,
         "background": 0,
@@ -134,7 +133,7 @@ def test_am4_normal_trans_dst():
 
     plane = planes[0]
     fb = fbs[0]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_W": fb.width << 16,
@@ -147,7 +146,7 @@ def test_am4_normal_trans_dst():
 
     plane = planes[1]
     fb = fbs[1]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
@@ -164,7 +163,7 @@ def test_am4_normal_trans_dst():
 
     plane = planes[2]
     fb = fbs[2]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
@@ -195,7 +194,7 @@ def test_am4_normal_trans_src():
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
-    set_props(crtc, {
+    crtc.set_props({
         "trans-key-mode": 2,
         "trans-key": purple.rgb888,
         "background": 0,
@@ -206,7 +205,7 @@ def test_am4_normal_trans_src():
 
     plane = planes[0]
     fb = fbs[0]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_W": fb.width << 16,
@@ -219,7 +218,7 @@ def test_am4_normal_trans_src():
 
     plane = planes[1]
     fb = fbs[1]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
@@ -236,7 +235,7 @@ def test_am4_normal_trans_src():
 
     plane = planes[2]
     fb = fbs[2]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
@@ -267,7 +266,7 @@ def test_am4_alpha_trans_src():
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
     pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
 
-    set_props(crtc, {
+    crtc.set_props({
         "trans-key-mode": 1,
         "trans-key": purple.rgb888,
         "background": 0,
@@ -278,7 +277,7 @@ def test_am4_alpha_trans_src():
 
     plane = planes[0]
     fb = fbs[0]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_W": fb.width << 16,
@@ -291,7 +290,7 @@ def test_am4_alpha_trans_src():
 
     plane = planes[1]
     fb = fbs[1]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,
@@ -308,7 +307,7 @@ def test_am4_alpha_trans_src():
 
     plane = planes[2]
     fb = fbs[2]
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_X": 0 << 16,

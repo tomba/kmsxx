@@ -3,8 +3,6 @@
 import sys
 import selectors
 import pykms
-from helpers import *
-
 
 w = 640
 h = 480
@@ -48,7 +46,7 @@ def readvid(conn, mask):
     fb = cap.dequeue()
 
     if card.has_atomic:
-        set_props(plane, {
+        plane.set_props({
             "FB_ID": fb.id,
             "CRTC_ID": crtc.id,
             "SRC_W": fb.width << 16,

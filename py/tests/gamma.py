@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import pykms
-from helpers import *
 
 # This hack makes drm initialize the fbcon, setting up the default connector
 card = pykms.Card()
@@ -32,10 +31,10 @@ for i in range(len):
 
 gamma = pykms.Blob(card, arr);
 
-set_prop(crtc, "GAMMA_LUT", gamma.id)
+crtc.set_prop("GAMMA_LUT", gamma.id)
 
 input("press enter to remove gamma\n")
 
-set_prop(crtc, "GAMMA_LUT", 0)
+crtc.set_prop("GAMMA_LUT", 0)
 
 input("press enter to exit\n")

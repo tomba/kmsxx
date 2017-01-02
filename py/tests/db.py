@@ -3,7 +3,6 @@
 import sys
 import pykms
 import selectors
-from helpers import *
 
 bar_width = 20
 bar_speed = 8

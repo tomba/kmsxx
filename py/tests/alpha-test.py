@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import pykms
-from helpers import *
 import time
 
 # This hack makes drm initialize the fbcon, setting up the default connector
@@ -24,7 +23,7 @@ if len(planes) != 3:
     print("Need 3 planes!")
     exit(1)
 
-disable_planes(card)
+card.disable_planes()
 
 w = mode.hdisplay
 h = mode.vdisplay
@@ -39,7 +38,7 @@ pykms.draw_rect(fbs[1], 150, 50, 200, 200, pykms.RGB(128, 0, 255, 0))
 pykms.draw_rect(fbs[2], 50, 150, 200, 200, pykms.RGB(128, 0, 0, 255))
 
 
-set_props(crtc, {
+crtc.set_props({
     "trans-key-mode": 0,
     "trans-key": 0,
     "background": 0,
@@ -52,7 +51,7 @@ for i in range(len(planes)):
 
     print("set crtc {}, plane {}, fb {}".format(crtc.id, p.id, fbs[i].id))
 
-    set_props(plane, {
+    plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_W": fb.width << 16,

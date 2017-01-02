@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import pykms
-from helpers import *
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)

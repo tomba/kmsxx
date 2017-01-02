@@ -91,6 +91,8 @@ void init_pykmsbase(py::module &m)
 			;
 
 	py::class_<MappedFramebuffer>(m, "MappedFramebuffer", py::base<Framebuffer>())
+			.def_property_readonly("width", &MappedFramebuffer::width)
+			.def_property_readonly("height", &MappedFramebuffer::height)
 			;
 
 	py::class_<DumbFramebuffer>(m, "DumbFramebuffer", py::base<MappedFramebuffer>())
@@ -98,8 +100,6 @@ void init_pykmsbase(py::module &m)
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
-			.def_property_readonly("width", &DumbFramebuffer::width)
-			.def_property_readonly("height", &DumbFramebuffer::height)
 			;
 
 	py::enum_<PixelFormat>(m, "PixelFormat")

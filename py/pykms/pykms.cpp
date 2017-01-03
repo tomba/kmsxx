@@ -36,8 +36,7 @@ PYBIND11_PLUGIN(pykms) {
 
 	init_pykmsbase(m);
 
-	py::class_<PyPageFlipHandlerBase>(m, "PageFlipHandlerBase")
-			.alias<PageFlipHandlerBase>()
+	py::class_<PageFlipHandlerBase, PyPageFlipHandlerBase>(m, "PageFlipHandlerBase")
 			.def(py::init<>())
 			.def("handle_page_flip", &PageFlipHandlerBase::handle_page_flip)
 			;

@@ -10,11 +10,11 @@ using namespace std;
 
 void init_pykmsomap(py::module &m)
 {
-	py::class_<OmapCard>(m, "OmapCard", py::base<Card>())
+	py::class_<OmapCard, Card>(m, "OmapCard")
 			.def(py::init<>())
 			;
 
-	py::class_<OmapFramebuffer>(m, "OmapFramebuffer", py::base<MappedFramebuffer>())
+	py::class_<OmapFramebuffer, MappedFramebuffer>(m, "OmapFramebuffer")
 			.def(py::init<OmapCard&, uint32_t, uint32_t, const string&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<OmapCard&, uint32_t, uint32_t, PixelFormat>(),

@@ -9,9 +9,15 @@ namespace py = pybind11;
 using namespace kms;
 using namespace std;
 
+PYBIND11_DECLARE_HOLDER_TYPE(T, T*, true);
+
+// XXX I don't think these are really needed. Use return value parameters.
+typedef VideoDevice* VideoDeviceHolder;
+typedef VideoStreamer* VideoStreamerHolder;
+
 void init_pyvid(py::module &m)
 {
-	py::class_<VideoDevice, VideoDevice*>(m, "VideoDevice")
+	py::class_<VideoDevice, VideoDeviceHolder>(m, "VideoDevice")
 			.def(py::init<const string&>())
 			.def_property_readonly("fd", &VideoDevice::fd)
 			.def_property_readonly("has_capture", &VideoDevice::has_capture)
@@ -24,7 +30,7 @@ void init_pyvid(py::module &m)
 			.def("get_capture_devices", &VideoDevice::get_capture_devices)
 			;
 
-	py::class_<VideoStreamer, VideoStreamer*>(m, "VideoStreamer")
+	py::class_<VideoStreamer, VideoStreamerHolder>(m, "VideoStreamer")
 			.def_property_readonly("fd", &VideoStreamer::fd)
 			.def_property_readonly("ports", &VideoStreamer::get_ports)
 			.def("set_port", &VideoStreamer::set_port)

@@ -7,6 +7,16 @@ namespace py = pybind11;
 using namespace kms;
 using namespace std;
 
+PYBIND11_DECLARE_HOLDER_TYPE(T, T*, true);
+
+typedef DrmObject* DrmObjectHolder;
+typedef DrmPropObject* DrmPropObjectHolder;
+typedef Connector* ConnectorHolder;
+typedef Crtc* CrtcHolder;
+typedef Encoder* EncoderHolder;
+typedef Plane* PlaneHolder;
+typedef Property* PropertyHolder;
+
 void init_pykmsbase(py::module &m)
 {
 	py::class_<Card>(m, "Card")
@@ -22,12 +32,12 @@ void init_pykmsbase(py::module &m)
 			.def("get_prop", (Property* (Card::*)(uint32_t) const)&Card::get_prop)
 			;
 
-	py::class_<DrmObject, DrmObject*>(m, "DrmObject")
+	py::class_<DrmObject, DrmObjectHolder>(m, "DrmObject")
 			.def_property_readonly("id", &DrmObject::id)
 			.def_property_readonly("card", &DrmObject::card)
 			;
 
-	py::class_<DrmPropObject, DrmPropObject*>(m, "DrmPropObject", py::base<DrmObject>())
+	py::class_<DrmPropObject, DrmObject, DrmPropObjectHolder>(m, "DrmPropObject")
 			.def("refresh_props", &DrmPropObject::refresh_props)
 			.def_property_readonly("prop_map", &DrmPropObject::get_prop_map)
 			.def("get_prop_value", (uint64_t (DrmPropObject::*)(const string&) const)&DrmPropObject::get_prop_value)
@@ -35,7 +45,7 @@ void init_pykmsbase(py::module &m)
 			.def("get_prop_value_as_blob", &DrmPropObject::get_prop_value_as_blob)
 			;
 
-	py::class_<Connector, Connector*>(m, "Connector",  py::base<DrmPropObject>())
+	py::class_<Connector, DrmPropObject, ConnectorHolder>(m, "Connector")
 			.def_property_readonly("fullname", &Connector::fullname)
 			.def("get_default_mode", &Connector::get_default_mode)
 			.def("get_current_crtc", &Connector::get_current_crtc)
@@ -47,7 +57,7 @@ void init_pykmsbase(py::module &m)
 			.def("refresh", &Connector::refresh)
 			;
 
-	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
+	py::class_<Crtc, DrmPropObject, CrtcHolder>(m, "Crtc")
 			.def("set_mode", &Crtc::set_mode)
 			.def("page_flip", &Crtc::page_flip)
 			.def("set_plane", &Crtc::set_plane)
@@ -59,11 +69,11 @@ void init_pykmsbase(py::module &m)
 			.def("refresh", &Crtc::refresh)
 			;
 
-	py::class_<Encoder, Encoder*>(m, "Encoder",  py::base<DrmPropObject>())
+	py::class_<Encoder, DrmPropObject, EncoderHolder>(m, "Encoder")
 			.def("refresh", &Encoder::refresh)
 			;
 
-	py::class_<Plane, Plane*>(m, "Plane",  py::base<DrmPropObject>())
+	py::class_<Plane, DrmPropObject, PlaneHolder>(m, "Plane")
 			.def("supports_crtc", &Plane::supports_crtc)
 			.def_property_readonly("plane_type", &Plane::plane_type)
 			.def("__repr__", [](const Plane& o) { return "<pykms.Plane " + to_string(o.id()) + ">"; })
@@ -75,11 +85,11 @@ void init_pykmsbase(py::module &m)
 			.value("Cursor", PlaneType::Cursor)
 			;
 
-	py::class_<Property, Property*>(m, "Property",  py::base<DrmObject>())
+	py::class_<Property, DrmObject, PropertyHolder>(m, "Property")
 			.def_property_readonly("name", &Property::name)
 			;
 
-	py::class_<Blob>(m, "Blob", py::base<DrmObject>())
+	py::class_<Blob, DrmObject>(m, "Blob")
 			.def("__init__", [](Blob& instance, Card& card, py::buffer buf) {
 				py::buffer_info info = buf.request();
 				if (info.ndim != 1)
@@ -90,15 +100,15 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("data", &Blob::data)
 			;
 
-	py::class_<Framebuffer>(m, "Framebuffer", py::base<DrmObject>())
+	py::class_<Framebuffer, DrmObject>(m, "Framebuffer")
 			;
 
-	py::class_<MappedFramebuffer>(m, "MappedFramebuffer", py::base<Framebuffer>())
+	py::class_<MappedFramebuffer, Framebuffer>(m, "MappedFramebuffer")
 			.def_property_readonly("width", &MappedFramebuffer::width)
 			.def_property_readonly("height", &MappedFramebuffer::height)
 			;
 
-	py::class_<DumbFramebuffer>(m, "DumbFramebuffer", py::base<MappedFramebuffer>())
+	py::class_<DumbFramebuffer, MappedFramebuffer>(m, "DumbFramebuffer")
 			.def(py::init<Card&, uint32_t, uint32_t, const string&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
@@ -110,7 +120,7 @@ void init_pykmsbase(py::module &m)
 			.def("offset", &DumbFramebuffer::offset)
 			;
 
-	py::class_<ExtFramebuffer>(m, "ExtFramebuffer", py::base<MappedFramebuffer>())
+	py::class_<ExtFramebuffer, MappedFramebuffer>(m, "ExtFramebuffer")
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat, vector<int>, vector<uint32_t>, vector<uint32_t>>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			;

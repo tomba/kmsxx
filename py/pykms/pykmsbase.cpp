@@ -144,6 +144,8 @@ void init_pykmsbase(py::module &m)
 
 			.def_readwrite("flags", &Videomode::flags)
 			.def_readwrite("type", &Videomode::type)
+
+			.def("__repr__", [](const Videomode& vm) { return "<pykms.Videomode " + to_string(vm.hdisplay) + "x" + to_string(vm.vdisplay) + ">"; })
 			;
 
 	py::class_<AtomicReq>(m, "AtomicReq")

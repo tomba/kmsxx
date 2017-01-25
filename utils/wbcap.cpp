@@ -288,6 +288,10 @@ int main(int argc, char** argv)
 
 	auto src_conn = resman.reserve_connector(src_conn_name);
 	auto src_crtc = resman.reserve_crtc(src_conn);
+	src_crtc->refresh();
+	Videomode src_mode = src_conn->get_default_mode();
+	DumbFramebuffer src_fb(card, src_mode.hdisplay, src_mode.vdisplay, PixelFormat::ARGB8888);
+	src_crtc->set_mode(src_conn, src_fb, src_mode);
 
 	uint32_t src_width = src_crtc->mode().hdisplay;
 	uint32_t src_height = src_crtc->mode().vdisplay;
@@ -296,6 +300,10 @@ int main(int argc, char** argv)
 
 	auto dst_conn = resman.reserve_connector(dst_conn_name);
 	auto dst_crtc = resman.reserve_crtc(dst_conn);
+	Videomode dst_mode = dst_conn->get_default_mode();
+	DumbFramebuffer dst_fb(card, dst_mode.hdisplay, dst_mode.vdisplay, PixelFormat::ARGB8888);
+	dst_crtc->set_mode(dst_conn, dst_fb, dst_mode);
+	dst_crtc->refresh();
 	auto dst_plane = resman.reserve_overlay_plane(dst_crtc, pixfmt);
 	FAIL_IF(!dst_plane, "Plane not found");
 

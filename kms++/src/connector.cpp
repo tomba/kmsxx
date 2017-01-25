@@ -73,11 +73,25 @@ Connector::Connector(Card &card, uint32_t id, uint32_t idx)
 	m_fullname = name + "-" + to_string(m_priv->drm_connector->connector_type_id);
 }
 
-
 Connector::~Connector()
 {
 	drmModeFreeConnector(m_priv->drm_connector);
 	delete m_priv;
+}
+
+void Connector::refresh()
+{
+	drmModeFreeConnector(m_priv->drm_connector);
+
+	m_priv->drm_connector = drmModeGetConnector(this->card().fd(), this->id());
+	assert(m_priv->drm_connector);
+
+	// XXX drmModeGetConnector() does forced probe, which seems to change (at least) EDID blob id.
+	// XXX So refresh the props again here.
+	refresh_props();
+
+	const auto& name = connector_names.at(m_priv->drm_connector->connector_type);
+	m_fullname = name + "-" + to_string(m_priv->drm_connector->connector_type_id);
 }
 
 void Connector::setup()

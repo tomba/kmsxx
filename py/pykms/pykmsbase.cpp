@@ -44,6 +44,7 @@ void init_pykmsbase(py::module &m)
 			.def("get_mode", (Videomode (Connector::*)(const string& mode) const)&Connector::get_mode)
 			.def("get_mode", (Videomode (Connector::*)(unsigned xres, unsigned yres, float refresh, bool ilace) const)&Connector::get_mode)
 			.def("__repr__", [](const Connector& o) { return "<pykms.Connector " + to_string(o.id()) + ">"; })
+			.def("refresh", &Connector::refresh)
 			;
 
 	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
@@ -55,9 +56,11 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("mode", &Crtc::mode)
 			.def_property_readonly("mode_valid", &Crtc::mode_valid)
 			.def("__repr__", [](const Crtc& o) { return "<pykms.Crtc " + to_string(o.id()) + ">"; })
+			.def("refresh", &Crtc::refresh)
 			;
 
 	py::class_<Encoder, Encoder*>(m, "Encoder",  py::base<DrmPropObject>())
+			.def("refresh", &Encoder::refresh)
 			;
 
 	py::class_<Plane, Plane*>(m, "Plane",  py::base<DrmPropObject>())

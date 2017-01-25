@@ -12,6 +12,8 @@ class Encoder : public DrmPropObject
 {
 	friend class Card;
 public:
+	void refresh();
+
 	Crtc* get_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;
 

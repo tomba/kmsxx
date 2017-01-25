@@ -31,6 +31,14 @@ Crtc::~Crtc()
 	delete m_priv;
 }
 
+void Crtc::refresh()
+{
+	drmModeFreeCrtc(m_priv->drm_crtc);
+
+	m_priv->drm_crtc = drmModeGetCrtc(this->card().fd(), this->id());
+	assert(m_priv->drm_crtc);
+}
+
 void Crtc::setup()
 {
 	for (Plane* plane : card().get_planes()) {

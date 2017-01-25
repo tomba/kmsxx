@@ -45,6 +45,14 @@ Encoder::~Encoder()
 	delete m_priv;
 }
 
+void Encoder::refresh()
+{
+	drmModeFreeEncoder(m_priv->drm_encoder);
+
+	m_priv->drm_encoder = drmModeGetEncoder(this->card().fd(), this->id());
+	assert(m_priv->drm_encoder);
+}
+
 Crtc* Encoder::get_crtc() const
 {
 	if (m_priv->drm_encoder->crtc_id)

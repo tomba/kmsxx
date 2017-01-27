@@ -87,3 +87,12 @@ Variable                          | Description
 --------------------------------- | -------------
 KMSXX_DISABLE_UNIVERSAL_PLANES    | Set to disable the use of universal planes
 KMSXX_DISABLE_ATOMIC              | Set to disable the use of atomic modesetting
+
+## Python notes
+
+You can run the python code directly from the build dir by defining PYTHONPATH env variable. For example:
+
+```
+PYTHONPATH=build/py py/tests/hpd.py
+
+```

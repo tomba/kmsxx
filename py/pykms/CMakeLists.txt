@@ -1,7 +1,7 @@
 include_directories(${LIBDRM_INCLUDE_DIRS})
 link_directories(${LIBDRM_LIBRARY_DIRS})
 
-pkg_check_modules(PYTHON python3 REQUIRED)
+pkg_search_module(PYTHON REQUIRED ${KMSXX_PYTHON_VERSION})
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)

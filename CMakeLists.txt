@@ -82,3 +82,5 @@ endif()
 if(KMSXX_ENABLE_PYTHON)
         add_subdirectory(py)
 endif()
+
+add_custom_target(docs SOURCES "README.md")

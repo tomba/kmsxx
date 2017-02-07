@@ -25,6 +25,11 @@ struct PlaneInfo
 	unsigned w;
 	unsigned h;
 
+	unsigned view_x;
+	unsigned view_y;
+	unsigned view_w;
+	unsigned view_h;
+
 	vector<MappedFramebuffer*> fbs;
 };
 
@@ -331,6 +336,20 @@ static vector<MappedFramebuffer*> parse_fb(Card& card, const string& fb_str, uns
 	return v;
 }
 
+static void parse_view(const string& view_str, PlaneInfo& pinfo)
+{
+	const regex view_re("(\\d+),(\\d+)-(\\d+)x(\\d+)");		// 400,400-400x400
+
+	smatch sm;
+	if (!regex_match(view_str, sm, view_re))
+		EXIT("Failed to parse view option '%s'", view_str.c_str());
+
+	pinfo.view_x = stoul(sm[1]);
+	pinfo.view_y = stoul(sm[2]);
+	pinfo.view_w = stoul(sm[3]);
+	pinfo.view_h = stoul(sm[4]);
+}
+
 static const char* usage_str =
 		"Usage: kmstest [OPTION]...\n\n"
 		"Show a test pattern on a display or plane\n\n"
@@ -342,6 +361,7 @@ static const char* usage_str =
 		"                            [<crtc>:]<pclk>,<hact>/<hfp>/<hsw>/<hbp>/<hsp>,<vact>/<vfp>/<vsw>/<vbp>/<vsp>[,i]\n"
 		"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
+		"  -v, --view=VIEW           VIEW is <x>,<y>-<w>x<h>\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
 		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
@@ -379,6 +399,7 @@ enum class ObjectType
 	Crtc,
 	Plane,
 	Framebuffer,
+	View,
 };
 
 struct Arg
@@ -415,6 +436,10 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("f|fb=", [&](string s)
 		{
 			args.push_back(Arg { ObjectType::Framebuffer, s });
+		}),
+		Option("v|view=", [&](string s)
+		{
+			args.push_back(Arg { ObjectType::View, s });
 		}),
 		Option("|dmt", []()
 		{
@@ -569,6 +594,15 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 			else
 				current_output->fbs = fbs;
 
+			break;
+		}
+
+		case ObjectType::View:
+		{
+			if (!current_plane || current_plane->fbs.empty())
+				EXIT("'view' parameter requires a plane and a fb");
+
+			parse_view(arg.arg, *current_plane);
 			break;
 		}
 		}
@@ -761,10 +795,10 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 			req.add(p.plane, {
 					{ "FB_ID", fb->id() },
 					{ "CRTC_ID", crtc->id() },
-					{ "SRC_X", 0 << 16 },
-					{ "SRC_Y", 0 << 16 },
-					{ "SRC_W", fb->width() << 16 },
-					{ "SRC_H", fb->height() << 16 },
+					{ "SRC_X", (p.view_x ?: 0) << 16 },
+					{ "SRC_Y", (p.view_y ?: 0) << 16 },
+					{ "SRC_W", (p.view_w ?: fb->width()) << 16 },
+					{ "SRC_H", (p.view_h ?: fb->height()) << 16 },
 					{ "CRTC_X", p.x },
 					{ "CRTC_Y", p.y },
 					{ "CRTC_W", p.w },

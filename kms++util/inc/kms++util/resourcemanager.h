@@ -13,6 +13,7 @@ public:
 
 	Card& card() const { return m_card; }
 	Connector* reserve_connector(const std::string& name = "");
+	Connector* reserve_connector(Connector* conn);
 	Crtc* reserve_crtc(Connector* conn);
 	Plane* reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format = PixelFormat::Undefined);
 	Plane* reserve_primary_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);

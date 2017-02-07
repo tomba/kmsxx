@@ -73,9 +73,9 @@ static void get_default_connector(Card& card, OutputInfo& output)
 	output.mode = output.connector->get_default_mode();
 }
 
-static void parse_connector(Card& card, const string& str, OutputInfo& output)
+static void parse_connector(Card& card, ResourceManager& resman, const string& str, OutputInfo& output)
 {
-	Connector* conn = resolve_connector(card, str);
+	Connector* conn = resman.reserve_connector(str);
 
 	if (!conn)
 		EXIT("No connector '%s'", str.c_str());
@@ -488,16 +488,19 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 	return args;
 }
 
-static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& output_args)
+static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman, const vector<Arg>& output_args)
 {
 	vector<OutputInfo> outputs;
 
 	if (output_args.size() == 0) {
 		// no output args, show a pattern on all screens
-		for (auto& pipe : card.get_connected_pipelines()) {
+		for (Connector* conn : card.get_connectors()) {
+			if (!conn->connected())
+				continue;
+
 			OutputInfo output = { };
-			output.connector = pipe.connector;
-			output.crtc = pipe.crtc;
+			output.connector = resman.reserve_connector(conn);
+			output.crtc = resman.reserve_crtc(conn);
 			output.mode = output.connector->get_default_mode();
 
 			output.fbs = get_default_fb(card, output.mode.hdisplay, output.mode.vdisplay);
@@ -518,7 +521,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, const vector<Arg>& outpu
 			outputs.push_back(OutputInfo { });
 			current_output = &outputs.back();
 
-			parse_connector(card, arg.arg, *current_output);
+			parse_connector(card, resman, arg.arg, *current_output);
 			current_plane = 0;
 
 			break;
@@ -1019,9 +1022,9 @@ int main(int argc, char **argv)
 	if (!card.has_atomic() && s_flip_sync)
 		EXIT("Synchronized flipping requires atomic modesetting");
 
-	vector<OutputInfo> outputs = setups_to_outputs(card, output_args);
-
 	ResourceManager resman(card);
+
+	vector<OutputInfo> outputs = setups_to_outputs(card, resman, output_args);
 
 	if (card.has_atomic()) {
 		for (OutputInfo& o : outputs) {

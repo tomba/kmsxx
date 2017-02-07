@@ -99,6 +99,15 @@ Connector* ResourceManager::reserve_connector(const string& name)
 	return conn;
 }
 
+Connector* ResourceManager::reserve_connector(Connector* conn)
+{
+	if (contains(m_reserved_connectors, conn))
+		return nullptr;
+
+	m_reserved_connectors.push_back(conn);
+	return conn;
+}
+
 Crtc* ResourceManager::reserve_crtc(Connector* conn)
 {
 	if (Crtc* crtc = conn->get_current_crtc()) {

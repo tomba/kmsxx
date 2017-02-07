@@ -60,12 +60,13 @@ int main(int argc, char **argv)
 	}
 
 	Card card(dev_path);
+	ResourceManager resman(card);
 
 	vector<Connector*> conns;
 
 	if (conn_strs.size() > 0) {
 		for (string s : conn_strs) {
-			auto c = resolve_connector(card, s);
+			auto c = resman.reserve_connector(s);
 			if (!c)
 				EXIT("Failed to resolve connector '%s'", s.c_str());
 			conns.push_back(c);

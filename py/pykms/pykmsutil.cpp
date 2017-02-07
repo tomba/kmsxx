@@ -23,7 +23,7 @@ void init_pykmstest(py::module &m)
 	py::class_<ResourceManager>(m, "ResourceManager")
 			.def(py::init<Card&>())
 			.def("reset", &ResourceManager::reset)
-			.def("reserve_connector", &ResourceManager::reserve_connector,
+			.def("reserve_connector", (Connector* (ResourceManager::*)(const string& name))&ResourceManager::reserve_connector,
 			     py::arg("name") = string())
 			.def("reserve_crtc", &ResourceManager::reserve_crtc)
 			.def("reserve_plane", &ResourceManager::reserve_plane,

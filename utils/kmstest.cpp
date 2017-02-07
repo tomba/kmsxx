@@ -67,13 +67,7 @@ static void print_regex_match(smatch sm)
 	}
 }
 
-static void get_default_connector(Card& card, OutputInfo& output)
-{
-	output.connector = card.get_first_connected_connector();
-	output.mode = output.connector->get_default_mode();
-}
-
-static void parse_connector(Card& card, ResourceManager& resman, const string& str, OutputInfo& output)
+static void get_connector(ResourceManager& resman, OutputInfo& output, const string& str = "")
 {
 	Connector* conn = resman.reserve_connector(str);
 
@@ -521,7 +515,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			outputs.push_back(OutputInfo { });
 			current_output = &outputs.back();
 
-			parse_connector(card, resman, arg.arg, *current_output);
+			get_connector(resman, *current_output, arg.arg);
 			current_plane = 0;
 
 			break;
@@ -535,7 +529,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			}
 
 			if (!current_output->connector)
-				get_default_connector(card, *current_output);
+				get_connector(resman, *current_output);
 
 			parse_crtc(card, arg.arg, *current_output);
 
@@ -554,7 +548,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			}
 
 			if (!current_output->connector)
-				get_default_connector(card, *current_output);
+				get_connector(resman, *current_output);
 
 			if (!current_output->crtc)
 				get_default_crtc(card, *current_output);
@@ -575,7 +569,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			}
 
 			if (!current_output->connector)
-				get_default_connector(card, *current_output);
+				get_connector(resman, *current_output);
 
 			if (!current_output->crtc)
 				get_default_crtc(card, *current_output);

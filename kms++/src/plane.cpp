@@ -50,10 +50,20 @@ bool Plane::supports_format(PixelFormat fmt) const
 
 PlaneType Plane::plane_type() const
 {
-	if (card().has_has_universal_planes())
-		return (PlaneType)get_prop_value("type");
-	else
+	if (card().has_has_universal_planes()) {
+		switch (get_prop_value("type")) {
+		case DRM_PLANE_TYPE_OVERLAY:
+			return PlaneType::Overlay;
+		case DRM_PLANE_TYPE_PRIMARY:
+			return PlaneType::Primary;
+		case DRM_PLANE_TYPE_CURSOR:
+			return PlaneType::Cursor;
+		default:
+			throw invalid_argument("Bad plane type");
+		}
+	} else {
 		return PlaneType::Overlay;
+	}
 }
 
 vector<PixelFormat> Plane::get_formats() const

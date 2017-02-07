@@ -7,9 +7,9 @@ namespace kms
 
 enum class PlaneType
 {
-	Overlay = 0,
-	Primary = 1,
-	Cursor = 2,
+	Overlay = 1 << 0,
+	Primary = 1 << 1,
+	Cursor = 1 << 2,
 };
 
 struct PlanePriv;

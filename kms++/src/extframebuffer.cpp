@@ -13,7 +13,7 @@ namespace kms
 {
 
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-			       uint32_t handles[], uint32_t pitches[], uint32_t offsets[])
+			       vector<uint32_t> handles, vector<uint32_t> pitches, vector<uint32_t> offsets)
 	: MappedFramebuffer(card, width, height)
 {
 	m_format = format;
@@ -35,7 +35,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	}
 
 	uint32_t id;
-	int r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles, pitches, offsets, &id, 0);
+	int r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
 	if (r)
 		throw std::invalid_argument(string("Failed to create ExtFramebuffer: ") + strerror(r));
 
@@ -43,7 +43,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 }
 
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-			       int fds[4], uint32_t pitches[4], uint32_t offsets[4])
+			       vector<int> fds, vector<uint32_t> pitches, vector<uint32_t> offsets)
 	: MappedFramebuffer(card, width, height)
 {
 	int r;
@@ -72,7 +72,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	uint32_t id;
 	uint32_t bo_handles[4] = { m_planes[0].handle, m_planes[1].handle };
 	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
-			  bo_handles, pitches, offsets, &id, 0);
+			  bo_handles, pitches.data(), offsets.data(), &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
 

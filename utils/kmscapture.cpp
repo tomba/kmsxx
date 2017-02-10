@@ -83,9 +83,9 @@ ExtFramebuffer* CameraPipeline::GetExtFrameBuffer(Card& card, uint32_t i, PixelF
 	const PixelFormatInfo& format_info = get_pixel_format_info(pixfmt);
 	ASSERT(format_info.num_planes == 1);
 
-	uint32_t handles[4] { handle };
-	uint32_t pitches[4] { m_in_width * (format_info.planes[0].bitspp / 8) };
-	uint32_t offsets[4] { };
+	vector<uint32_t> handles { handle };
+	vector<uint32_t> pitches { m_in_width * (format_info.planes[0].bitspp / 8) };
+	vector<uint32_t> offsets { };
 
 	return new ExtFramebuffer(card, m_in_width, m_in_height, pixfmt,
 				  handles, pitches, offsets);

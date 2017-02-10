@@ -134,9 +134,9 @@ public:
 		uint32_t handle = gbm_bo_get_handle(bo).u32;
 		PixelFormat format = (PixelFormat)gbm_bo_get_format(bo);
 
-		uint32_t handles[4] { handle };
-		uint32_t strides[4] { stride };
-		uint32_t offsets[4] { 0 };
+		vector<uint32_t> handles { handle };
+		vector<uint32_t> strides { stride };
+		vector<uint32_t> offsets { 0 };
 
 		fb = new ExtFramebuffer(card, width, height, format, handles, strides, offsets);
 

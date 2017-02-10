@@ -10,9 +10,9 @@ class ExtFramebuffer : public MappedFramebuffer
 {
 public:
 	ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-		       uint32_t handles[4], uint32_t pitches[4], uint32_t offsets[4]);
+		       std::vector<uint32_t> handles, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets);
 	ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-		       int fds[4], uint32_t pitches[4], uint32_t offsets[4]);
+		       std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets);
 	virtual ~ExtFramebuffer();
 
 	uint32_t width() const { return Framebuffer::width(); }

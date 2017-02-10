@@ -155,6 +155,10 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 		return;
 	}
 
+	// Create the mmaps before starting the threads
+	for (unsigned i = 0; i < fb.num_planes(); ++i)
+		fb.map(0);
+
 	unsigned num_threads = thread::hardware_concurrency();
 	vector<thread> workers;
 

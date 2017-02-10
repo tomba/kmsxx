@@ -1,5 +1,7 @@
 #pragma once
 
+#include "framebuffer.h"
+
 namespace kms
 {
 

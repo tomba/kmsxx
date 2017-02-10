@@ -15,6 +15,8 @@ void init_pykmsomap(py::module &m)
 			;
 
 	py::class_<OmapFramebuffer>(m, "OmapFramebuffer", py::base<MappedFramebuffer>())
+			.def(py::init<OmapCard&, uint32_t, uint32_t, const string&>(),
+			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<OmapCard&, uint32_t, uint32_t, PixelFormat>(),
 			     py::keep_alive<1, 2>())	// Keep OmapCard alive until this is destructed
 			;

@@ -103,6 +103,11 @@ void init_pykmsbase(py::module &m)
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
+			.def_property_readonly("format", &DumbFramebuffer::format)
+			.def_property_readonly("num_planes", &DumbFramebuffer::num_planes)
+			.def("fd", &DumbFramebuffer::prime_fd)
+			.def("stride", &DumbFramebuffer::stride)
+			.def("offset", &DumbFramebuffer::offset)
 			;
 
 	py::enum_<PixelFormat>(m, "PixelFormat")

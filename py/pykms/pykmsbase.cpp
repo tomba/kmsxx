@@ -110,6 +110,11 @@ void init_pykmsbase(py::module &m)
 			.def("offset", &DumbFramebuffer::offset)
 			;
 
+	py::class_<ExtFramebuffer>(m, "ExtFramebuffer", py::base<MappedFramebuffer>())
+			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat, vector<int>, vector<uint32_t>, vector<uint32_t>>(),
+			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
+			;
+
 	py::enum_<PixelFormat>(m, "PixelFormat")
 			.value("Undefined", PixelFormat::Undefined)
 

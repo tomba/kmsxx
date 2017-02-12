@@ -24,9 +24,10 @@ static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* pla
 }
 
 static const char* usage_str =
-		"Usage: kmsview [-t <ms>] <file> <width> <height> <fourcc>\n\n"
+		"Usage: kmsview [options] <file> <width> <height> <fourcc>\n\n"
 		"Options:\n"
-		"  -t, --time        Milliseconds to sleep between frames\n"
+		"  -c, --connector <name>	Output connector\n"
+		"  -t, --time <ms>		Milliseconds to sleep between frames\n"
 		;
 
 static void usage()
@@ -38,8 +39,13 @@ int main(int argc, char** argv)
 {
 	uint32_t time = 0;
 	string dev_path = "/dev/dri/card0";
+	string conn_name;
 
 	OptionSet optionset = {
+		Option("c|connector=", [&conn_name](string s)
+		{
+			conn_name = s;
+		}),
 		Option("|device=", [&dev_path](string s)
 		{
 			dev_path = s;
@@ -81,7 +87,7 @@ int main(int argc, char** argv)
 	Card card(dev_path);
 	ResourceManager res(card);
 
-	auto conn = res.reserve_connector();
+	auto conn = res.reserve_connector(conn_name);
 	auto crtc = res.reserve_crtc(conn);
 	auto plane = res.reserve_overlay_plane(crtc, pixfmt);
 	FAIL_IF(!plane, "available plane not found");

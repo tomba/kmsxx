@@ -56,10 +56,14 @@ class FlipHandler(pykms.PageFlipHandlerBase):
         else:
             crtc.page_flip(fb, self)
 
+if len(sys.argv) > 1:
+    conn_name = sys.argv[1]
+else:
+    conn_name = ''
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector()
+conn = res.reserve_connector(conn_name)
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 

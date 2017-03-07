@@ -71,6 +71,7 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Plane, Plane*>(m, "Plane",  py::base<DrmPropObject>())
 			.def("supports_crtc", &Plane::supports_crtc)
+			.def_property_readonly("formats", &Plane::get_formats)
 			.def_property_readonly("plane_type", &Plane::plane_type)
 			.def("__repr__", [](const Plane& o) { return "<pykms.Plane " + to_string(o.id()) + ">"; })
 			;
@@ -138,8 +139,10 @@ void init_pykmsbase(py::module &m)
 			.value("ABGR8888", PixelFormat::ABGR8888)
 
 			.value("RGB888", PixelFormat::RGB888)
+			.value("BGR888", PixelFormat::BGR888)
 
 			.value("RGB565", PixelFormat::RGB565)
+			.value("BGR565", PixelFormat::BGR565)
 			;
 
 	py::class_<Videomode>(m, "Videomode")

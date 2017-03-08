@@ -7,7 +7,7 @@ import selectors
 bar_width = 20
 bar_speed = 8
 
-class FlipHandler(pykms.PageFlipHandlerBase):
+class FlipHandler():
     def __init__(self):
         super().__init__()
         self.bar_xpos = 0
@@ -75,7 +75,11 @@ fliphandler.handle_page_flip(0, 0)
 
 def readdrm(fileobj, mask):
     #print("EVENT");
-    card.call_page_flip_handlers()
+    #card.call_page_flip_handlers()
+    for ev in card.read_events():
+        if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
+            ev.data.handle_page_flip(ev.seq, ev.time)
+
 
 def readkey(fileobj, mask):
     #print("KEY EVENT");

@@ -18,7 +18,6 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("encoders", &Card::get_encoders)
 			.def_property_readonly("planes", &Card::get_planes)
 			.def_property_readonly("has_atomic", &Card::has_atomic)
-			.def("call_page_flip_handlers", &Card::call_page_flip_handlers)
 			.def("get_prop", (Property* (Card::*)(uint32_t) const)&Card::get_prop)
 			;
 
@@ -49,7 +48,14 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
 			.def("set_mode", &Crtc::set_mode)
-			.def("page_flip", &Crtc::page_flip)
+			.def("page_flip",
+			     [](Crtc* self, Framebuffer& fb, py::object ob)
+				{
+					// This adds a ref to the object, and must be unpacked with __ob_unpack_helper()
+					PyObject* pob = ob.ptr();
+					Py_XINCREF(pob);
+					self->page_flip(fb, pob);
+				})
 			.def("set_plane", &Crtc::set_plane)
 			.def_property_readonly("possible_planes", &Crtc::get_possible_planes)
 			.def_property_readonly("primary_plane", &Crtc::get_primary_plane)
@@ -167,7 +173,14 @@ void init_pykmsbase(py::module &m)
 			.def("add", (void (AtomicReq::*)(DrmPropObject*, const string&, uint64_t)) &AtomicReq::add)
 			.def("add", (void (AtomicReq::*)(DrmPropObject*, const map<string, uint64_t>&)) &AtomicReq::add)
 			.def("test", &AtomicReq::test, py::arg("allow_modeset") = false)
-			.def("commit", &AtomicReq::commit, py::arg("data"), py::arg("allow_modeset") = false)
+			.def("commit",
+			     [](AtomicReq* self, py::object ob, bool allow)
+				{
+					// This adds a ref to the object, and must be unpacked with __ob_unpack_helper()
+					PyObject* pob = ob.ptr();
+					Py_XINCREF(pob);
+					self->commit(pob, allow);
+				}, py::arg("data"), py::arg("allow_modeset") = false)
 			.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false)
 			;
 }

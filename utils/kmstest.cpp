@@ -54,6 +54,7 @@ static bool s_flip_sync;
 static bool s_cvt;
 static bool s_cvt_v2;
 static bool s_cvt_vid_opt;
+static unsigned s_max_flips;
 
 static set<Crtc*> s_used_crtcs;
 static set<Plane*> s_used_planes;
@@ -359,7 +360,7 @@ static const char* usage_str =
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
 		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
-		"      --flip                Do page flipping for each output\n"
+		"      --flip[=max]          Do page flipping for each output with an optional maximum flips count\n"
 		"      --sync                Synchronize page flipping\n"
 		"\n"
 		"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (<id>).\n"
@@ -443,10 +444,12 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		{
 			s_use_cea = true;
 		}),
-		Option("|flip", []()
+		Option("|flip?", [&](string s)
 		{
 			s_flip_mode = true;
 			s_num_buffers = 2;
+			if (!s.empty())
+				s_max_flips = stoi(s);
 		}),
 		Option("|sync", []()
 		{
@@ -821,6 +824,8 @@ static void set_crtcs_n_planes(Card& card, const vector<OutputInfo>& outputs)
 		set_crtcs_n_planes_legacy(card, outputs);
 }
 
+static bool max_flips_reached;
+
 class FlipState : private PageFlipHandlerBase
 {
 public:
@@ -841,6 +846,8 @@ private:
 	void handle_page_flip(uint32_t frame, double time)
 	{
 		m_frame_num++;
+		if (s_max_flips && m_frame_num >= s_max_flips)
+			max_flips_reached = true;
 
 		auto now = std::chrono::steady_clock::now();
 
@@ -988,7 +995,7 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 	for (unique_ptr<FlipState>& fs : flipstates)
 		fs->start_flipping();
 
-	while (true) {
+	while (!max_flips_reached) {
 		int r;
 
 		FD_SET(0, &fds);

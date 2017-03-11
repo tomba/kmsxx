@@ -15,7 +15,8 @@ public:
 	Connector* reserve_connector(const std::string& name = "");
 	Connector* reserve_connector(Connector* conn);
 	Crtc* reserve_crtc(Connector* conn);
-	Plane* reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format = PixelFormat::Undefined);
+	Plane* reserve_plane(Crtc* crtc, PlaneType typemask, PixelFormat format = PixelFormat::Undefined);
+	Plane* reserve_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);
 	Plane* reserve_primary_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);
 	Plane* reserve_overlay_plane(Crtc* crtc, PixelFormat format = PixelFormat::Undefined);
 

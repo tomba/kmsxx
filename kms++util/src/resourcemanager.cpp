@@ -126,10 +126,10 @@ Crtc* ResourceManager::reserve_crtc(Connector* conn)
 	return nullptr;
 }
 
-Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format)
+Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType typemask, PixelFormat format)
 {
 	for (Plane* plane : crtc->get_possible_planes()) {
-		if (plane->plane_type() != type)
+		if (PlaneType::None == (plane->plane_type() & typemask))
 			continue;
 
 		if (format != PixelFormat::Undefined && !plane->supports_format(format))
@@ -143,6 +143,12 @@ Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat fo
 	}
 
 	return nullptr;
+}
+
+Plane* ResourceManager::reserve_plane(Crtc* crtc, PixelFormat format)
+{
+	return reserve_plane(crtc, PlaneType::Primary | PlaneType::Overlay,
+			     format);
 }
 
 Plane* ResourceManager::reserve_primary_plane(Crtc* crtc, PixelFormat format)

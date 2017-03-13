@@ -75,7 +75,6 @@ fliphandler.handle_page_flip(0, 0)
 
 def readdrm(fileobj, mask):
     #print("EVENT");
-    #card.call_page_flip_handlers()
     for ev in card.read_events():
         if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
             ev.data.handle_page_flip(ev.seq, ev.time)

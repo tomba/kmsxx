@@ -5,6 +5,7 @@
 #include <cassert>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <algorithm>
 
 #include <kms++/kms++.h>
 
@@ -64,6 +65,30 @@ PlaneType Plane::plane_type() const
 	} else {
 		return PlaneType::Overlay;
 	}
+}
+
+vector<Crtc*> Plane::get_possible_crtcs() const
+{
+	unsigned idx = 0;
+	vector<Crtc*> v;
+	auto crtcs = card().get_crtcs();
+
+	for (uint32_t crtc_mask = m_priv->drm_plane->possible_crtcs;
+	     crtc_mask;
+	     idx++, crtc_mask >>= 1) {
+
+		if ((crtc_mask & 1) == 0)
+			continue;
+
+		auto iter = find_if(crtcs.begin(), crtcs.end(), [idx](Crtc* crtc) { return crtc->idx() == idx; });
+
+		if (iter == crtcs.end())
+			throw runtime_error("get_possible_crtcs: crtc missing");
+
+		v.push_back(*iter);
+	}
+
+	return v;
 }
 
 vector<PixelFormat> Plane::get_formats() const

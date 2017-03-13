@@ -179,7 +179,7 @@ void init_pykmsbase(py::module &m)
 					// This adds a ref to the object, and must be unpacked with __ob_unpack_helper()
 					PyObject* pob = ob.ptr();
 					Py_XINCREF(pob);
-					self->commit(pob, allow);
+					return self->commit(pob, allow);
 				}, py::arg("data"), py::arg("allow_modeset") = false)
 			.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false)
 			;

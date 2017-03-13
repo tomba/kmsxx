@@ -101,6 +101,10 @@ static string format_plane(Plane& p)
 	if (p.fb_id())
 		str += sformat(" fb-id: %u", p.fb_id());
 
+	string crtcs = join<Crtc*>(p.get_possible_crtcs(), " ", [](Crtc* crtc) { return to_string(crtc->idx()); });
+
+	str += sformat(" (crtcs: %s)", crtcs.c_str());
+
 	if (p.card().has_atomic()) {
 		str += sformat(" %u,%u %ux%u -> %u,%u %ux%u",
 			       (uint32_t)p.get_prop_value("SRC_X") >> 16,

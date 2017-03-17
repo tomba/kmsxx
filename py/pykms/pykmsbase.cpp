@@ -23,6 +23,7 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<DrmObject, DrmObject*>(m, "DrmObject")
 			.def_property_readonly("id", &DrmObject::id)
+			.def_property_readonly("idx", &DrmObject::idx)
 			.def_property_readonly("card", &DrmObject::card)
 			;
 

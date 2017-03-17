@@ -7,10 +7,28 @@ namespace kms
 
 enum class PlaneType
 {
+	None = 0,
 	Overlay = 1 << 0,
 	Primary = 1 << 1,
 	Cursor = 1 << 2,
 };
+
+inline constexpr PlaneType operator&(PlaneType a, PlaneType b)
+{
+	return static_cast<PlaneType>(static_cast<uint>(a) &
+				      static_cast<uint>(b));
+}
+
+inline constexpr PlaneType operator|(PlaneType a, PlaneType b)
+{
+	return static_cast<PlaneType> (static_cast<uint>(a) |
+				       static_cast<uint>(b));
+}
+
+inline constexpr PlaneType operator~(PlaneType a)
+{
+	return static_cast<PlaneType> (~static_cast<uint>(a));
+}
 
 struct PlanePriv;
 

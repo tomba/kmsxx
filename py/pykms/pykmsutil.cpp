@@ -30,6 +30,9 @@ void init_pykmstest(py::module &m)
 			     py::arg("crtc"),
 			     py::arg("type"),
 			     py::arg("format") = PixelFormat::Undefined)
+			.def("reserve_generic_plane", &ResourceManager::reserve_generic_plane,
+			     py::arg("crtc"),
+			     py::arg("format") = PixelFormat::Undefined)
 			.def("reserve_primary_plane", &ResourceManager::reserve_primary_plane,
 			     py::arg("crtc"),
 			     py::arg("format") = PixelFormat::Undefined)

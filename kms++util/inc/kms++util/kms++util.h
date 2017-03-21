@@ -63,3 +63,9 @@ void draw_test_pattern(IMappedFramebuffer &fb);
 		fprintf(stderr, fmt "\n", ##__VA_ARGS__); \
 		exit(-1); \
 	} while(0)
+
+#define EXIT_IF(x, fmt, ...) \
+	if (unlikely(x)) { \
+		fprintf(stderr, fmt "\n", ##__VA_ARGS__); \
+		exit(-1); \
+	}

@@ -497,7 +497,9 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 
 			OutputInfo output = { };
 			output.connector = resman.reserve_connector(conn);
+			EXIT_IF(!output.connector, "Failed to reserve connector %s", conn->fullname().c_str());
 			output.crtc = resman.reserve_crtc(conn);
+			EXIT_IF(!output.crtc, "Failed to reserve crtc for %s", conn->fullname().c_str());
 			output.mode = output.connector->get_default_mode();
 
 			output.fbs = get_default_fb(card, output.mode.hdisplay, output.mode.vdisplay);

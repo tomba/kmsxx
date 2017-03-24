@@ -101,6 +101,9 @@ Connector* ResourceManager::reserve_connector(const string& name)
 
 Connector* ResourceManager::reserve_connector(Connector* conn)
 {
+	if (!conn)
+		return nullptr;
+
 	if (contains(m_reserved_connectors, conn))
 		return nullptr;
 
@@ -110,6 +113,9 @@ Connector* ResourceManager::reserve_connector(Connector* conn)
 
 Crtc* ResourceManager::reserve_crtc(Connector* conn)
 {
+	if (!conn)
+		return nullptr;
+
 	if (Crtc* crtc = conn->get_current_crtc()) {
 		m_reserved_crtcs.push_back(crtc);
 		return crtc;
@@ -128,6 +134,9 @@ Crtc* ResourceManager::reserve_crtc(Connector* conn)
 
 Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format)
 {
+	if (!crtc)
+		return nullptr;
+
 	for (Plane* plane : crtc->get_possible_planes()) {
 		if (plane->plane_type() == type)
 			continue;
@@ -147,6 +156,9 @@ Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat fo
 
 Plane* ResourceManager::reserve_generic_plane(Crtc* crtc, PixelFormat format)
 {
+	if (!crtc)
+		return nullptr;
+
 	for (Plane* plane : crtc->get_possible_planes()) {
 		if (plane->plane_type() == PlaneType::Cursor)
 			continue;

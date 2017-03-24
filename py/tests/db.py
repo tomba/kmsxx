@@ -51,7 +51,14 @@ class FlipHandler():
 
         if card.has_atomic:
             ctx = pykms.AtomicReq(card)
-            ctx.add(crtc.primary_plane, "FB_ID", fb.id)
+            ctx.add(crtc.primary_plane, {
+                "CRTC_ID": crtc.id,
+                "FB_ID": fb.id,
+                "SRC_W": fb.width << 16,
+                "SRC_H": fb.height << 16,
+                "CRTC_W": fb.width,
+                "CRTC_H": fb.height,
+            })
             ctx.commit(self)
         else:
             crtc.page_flip(fb, self)
@@ -62,6 +69,7 @@ else:
     conn_name = ''
 
 card = pykms.Card()
+card.disable_planes()
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector(conn_name)
 crtc = res.reserve_crtc(conn)

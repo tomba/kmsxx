@@ -49,6 +49,7 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
 			.def("set_mode", &Crtc::set_mode)
+			.def("disable_mode", &Crtc::disable_mode)
 			.def("page_flip",
 			     [](Crtc* self, Framebuffer& fb, py::object ob)
 				{

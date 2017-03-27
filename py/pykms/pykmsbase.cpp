@@ -147,6 +147,12 @@ void init_pykmsbase(py::module &m)
 			.value("BGR565", PixelFormat::BGR565)
 			;
 
+	py::enum_<SyncPolarity>(m, "SyncPolarity")
+			.value("Undefined", SyncPolarity::Undefined)
+			.value("Positive", SyncPolarity::Positive)
+			.value("Negative", SyncPolarity::Negative)
+			;
+
 	py::class_<Videomode>(m, "Videomode")
 			.def(py::init<>())
 
@@ -172,7 +178,13 @@ void init_pykmsbase(py::module &m)
 			.def("__repr__", [](const Videomode& vm) { return "<pykms.Videomode " + to_string(vm.hdisplay) + "x" + to_string(vm.vdisplay) + ">"; })
 
 			.def("to_blob", &Videomode::to_blob)
+
+			.def_property("hsync", &Videomode::hsync, &Videomode::set_hsync)
+			.def_property("vsync", &Videomode::vsync, &Videomode::set_vsync)
 			;
+
+
+	m.def("videomode_from_timings", &videomode_from_timings);
 
 	py::class_<AtomicReq>(m, "AtomicReq")
 			.def(py::init<Card&>(),

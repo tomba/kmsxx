@@ -138,7 +138,7 @@ Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat fo
 		return nullptr;
 
 	for (Plane* plane : crtc->get_possible_planes()) {
-		if (plane->plane_type() == type)
+		if (plane->plane_type() != type)
 			continue;
 
 		if (format != PixelFormat::Undefined && !plane->supports_format(format))

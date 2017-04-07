@@ -31,18 +31,18 @@ def test_am5_trans_dest():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, purple)
-    pykms.draw_rect(fb, 100, 100, 100, 200, green)
-    pykms.draw_rect(fb, 300, 100, 100, 200, red)
-    pykms.draw_rect(fb, 500, 100, 100, 200, white)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.purple)
+    pykms.draw_rect(fb, 100, 100, 100, 200, pykms.green)
+    pykms.draw_rect(fb, 300, 100, 100, 200, pykms.red)
+    pykms.draw_rect(fb, 500, 100, 100, 200, pykms.white)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
-    pykms.draw_rect(fb, 250, 100, 200, 200, yellow)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
+    pykms.draw_rect(fb, 250, 100, 200, 200, pykms.yellow)
 
     crtc.set_props({
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888,
+        "trans-key": pykms.purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -71,17 +71,17 @@ def test_am5_trans_src():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, white)
-    pykms.draw_rect(fb, 200, 200, 100, 100, red)
-    pykms.draw_rect(fb, fb.width - 300, 200, 100, 100, green)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.white)
+    pykms.draw_rect(fb, 200, 200, 100, 100, pykms.red)
+    pykms.draw_rect(fb, fb.width - 300, 200, 100, 100, pykms.green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
-    pykms.draw_rect(fb, 100, 100, 500, 500, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
+    pykms.draw_rect(fb, 100, 100, 500, 500, pykms.purple)
 
     crtc.set_props({
         "trans-key-mode": 2,
-        "trans-key": purple.rgb888,
+        "trans-key": pykms.purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -111,20 +111,20 @@ def test_am4_normal_trans_dst():
     fbs.append(pykms.DumbFramebuffer(card, w * 2 // 3, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, w, h, purple)
-    pykms.draw_rect(fb, 100, 50, 50, 200, green)
-    pykms.draw_rect(fb, 200, 50, 50, 200, red)
-    pykms.draw_rect(fb, 300, 50, 50, 200, white)
+    pykms.draw_rect(fb, 0, 0, w, h, pykms.purple)
+    pykms.draw_rect(fb, 100, 50, 50, 200, pykms.green)
+    pykms.draw_rect(fb, 200, 50, 50, 200, pykms.red)
+    pykms.draw_rect(fb, 300, 50, 50, 200, pykms.white)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.blue)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
 
     crtc.set_props({
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888,
+        "trans-key": pykms.purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -183,20 +183,20 @@ def test_am4_normal_trans_src():
 
     fb = fbs[0]
     pykms.draw_rect(fb, 0, 0, w, h, pykms.RGB(128, 255, 255))
-    pykms.draw_rect(fb, 200, 100, 50, 200, red)
-    pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, green)
+    pykms.draw_rect(fb, 200, 100, 50, 200, pykms.red)
+    pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, pykms.green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
-    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.blue)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, pykms.purple)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
-    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, pykms.purple)
 
     crtc.set_props({
         "trans-key-mode": 2,
-        "trans-key": purple.rgb888,
+        "trans-key": pykms.purple.rgb888,
         "background": 0,
         "alpha_blender": 0,
     })
@@ -254,21 +254,21 @@ def test_am4_alpha_trans_src():
     fbs.append(pykms.DumbFramebuffer(card, w // 2, h, "XR24"))
 
     fb = fbs[0]
-    pykms.draw_rect(fb, 0, 0, w, h, purple)
-    pykms.draw_rect(fb, 200, 100, 50, 200, red)
-    pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, green)
+    pykms.draw_rect(fb, 0, 0, w, h, pykms.purple)
+    pykms.draw_rect(fb, 200, 100, 50, 200, pykms.red)
+    pykms.draw_rect(fb, w - 200 - 50, 100, 50, 200, pykms.green)
 
     fb = fbs[1]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, blue)
-    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.blue)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, pykms.purple)
 
     fb = fbs[2]
-    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, cyan)
-    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, purple)
+    pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, pykms.purple)
 
     crtc.set_props({
         "trans-key-mode": 1,
-        "trans-key": purple.rgb888,
+        "trans-key": pykms.purple.rgb888,
         "background": 0,
         "alpha_blender": 1,
     })

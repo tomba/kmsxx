@@ -145,10 +145,47 @@ void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
 
 void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
 {
-	for (unsigned i = x; i < x + w; ++i) {
-		for (unsigned j = y; j < y + h; ++j) {
-			draw_rgb_pixel(fb, i, j, color);
+	unsigned i, j;
+	YUV yuvcolor = color.yuv();
+
+	switch (fb.format()) {
+	case PixelFormat::XRGB8888:
+	case PixelFormat::XBGR8888:
+	case PixelFormat::ARGB8888:
+	case PixelFormat::ABGR8888:
+	case PixelFormat::RGB888:
+	case PixelFormat::BGR888:
+	case PixelFormat::RGB565:
+	case PixelFormat::BGR565:
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i++) {
+				draw_rgb_pixel(fb, x + i, y + j, color);
+			}
 		}
+		break;
+
+	case PixelFormat::UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::YVYU:
+	case PixelFormat::VYUY:
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i += 2) {
+				draw_yuv422_macropixel(fb, x + i, y + j, yuvcolor, yuvcolor);
+			}
+		}
+		break;
+
+	case PixelFormat::NV12:
+	case PixelFormat::NV21:
+		for (j = 0; j < h; j += 2) {
+			for (i = 0; i < w; i += 2) {
+				draw_yuv420_macropixel(fb, x + i, y + j,
+						       yuvcolor, yuvcolor, yuvcolor, yuvcolor);
+			}
+		}
+		break;
+	default:
+		throw std::invalid_argument("unknown pixelformat");
 	}
 }
 

@@ -95,12 +95,20 @@ int Crtc::disable_plane(Plane* plane)
 
 Plane* Crtc::get_primary_plane()
 {
+	Plane *primary = nullptr;
+
 	for (Plane* p : get_possible_planes()) {
 		if (p->plane_type() != PlaneType::Primary)
 			continue;
 
-		return p;
+		if (p->crtc_id() == id())
+			return p;
+
+		primary = p;
 	}
+
+	if (primary)
+		return primary;
 
 	throw invalid_argument(string("No primary plane for crtc ") + to_string(id()));
 }

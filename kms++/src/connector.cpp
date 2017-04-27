@@ -13,6 +13,9 @@ using namespace std;
 namespace kms
 {
 
+#ifndef DRM_MODE_CONNECTOR_DPI
+#define DRM_MODE_CONNECTOR_DPI 17
+#endif
 
 static const map<int, string> connector_names = {
 	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
@@ -32,6 +35,7 @@ static const map<int, string> connector_names = {
 	{ DRM_MODE_CONNECTOR_eDP, "eDP" },
 	{ DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
 	{ DRM_MODE_CONNECTOR_DSI, "DSI" },
+	{ DRM_MODE_CONNECTOR_DPI, "DPI" },
 };
 
 static const map<int, string> connection_str = {

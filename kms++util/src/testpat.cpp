@@ -97,7 +97,7 @@ static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y
 	}
 }
 
-static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, unsigned end_y)
+static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, unsigned end_y, YUVType yuvt)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
@@ -127,7 +127,7 @@ static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, uns
 			for (x = 0; x < w; x += 2) {
 				RGB pixel1 = get_test_pattern_pixel(fb, x, y);
 				RGB pixel2 = get_test_pattern_pixel(fb, x + 1, y);
-				draw_yuv422_macropixel(fb, x, y, pixel1.yuv(), pixel2.yuv());
+				draw_yuv422_macropixel(fb, x, y, pixel1.yuv(yuvt), pixel2.yuv(yuvt));
 			}
 		}
 		break;
@@ -141,8 +141,8 @@ static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, uns
 				RGB pixel01 = get_test_pattern_pixel(fb, x, y + 1);
 				RGB pixel11 = get_test_pattern_pixel(fb, x + 1, y + 1);
 				draw_yuv420_macropixel(fb, x, y,
-						       pixel00.yuv(), pixel10.yuv(),
-						       pixel01.yuv(), pixel11.yuv());
+						       pixel00.yuv(yuvt), pixel10.yuv(yuvt),
+						       pixel01.yuv(yuvt), pixel11.yuv(yuvt));
 			}
 		}
 		break;
@@ -151,10 +151,10 @@ static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, uns
 	}
 }
 
-static void draw_test_pattern_impl(IMappedFramebuffer& fb)
+static void draw_test_pattern_impl(IMappedFramebuffer& fb, YUVType yuvt)
 {
 	if (fb.height() < 20) {
-		draw_test_pattern_part(fb, 0, fb.height());
+		draw_test_pattern_part(fb, 0, fb.height(), yuvt);
 		return;
 	}
 
@@ -174,21 +174,21 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb)
 		if (n == num_threads - 1)
 			end = fb.height();
 
-		workers.push_back(thread([&fb, start, end]() { draw_test_pattern_part(fb, start, end); }));
+		workers.push_back(thread([&fb, start, end, yuvt]() { draw_test_pattern_part(fb, start, end, yuvt); }));
 	}
 
 	for (thread& t : workers)
 		t.join();
 }
 
-void draw_test_pattern(IMappedFramebuffer &fb)
+void draw_test_pattern(IMappedFramebuffer &fb, YUVType yuvt)
 {
 #ifdef DRAW_PERF_PRINT
 	Stopwatch sw;
 	sw.start();
 #endif
 
-	draw_test_pattern_impl(fb);
+	draw_test_pattern_impl(fb, yuvt);
 
 #ifdef DRAW_PERF_PRINT
 	double us = sw.elapsed_us();

@@ -26,7 +26,7 @@ void draw_text(IMappedFramebuffer& buf, uint32_t x, uint32_t y, const std::strin
 
 void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width);
 
-void draw_test_pattern(IMappedFramebuffer &fb);
+void draw_test_pattern(IMappedFramebuffer &fb, YUVType yuvt = YUVType::BT601_Lim);
 }
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

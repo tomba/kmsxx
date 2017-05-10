@@ -28,6 +28,9 @@ static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y
 	// white margin lines
 	if (x == xm1 || x == xm2 || y == ym1 || y == ym2)
 		return RGB(255, 255, 255);
+	// white box in top left corner
+	else if (x < xm1 && y < ym1)
+		return RGB(255, 255, 255);
 	// white box outlines to corners
 	else if ((x == 0 || x == w - 1) && (y < ym1 || y > ym2))
 		return RGB(255, 255, 255);

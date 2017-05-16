@@ -49,4 +49,6 @@ void init_pykmstest(py::module &m)
 	m.def("draw_rect", [](MappedFramebuffer& fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color) {
 		draw_rect(fb, x, y, w, h, color);
 	} );
+	m.def("draw_text", [](MappedFramebuffer& fb, uint32_t x, uint32_t y, const string& str, RGB color) {
+		draw_text(fb, x, y, str, color); } );
 }

@@ -232,7 +232,7 @@ static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, cha
 				bool b1 = get_char_pixel(c, x + 1, y);
 
 				draw_yuv422_macropixel(buf, xpos + x, ypos + y,
-						       b0 ? yuvcolor : YUV(), b1 ? yuvcolor : YUV());
+						       b0 ? yuvcolor : YUV(RGB()), b1 ? yuvcolor : YUV(RGB()));
 			}
 		}
 		break;
@@ -247,8 +247,8 @@ static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, cha
 				bool b11 = get_char_pixel(c, x + 1, y + 1);
 
 				draw_yuv420_macropixel(buf, xpos + x, ypos + y,
-						       b00 ? yuvcolor : YUV(), b10 ? yuvcolor : YUV(),
-						       b01 ? yuvcolor : YUV(), b11 ? yuvcolor : YUV());
+						       b00 ? yuvcolor : YUV(RGB()), b10 ? yuvcolor : YUV(RGB()),
+						       b01 ? yuvcolor : YUV(RGB()), b11 ? yuvcolor : YUV(RGB()));
 			}
 		}
 		break;

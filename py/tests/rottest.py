@@ -96,7 +96,7 @@ fb_h = 150
 x_scale = 1
 y_scale = 1
 
-fb = pykms.OmapFramebuffer(card, fb_w, fb_h, "NV12", tiled = True);
+fb = pykms.OmapFramebuffer(card, fb_w, fb_h, "NV12", flags = pykms.OmapFramebuffer.Tiled);
 #fb = pykms.DumbFramebuffer(card, fb_w, fb_h, "NV12")
 pykms.draw_test_pattern(fb);
 

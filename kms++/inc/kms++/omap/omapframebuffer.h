@@ -12,8 +12,14 @@ class OmapCard;
 class OmapFramebuffer : public MappedFramebuffer
 {
 public:
-	OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const std::string& fourcc, bool tiled = false);
-	OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, bool tiled = false);
+	enum Flags
+	{
+		None = 0,
+		Tiled = 1 << 0,
+	};
+
+	OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const std::string& fourcc, Flags flags = Flags::None);
+	OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, Flags flags = Flags::None);
 	virtual ~OmapFramebuffer();
 
 	uint32_t width() const { return Framebuffer::width(); }
@@ -42,7 +48,7 @@ private:
 		uint8_t* map;
 	};
 
-	void Create(bool tiled);
+	void Create(Flags buffer_flags);
 	void Destroy();
 
 	unsigned m_num_planes;

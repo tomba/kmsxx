@@ -26,15 +26,15 @@ using namespace std;
 namespace kms
 {
 
-OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const string& fourcc, bool tiled)
-	: OmapFramebuffer(card, width, height, FourCCToPixelFormat(fourcc), tiled)
+OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const string& fourcc, Flags flags)
+	: OmapFramebuffer(card, width, height, FourCCToPixelFormat(fourcc), flags)
 {
 }
 
-OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, bool tiled)
+OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, Flags flags)
 	:MappedFramebuffer(card, width, height), m_omap_card(card), m_format(format)
 {
-	Create(tiled);
+	Create(flags);
 }
 
 OmapFramebuffer::~OmapFramebuffer()
@@ -42,7 +42,7 @@ OmapFramebuffer::~OmapFramebuffer()
 	Destroy();
 }
 
-void OmapFramebuffer::Create(bool tiled)
+void OmapFramebuffer::Create(Flags buffer_flags)
 {
 	const PixelFormatInfo& format_info = get_pixel_format_info(m_format);
 
@@ -58,7 +58,7 @@ void OmapFramebuffer::Create(bool tiled)
 
 		uint32_t stride;
 
-		if (!tiled) {
+		if (!(buffer_flags & Flags::Tiled)) {
 			stride = width() * pi.bitspp / 8;
 
 			uint32_t size = stride * height() / pi.ysub;

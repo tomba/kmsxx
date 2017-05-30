@@ -14,13 +14,22 @@ void init_pykmsomap(py::module &m)
 			.def(py::init<>())
 			;
 
-	py::class_<OmapFramebuffer>(m, "OmapFramebuffer", py::base<MappedFramebuffer>())
-			.def(py::init<OmapCard&, uint32_t, uint32_t, const string&, bool>(),
+	py::class_<OmapFramebuffer> omapfb(m, "OmapFramebuffer", py::base<MappedFramebuffer>());
+
+	// XXX we should use py::arithmetic() here to support or and and operators, but it's not supported in the pybind11 we use
+	py::enum_<OmapFramebuffer::Flags>(omapfb, "Flags")
+			.value("None", OmapFramebuffer::Flags::None)
+			.value("Tiled", OmapFramebuffer::Flags::Tiled)
+			.export_values()
+			;
+
+	omapfb
+			.def(py::init<OmapCard&, uint32_t, uint32_t, const string&, OmapFramebuffer::Flags>(),
 			     py::keep_alive<1, 2>(),	// Keep Card alive until this is destructed
-			     py::arg("card"), py::arg("width"), py::arg("height"), py::arg("fourcc"), py::arg("tiled") = false)
-			.def(py::init<OmapCard&, uint32_t, uint32_t, PixelFormat, bool>(),
+			     py::arg("card"), py::arg("width"), py::arg("height"), py::arg("fourcc"), py::arg("flags") = OmapFramebuffer::None)
+			.def(py::init<OmapCard&, uint32_t, uint32_t, PixelFormat, OmapFramebuffer::Flags>(),
 			     py::keep_alive<1, 2>(),	// Keep OmapCard alive until this is destructed
-			     py::arg("card"), py::arg("width"), py::arg("height"), py::arg("pixfmt"), py::arg("tiled") = false)
+			     py::arg("card"), py::arg("width"), py::arg("height"), py::arg("pixfmt"), py::arg("flags") = OmapFramebuffer::None)
 			.def_property_readonly("format", &OmapFramebuffer::format)
 			.def_property_readonly("num_planes", &OmapFramebuffer::num_planes)
 			.def("fd", &OmapFramebuffer::prime_fd)

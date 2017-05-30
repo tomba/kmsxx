@@ -20,6 +20,9 @@ void init_pykmsomap(py::module &m)
 	py::enum_<OmapFramebuffer::Flags>(omapfb, "Flags")
 			.value("None", OmapFramebuffer::Flags::None)
 			.value("Tiled", OmapFramebuffer::Flags::Tiled)
+			.value("MemContig", OmapFramebuffer::Flags::MemContig)
+			.value("MemTiler", OmapFramebuffer::Flags::MemTiler)
+			.value("MemPin", OmapFramebuffer::Flags::MemPin)
 			.export_values()
 			;
 

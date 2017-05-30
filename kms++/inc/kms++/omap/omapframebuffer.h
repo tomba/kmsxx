@@ -16,6 +16,9 @@ public:
 	{
 		None = 0,
 		Tiled = 1 << 0,
+		MemContig = 1 << 1,
+		MemTiler = 1 << 2,
+		MemPin = 1 << 3,
 	};
 
 	OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const std::string& fourcc, Flags flags = Flags::None);

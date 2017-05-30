@@ -54,6 +54,15 @@ void OmapFramebuffer::Create(Flags buffer_flags)
 
 		uint32_t flags = OMAP_BO_SCANOUT | OMAP_BO_WC;
 
+#if defined(OMAP_BO_MEM_CONTIG)
+		if (buffer_flags & Flags::MemContig)
+			flags |= OMAP_BO_MEM_CONTIG;
+		if (buffer_flags & Flags::MemTiler)
+			flags |= OMAP_BO_MEM_TILER;
+		if (buffer_flags & Flags::MemPin)
+			flags |= OMAP_BO_MEM_PIN;
+#endif
+
 		struct omap_bo* bo;
 
 		uint32_t stride;

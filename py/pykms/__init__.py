@@ -16,6 +16,20 @@ white = RGB(255, 255, 255)
 cyan = RGB(0, 255, 255)
 
 #
+# Rotation enum
+#
+
+class Rotation(int, Enum):
+    ROTATE_0 = 1 << 0
+    ROTATE_90 = 1 << 1
+    ROTATE_180 = 1 << 2
+    ROTATE_270 = 1 << 3
+    ROTATE_MASK = ROTATE_0 | ROTATE_90 | ROTATE_180 | ROTATE_270
+    REFLECT_X = 1 << 4
+    REFLECT_Y = 1 << 5
+    REFLECT_MASK = REFLECT_X | REFLECT_Y
+
+#
 # DrmObject API extensions
 #
 

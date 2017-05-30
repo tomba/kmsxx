@@ -43,23 +43,12 @@ req.add(crtc, {"ACTIVE": 1,
 
 req.commit_sync(allow_modeset = True)
 
-class Rotation(int, Enum):
-	ROTATE_0 = 1 << 0
-	ROTATE_90 = 1 << 1
-	ROTATE_180 = 1 << 2
-	ROTATE_270 = 1 << 3
-	ROTATE_MASK = ROTATE_0 | ROTATE_90 | ROTATE_180 | ROTATE_270
-	REFLECT_X = 1 << 4
-	REFLECT_Y = 1 << 5
-	REFLECT_MASK = REFLECT_X | REFLECT_Y
-
-
 def show_rot_plane(crtc, plane, fb, rot, x_scale, y_scale):
 
 	crtc_w = int(fb_w * x_scale)
 	crtc_h = int(fb_h * y_scale)
 
-	if (rot & Rotation.ROTATE_90) or (rot & Rotation.ROTATE_270):
+	if (rot & pykms.Rotation.ROTATE_90) or (rot & pykms.Rotation.ROTATE_270):
 		tmp = crtc_w
 		crtc_w = crtc_h
 		crtc_h = tmp
@@ -78,9 +67,9 @@ def show_rot_plane(crtc, plane, fb, rot, x_scale, y_scale):
 		src_x, src_y, src_w, src_h,
 		crtc_x, crtc_y, crtc_w, crtc_h))
 
-	angle_str = Rotation(rot & Rotation.ROTATE_MASK).name
-	reflect_x_str = "REFLECT_X" if rot & Rotation.REFLECT_X else ""
-	reflect_y_str = "REFLECT_Y" if rot & Rotation.REFLECT_Y else ""
+	angle_str = pykms.Rotation(rot & pykms.Rotation.ROTATE_MASK).name
+	reflect_x_str = "REFLECT_X" if rot & pykms.Rotation.REFLECT_X else ""
+	reflect_y_str = "REFLECT_Y" if rot & pykms.Rotation.REFLECT_Y else ""
 
 	print("{} {} {}".format(angle_str, reflect_x_str, reflect_y_str))
 
@@ -119,7 +108,7 @@ pykms.draw_text(fb, even((fb_w // 2) - (8 * 6) // 2), fb_h - 8 - 4, "BOTTOM", py
 pykms.draw_text(fb, 4, even(((fb_h // 2) - 4)), "L", pykms.white)
 pykms.draw_text(fb, fb_w - 8 - 4, even(((fb_h // 2) - 4)), "R", pykms.white)
 
-rots = [ Rotation.ROTATE_0, Rotation.ROTATE_90, Rotation.ROTATE_180, Rotation.ROTATE_270 ]
+rots = [ pykms.Rotation.ROTATE_0, pykms.Rotation.ROTATE_90, pykms.Rotation.ROTATE_180, pykms.Rotation.ROTATE_270 ]
 cursors = [ "A", "D", "B", "C" ]
 
 print("Use the cursor keys, x and y to change rotation. Press q to quit.")
@@ -131,7 +120,7 @@ tty.setcbreak(fd)
 try:
 	esc_seq = 0
 
-	current_rot = Rotation.ROTATE_0
+	current_rot = pykms.Rotation.ROTATE_0
 
 	show_rot_plane(crtc, plane, fb, current_rot, x_scale, y_scale)
 
@@ -160,7 +149,7 @@ try:
 
 				rot = rots[cursors.index(c)]
 
-				current_rot &= ~Rotation.ROTATE_MASK
+				current_rot &= ~pykms.Rotation.ROTATE_MASK
 				current_rot |= rot
 
 				changed = True
@@ -169,10 +158,10 @@ try:
 			if c == "q":
 				break
 			elif c == "x":
-				current_rot ^= Rotation.REFLECT_X
+				current_rot ^= pykms.Rotation.REFLECT_X
 				changed = True
 			elif c == "y":
-				current_rot ^= Rotation.REFLECT_Y
+				current_rot ^= pykms.Rotation.REFLECT_Y
 				changed = True
 
 		if changed:

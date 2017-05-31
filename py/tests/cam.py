@@ -8,11 +8,6 @@ w = 640
 h = 480
 fmt = pykms.PixelFormat.YUYV
 
-
-# This hack makes drm initialize the fbcon, setting up the default connector
-card = pykms.Card()
-card = 0
-
 card = pykms.Card()
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
@@ -20,6 +15,13 @@ crtc = res.reserve_crtc(conn)
 plane = res.reserve_overlay_plane(crtc, fmt)
 
 mode = conn.get_default_mode()
+modeb = mode.to_blob(card)
+
+req = pykms.AtomicReq(card)
+req.add(conn, "CRTC_ID", crtc.id)
+req.add(crtc, {"ACTIVE": 1,
+        "MODE_ID": modeb.id})
+req.commit_sync(allow_modeset = True)
 
 NUM_BUFS = 5
 

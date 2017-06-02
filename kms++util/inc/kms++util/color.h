@@ -6,6 +6,14 @@ namespace kms
 {
 struct YUV;
 
+enum class YUVType {
+	BT601_Lim = 0,
+	BT601_Full,
+	BT709_Lim,
+	BT709_Full,
+	MAX,
+};
+
 struct RGB
 {
 	RGB();
@@ -19,7 +27,7 @@ struct RGB
 	uint32_t abgr8888() const;
 	uint16_t rgb565() const;
 	uint16_t bgr565() const;
-	YUV yuv() const;
+	YUV yuv(YUVType type = YUVType::BT601_Lim) const;
 
 	uint8_t b;
 	uint8_t g;
@@ -31,7 +39,7 @@ struct YUV
 {
 	YUV();
 	YUV(uint8_t y, uint8_t u, uint8_t v);
-	YUV(const RGB& rgb);
+	YUV(const RGB& rgb, YUVType type = YUVType::BT601_Lim);
 
 	uint8_t v;
 	uint8_t u;

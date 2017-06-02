@@ -59,11 +59,40 @@ uint16_t RGB::bgr565() const
 	return ((b >> 3) << 11) | ((g >> 2) << 5) | ((r >> 3) << 0);
 }
 
-YUV RGB::yuv() const
+YUV RGB::yuv(YUVType type) const
 {
-	return YUV(*this);
+	return YUV(*this, type);
 }
 
+#define CF_ONE (256)
+#define CF(a, b, c) { ((int) ((a) * CF_ONE)), ((int) ((b) * CF_ONE)), ((int) ((c) * CF_ONE)) }
+#define CLAMP(a) ((a) > (CF_ONE-1) ? (CF_ONE-1) : (a) < 0 ? 0 : (a))
+
+const int YUVcoef[static_cast<unsigned>(YUVType::MAX)][3][3] = {
+	[static_cast<unsigned>(YUVType::BT601_Lim)] = {
+		CF( 0.257,  0.504,  0.098),
+		CF(-0.148, -0.291,  0.439),
+		CF( 0.439, -0.368, -0.071) },
+	[static_cast<unsigned>(YUVType::BT601_Full)] = {
+		CF( 0.299,  0.587,  0.114),
+		CF(-0.169, -0.331,  0.500),
+		CF( 0.500, -0.419, -0.081) },
+	[static_cast<unsigned>(YUVType::BT709_Lim)] = {
+		CF( 0.1826,  0.6142,  0.0620),
+		CF(-0.1006, -0.3386,  0.4392),
+		CF( 0.4392, -0.3989, -0.0403) },
+	[static_cast<unsigned>(YUVType::BT709_Full)] = {
+		CF( 0.2126,  0.7152,  0.0722),
+		CF(-0.1146, -0.3854,  0.5000),
+		CF( 0.5000, -0.4542, -0.0468) },
+};
+
+const int YUVoffset[static_cast<unsigned>(YUVType::MAX)][3] = {
+	[static_cast<unsigned>(YUVType::BT601_Lim)]  = CF(0.0625,  0.5,  0.5),
+	[static_cast<unsigned>(YUVType::BT601_Full)] = CF(     0,  0.5,  0.5),
+	[static_cast<unsigned>(YUVType::BT709_Lim)]  = CF(0.0625,  0.5,  0.5),
+	[static_cast<unsigned>(YUVType::BT709_Full)] = CF(     0,  0.5,  0.5),
+};
 
 YUV::YUV()
 {
@@ -78,26 +107,41 @@ YUV::YUV(uint8_t y, uint8_t u, uint8_t v)
 	this->a = 0;
 }
 
-static inline uint8_t MAKE_YUV_601_Y(uint8_t r, uint8_t g, uint8_t b)
+static inline
+uint8_t MAKE_YUV_Y(uint8_t r, uint8_t g, uint8_t b, YUVType type)
 {
-	return (((66 * r + 129 * g +  25 * b + 128) >> 8) + 16);
+	unsigned tidx = static_cast<unsigned>(type);
+
+	return CLAMP(((YUVcoef[tidx][0][0] * r + YUVcoef[tidx][0][1] * g +
+		      YUVcoef[tidx][0][2] * b + CF_ONE/2) / CF_ONE) +
+		     YUVoffset[tidx][0]);
 }
 
-static inline uint8_t MAKE_YUV_601_U(uint8_t r, uint8_t g, uint8_t b)
+static inline
+uint8_t MAKE_YUV_U(uint8_t r, uint8_t g, uint8_t b, YUVType type)
 {
-	return (((-38 * r -  74 * g + 112 * b + 128) >> 8) + 128);
+	unsigned tidx = static_cast<unsigned>(type);
+
+	return CLAMP(((YUVcoef[tidx][1][0] * r + YUVcoef[tidx][1][1] * g +
+		       YUVcoef[tidx][1][2] * b + CF_ONE/2) / CF_ONE) +
+		     YUVoffset[tidx][1]);
 }
 
-static inline uint8_t MAKE_YUV_601_V(uint8_t r, uint8_t g, uint8_t b)
+static inline
+uint8_t MAKE_YUV_V(uint8_t r, uint8_t g, uint8_t b, YUVType type)
 {
-	return (((112 * r -  94 * g -  18 * b + 128) >> 8) + 128);
+	unsigned tidx = static_cast<unsigned>(type);
+
+	return CLAMP(((YUVcoef[tidx][2][0] * r + YUVcoef[tidx][2][1] * g +
+		       YUVcoef[tidx][2][2] * b + CF_ONE/2) / CF_ONE) +
+		     YUVoffset[tidx][2]);
 }
 
-YUV::YUV(const RGB& rgb)
+YUV::YUV(const RGB& rgb, YUVType type)
 {
-	this->y = MAKE_YUV_601_Y(rgb.r, rgb.g, rgb.b);
-	this->u = MAKE_YUV_601_U(rgb.r, rgb.g, rgb.b);
-	this->v = MAKE_YUV_601_V(rgb.r, rgb.g, rgb.b);
+	this->y = MAKE_YUV_Y(rgb.r, rgb.g, rgb.b, type);
+	this->u = MAKE_YUV_U(rgb.r, rgb.g, rgb.b, type);
+	this->v = MAKE_YUV_V(rgb.r, rgb.g, rgb.b, type);
 	this->a = rgb.a;
 }
 }

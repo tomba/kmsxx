@@ -40,9 +40,17 @@ void init_pykmstest(py::module &m)
 			     py::arg("crtc"),
 			     py::arg("format") = PixelFormat::Undefined)
 			;
+	py::enum_<YUVType>(m, "YUVType")
+			.value("BT601_Lim", YUVType::BT601_Lim)
+			.value("BT601_Full", YUVType::BT601_Full)
+			.value("BT709_Lim", YUVType::BT709_Lim)
+			.value("BT709_Full", YUVType::BT709_Full)
+			;
 
 	// Use lambdas to handle IMappedFramebuffer
-	m.def("draw_test_pattern", [](MappedFramebuffer& fb) { draw_test_pattern(fb); } );
+	m.def("draw_test_pattern", [](MappedFramebuffer& fb, YUVType yuvt) { draw_test_pattern(fb, yuvt); },
+	      py::arg("fb"),
+	      py::arg("yuvt") = YUVType::BT601_Lim);
 	m.def("draw_color_bar", [](MappedFramebuffer& fb, int old_xpos, int xpos, int width) {
 		draw_color_bar(fb, old_xpos, xpos, width);
 	} );

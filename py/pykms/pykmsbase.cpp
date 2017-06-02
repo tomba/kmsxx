@@ -33,6 +33,7 @@ void init_pykmsbase(py::module &m)
 			.def("get_prop_value", (uint64_t (DrmPropObject::*)(const string&) const)&DrmPropObject::get_prop_value)
 			.def("set_prop_value",(int (DrmPropObject::*)(const string&, uint64_t)) &DrmPropObject::set_prop_value)
 			.def("get_prop_value_as_blob", &DrmPropObject::get_prop_value_as_blob)
+			.def("get_prop", &DrmPropObject::get_prop)
 			;
 
 	py::class_<Connector, Connector*>(m, "Connector",  py::base<DrmPropObject>())
@@ -50,6 +51,7 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Crtc, Crtc*>(m, "Crtc",  py::base<DrmPropObject>())
 			.def("set_mode", &Crtc::set_mode)
+			.def("disable_mode", &Crtc::disable_mode)
 			.def("page_flip",
 			     [](Crtc* self, Framebuffer& fb, py::object ob)
 				{
@@ -86,6 +88,7 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Property, Property*>(m, "Property",  py::base<DrmObject>())
 			.def_property_readonly("name", &Property::name)
+			.def_property_readonly("enums", &Property::get_enums)
 			;
 
 	py::class_<Blob>(m, "Blob", py::base<DrmObject>())

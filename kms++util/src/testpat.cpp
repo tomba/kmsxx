@@ -55,7 +55,7 @@ static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y
 		if (x == y || w - x == h - y)
 			return RGB(255, 255, 255);
 		// diagonal line
-		else if (w - x == y || x == h - y)
+		else if (w - x - 1 == y || x == h - y - 1)
 			return RGB(255, 255, 255);
 		else {
 			int t = (x - xm1 - 1) * 8 / (xm2 - xm1 - 1);

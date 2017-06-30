@@ -70,6 +70,8 @@ static string format_connector(Connector& c)
 
 	if (c.connected())
 		str += " (connected)";
+	else
+		str += " (disconnected)";
 
 	return str;
 }
@@ -408,9 +410,6 @@ static void print_as_tree(Card& card)
 	vector<Entry> entries;
 
 	for (Connector* conn : card.get_connectors()) {
-		if (!conn->connected())
-			continue;
-
 		Entry& e1 = add_entry(entries);
 		e1.title = format_ob(conn);
 		if (s_opts.print_props)

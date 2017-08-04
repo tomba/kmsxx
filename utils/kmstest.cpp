@@ -363,7 +363,7 @@ static const char* usage_str =
 		"      --flip[=max]          Do page flipping for each output with an optional maximum flips count\n"
 		"      --sync                Synchronize page flipping\n"
 		"\n"
-		"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (<id>).\n"
+		"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (@<id>).\n"
 		"<connector> can also be given by name.\n"
 		"\n"
 		"Options can be given multiple times to set up multiple displays or planes.\n"

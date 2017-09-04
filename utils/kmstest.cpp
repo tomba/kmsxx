@@ -381,6 +381,10 @@ static const char* usage_str =
 		"    kmstest -p 400x400 -f XR24\n\n"
 		"Test pattern on the second connector with default mode:\n"
 		"    kmstest -c 1\n"
+		"\n"
+		"Environmental variables:\n"
+		"    KMSXX_DISABLE_UNIVERSAL_PLANES    Don't enable universal planes even if available\n"
+		"    KMSXX_DISABLE_ATOMIC              Don't enable atomic modesetting even if available\n"
 		;
 
 static void usage()

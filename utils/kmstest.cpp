@@ -851,6 +851,13 @@ public:
 private:
 	void handle_page_flip(uint32_t frame, double time)
 	{
+		/*
+		 * We get flip event for each crtc in this flipstate. We can commit the next frames
+		 * only after we've gotten the flip event for all crtcs
+		 */
+		if (++m_flip_count < m_outputs.size())
+			return;
+
 		m_frame_num++;
 		if (s_max_flips && m_frame_num >= s_max_flips)
 			max_flips_reached = true;
@@ -942,6 +949,8 @@ private:
 
 	void queue_next()
 	{
+		m_flip_count = 0;
+
 		if (m_card.has_atomic()) {
 			AtomicReq req(m_card);
 
@@ -961,6 +970,7 @@ private:
 	string m_name;
 	vector<const OutputInfo*> m_outputs;
 	unsigned m_frame_num;
+	unsigned m_flip_count;
 
 	chrono::steady_clock::time_point m_prev_print;
 	chrono::steady_clock::time_point m_prev_frame;

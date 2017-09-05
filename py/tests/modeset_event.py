@@ -6,7 +6,7 @@ import sys
 
 def readdrm(fileobj, mask):
     for ev in card.read_events():
-        ev.data(ev)
+        eventhandler(ev)
 
 def waitevent(sel):
     events = sel.select(1)
@@ -67,7 +67,7 @@ if ret != 0:
     print("Atomic test failed: %d" % ret)
     sys.exit()
 
-req.commit(eventhandler, allow_modeset = True)
+req.commit(0, allow_modeset = True)
 waitevent(sel)
 
 input("press enter to exit\n")

@@ -148,7 +148,7 @@ class FlipHandler():
         fence = self.timeline.create_fence(2 * self.flips - 1)
         req = pykms.AtomicReq(self.crtc.card)
         req.add(self.crtc.primary_plane, { 'FB_ID': fb.id, 'IN_FENCE_FD': fence.fd })
-        req.commit(self)
+        req.commit()
         del fence
 
         # Arm a timer to signal the fence in 0.5s.
@@ -207,7 +207,7 @@ def main(argv):
     def readdrm(fileobj, mask):
         for ev in card.read_events():
             if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
-                ev.data.handle_page_flip(ev.seq, ev.time)
+                flip_handler.handle_page_flip(ev.seq, ev.time)
 
     def readkey(fileobj, mask):
         sys.stdin.readline()

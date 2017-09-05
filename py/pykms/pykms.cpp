@@ -20,11 +20,6 @@ PYBIND11_PLUGIN(pykms) {
 
 	init_pykmsbase(m);
 
-	m.def("__ob_unpack_helper", [](uint64_t v) {
-		// AtomicReq::commit or Crtc::page_flip added a ref, so we can use borrowed = false
-		return py::object((PyObject*)v, false);
-	});
-
 	init_pykmstest(m);
 
 	init_pyvid(m);

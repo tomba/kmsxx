@@ -52,9 +52,9 @@ class FlipHandler():
         if card.has_atomic:
             ctx = pykms.AtomicReq(card)
             ctx.add(crtc.primary_plane, "FB_ID", fb.id)
-            ctx.commit(self)
+            ctx.commit()
         else:
-            crtc.page_flip(fb, self)
+            crtc.page_flip(fb)
 
 if len(sys.argv) > 1:
     conn_name = sys.argv[1]
@@ -77,7 +77,7 @@ def readdrm(fileobj, mask):
     #print("EVENT");
     for ev in card.read_events():
         if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
-            ev.data.handle_page_flip(ev.seq, ev.time)
+            fliphandler.handle_page_flip(ev.seq, ev.time)
 
 
 def readkey(fileobj, mask):

@@ -53,13 +53,10 @@ void init_pykmsbase(py::module &m)
 			.def("set_mode", &Crtc::set_mode)
 			.def("disable_mode", &Crtc::disable_mode)
 			.def("page_flip",
-			     [](Crtc* self, Framebuffer& fb, py::object ob)
+			     [](Crtc* self, Framebuffer& fb, uint32_t data)
 				{
-					// This adds a ref to the object, and must be unpacked with __ob_unpack_helper()
-					PyObject* pob = ob.ptr();
-					Py_XINCREF(pob);
-					self->page_flip(fb, pob);
-				})
+					self->page_flip(fb, (void*)(intptr_t)data);
+				}, py::arg("fb"), py::arg("data") = 0)
 			.def("set_plane", &Crtc::set_plane)
 			.def_property_readonly("possible_planes", &Crtc::get_possible_planes)
 			.def_property_readonly("primary_plane", &Crtc::get_primary_plane)
@@ -196,13 +193,10 @@ void init_pykmsbase(py::module &m)
 			.def("add", (void (AtomicReq::*)(DrmPropObject*, const map<string, uint64_t>&)) &AtomicReq::add)
 			.def("test", &AtomicReq::test, py::arg("allow_modeset") = false)
 			.def("commit",
-			     [](AtomicReq* self, py::object ob, bool allow)
+			     [](AtomicReq* self, uint32_t data, bool allow)
 				{
-					// This adds a ref to the object, and must be unpacked with __ob_unpack_helper()
-					PyObject* pob = ob.ptr();
-					Py_XINCREF(pob);
-					return self->commit(pob, allow);
-				}, py::arg("data"), py::arg("allow_modeset") = false)
+					return self->commit((void*)(intptr_t)data, allow);
+				}, py::arg("data") = 0, py::arg("allow_modeset") = false)
 			.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false)
 			;
 }

@@ -112,6 +112,7 @@ class bigFB_db:
         self.flips = 0
         self.frames = 0
         self.time = 0
+        self.flip_count = 100
 
     def new_color(self):
         r = random.randrange(255)
@@ -190,7 +191,7 @@ class bigFB_db:
 
             screen_offset += mode.hdisplay
 
-        req.commit(self)
+        req.commit(0)
 
     def handle_page_flip_separate(self):
         self.draw_buf ^= 1
@@ -222,9 +223,16 @@ class bigFB_db:
 
             screen_offset += mode.hdisplay
 
-            req.commit(self)
+            req.commit(0)
 
     def handle_page_flip_main(self, frame, time):
+        self.flip_count += 1
+
+        if self.flip_count < len(conn_list):
+            return
+
+        self.flip_count = 0
+
         # statistics
         self.flips += 1
         if self.time == 0:
@@ -254,31 +262,14 @@ box_db.handle_page_flip_main(0, 0)
 def readdrm(fileobj, mask):
     for ev in card.read_events():
         if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
-            ev.data.handle_page_flip_main(ev.seq, ev.time)
-
-event_counter = len(conn_list)
-def readdrm_counted(fileobj, mask):
-    global event_counter
-
-    for ev in card.read_events():
-        if ev.type == pykms.DrmEventType.FLIP_COMPLETE:
-            # we expect events for each display (crtc), but only execute the
-            # next drawing and flip when we have received the last event.
-            event_counter -= 1
-            if event_counter == 0:
-                event_counter = len(conn_list)
-                ev.data.handle_page_flip_main(ev.seq, ev.time)
+            box_db.handle_page_flip_main(ev.seq, ev.time)
 
 def readkey(fileobj, mask):
     sys.stdin.readline()
     exit(0)
 
 sel = selectors.DefaultSelector()
-if args.flipmode == 'single':
-    sel.register(card.fd, selectors.EVENT_READ, readdrm)
-else:
-    sel.register(card.fd, selectors.EVENT_READ, readdrm_counted)
-
+sel.register(card.fd, selectors.EVENT_READ, readdrm)
 sel.register(sys.stdin, selectors.EVENT_READ, readkey)
 
 while True:

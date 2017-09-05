@@ -130,7 +130,7 @@ def __card_read_events(self):
 
         seq = vbl_tuple[3]
         time = vbl_tuple[1] + vbl_tuple[2] / 1000000.0;
-        udata = pykms.__ob_unpack_helper(vbl_tuple[0])
+        udata = vbl_tuple[0]
 
         yield DrmEvent(type, seq, time, udata)
 

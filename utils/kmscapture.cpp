@@ -76,19 +76,15 @@ ExtFramebuffer* CameraPipeline::GetExtFrameBuffer(Card& card, uint32_t i, PixelF
 	r = buffer_export(m_fd, V4L2_BUF_TYPE_VIDEO_CAPTURE, i, &dmafd);
 	ASSERT(r == 0);
 
-	uint32_t handle;
-	r = drmPrimeFDToHandle(card.fd(), dmafd, &handle);
-	ASSERT(r == 0);
-
 	const PixelFormatInfo& format_info = get_pixel_format_info(pixfmt);
 	ASSERT(format_info.num_planes == 1);
 
-	vector<uint32_t> handles { handle };
+	vector<int> fds { dmafd };
 	vector<uint32_t> pitches { m_in_width * (format_info.planes[0].bitspp / 8) };
-	vector<uint32_t> offsets { };
+	vector<uint32_t> offsets { 0 };
 
 	return new ExtFramebuffer(card, m_in_width, m_in_height, pixfmt,
-				  handles, pitches, offsets);
+				  fds, pitches, offsets);
 }
 
 bool inline better_size(struct v4l2_frmsize_discrete* v4ldisc,

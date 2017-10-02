@@ -102,4 +102,14 @@ uint8_t* ExtFramebuffer::map(unsigned plane)
 	return p.map;
 }
 
+int ExtFramebuffer::prime_fd(unsigned plane)
+{
+	FramebufferPlane& p = m_planes[plane];
+
+	if (!p.prime_fd)
+		throw invalid_argument("no primefb for non-dmabuf fb");
+
+	return p.prime_fd;
+}
+
 }

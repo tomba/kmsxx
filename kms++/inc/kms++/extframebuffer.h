@@ -26,6 +26,7 @@ public:
 	uint32_t size(unsigned plane) const { return m_planes[plane].size; }
 	uint32_t offset(unsigned plane) const { return m_planes[plane].offset; }
 	uint8_t* map(unsigned plane);
+	int prime_fd(unsigned plane);
 
 private:
 	struct FramebufferPlane {

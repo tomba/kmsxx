@@ -43,8 +43,7 @@ private:
 	Crtc* m_crtc;
 	Plane* m_plane;
 	BufferProvider m_buffer_provider;
-	vector<DumbFramebuffer*> m_fb; /* framebuffers for DRM buffers */
-	vector<ExtFramebuffer*> m_extfb; /* framebuffers for V4L2 buffers */
+	vector<Framebuffer*> m_fb;
 	int m_prev_fb_index;
 	uint32_t m_in_width, m_in_height; /* camera capture resolution */
 	/* image properties for display */
@@ -161,11 +160,10 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 	v4lbuf.memory = v4l_mem;
 
 	for (unsigned i = 0; i < CAMERA_BUF_QUEUE_SIZE; i++) {
-		DumbFramebuffer *fb = NULL;
-		ExtFramebuffer *extfb = NULL;
+		Framebuffer *fb;
 
 		if (m_buffer_provider == BufferProvider::V4L2)
-			extfb = GetExtFrameBuffer(card, i, pixfmt);
+			fb = GetExtFrameBuffer(card, i, pixfmt);
 		else
 			fb = new DumbFramebuffer(card, m_in_width,
 						 m_in_height, pixfmt);
@@ -176,10 +174,7 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 		r = ioctl(m_fd, VIDIOC_QBUF, &v4lbuf);
 		ASSERT(r == 0);
 
-		if (m_buffer_provider == BufferProvider::V4L2)
-			m_extfb.push_back(extfb);
-		else
-			m_fb.push_back(fb);
+		m_fb.push_back(fb);
 	}
 
 	m_plane = plane;
@@ -188,11 +183,7 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 	// set the FB when page flipping
 	AtomicReq req(card);
 
-	Framebuffer *fb;
-	if (m_buffer_provider == BufferProvider::V4L2)
-		fb = m_extfb[0];
-	else
-		fb = m_fb[0];
+	Framebuffer *fb = m_fb[0];
 
 	req.add(m_plane, "CRTC_ID", m_crtc->id());
 	req.add(m_plane, "FB_ID", fb->id());
@@ -215,9 +206,6 @@ CameraPipeline::~CameraPipeline()
 {
 	for (unsigned i = 0; i < m_fb.size(); i++)
 		delete m_fb[i];
-
-	for (unsigned i = 0; i < m_extfb.size(); i++)
-		delete m_extfb[i];
 
 	::close(m_fd);
 }
@@ -251,11 +239,7 @@ void CameraPipeline::show_next_frame(AtomicReq& req)
 
 	unsigned fb_index = v4l2buf.index;
 
-	Framebuffer *fb;
-	if (m_buffer_provider == BufferProvider::V4L2)
-		fb = m_extfb[fb_index];
-	else
-		fb = m_fb[fb_index];
+	Framebuffer *fb = m_fb[fb_index];
 
 	req.add(m_plane, "FB_ID", fb->id());
 

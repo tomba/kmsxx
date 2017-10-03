@@ -1,12 +1,12 @@
 
-#include <X11/Xlib-xcb.h>
-#include <X11/Xlibint.h>
+#include <kms++util/kms++util.h>
 
 #include "cube.h"
 #include "cube-egl.h"
 #include "cube-gles2.h"
 
-#include <kms++util/kms++util.h>
+#include <X11/Xlib-xcb.h>
+#include <X11/Xlibint.h>
 
 using namespace std;
 

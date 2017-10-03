@@ -5,7 +5,7 @@
 namespace kms
 {
 
-class CPUFramebuffer : public IMappedFramebuffer {
+class CPUFramebuffer : public IFramebuffer {
 public:
 	CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format);
 

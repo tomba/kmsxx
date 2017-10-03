@@ -1,12 +1,12 @@
 #pragma once
 
-#include "mappedframebuffer.h"
+#include "framebuffer.h"
 #include "pixelformats.h"
 
 namespace kms
 {
 
-class ExtFramebuffer : public MappedFramebuffer
+class ExtFramebuffer : public Framebuffer
 {
 public:
 	ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,

@@ -102,12 +102,12 @@ void init_pykmsbase(py::module &m)
 	py::class_<Framebuffer>(m, "Framebuffer", py::base<DrmObject>())
 			;
 
-	py::class_<MappedFramebuffer>(m, "MappedFramebuffer", py::base<Framebuffer>())
-			.def_property_readonly("width", &MappedFramebuffer::width)
-			.def_property_readonly("height", &MappedFramebuffer::height)
+	py::class_<Framebuffer>(m, "Framebuffer", py::base<Framebuffer>())
+			.def_property_readonly("width", &Framebuffer::width)
+			.def_property_readonly("height", &Framebuffer::height)
 			;
 
-	py::class_<DumbFramebuffer>(m, "DumbFramebuffer", py::base<MappedFramebuffer>())
+	py::class_<DumbFramebuffer>(m, "DumbFramebuffer", py::base<Framebuffer>())
 			.def(py::init<Card&, uint32_t, uint32_t, const string&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
@@ -119,7 +119,7 @@ void init_pykmsbase(py::module &m)
 			.def("offset", &DumbFramebuffer::offset)
 			;
 
-	py::class_<ExtFramebuffer>(m, "ExtFramebuffer", py::base<MappedFramebuffer>())
+	py::class_<ExtFramebuffer>(m, "ExtFramebuffer", py::base<Framebuffer>())
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat, vector<int>, vector<uint32_t>, vector<uint32_t>>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			;

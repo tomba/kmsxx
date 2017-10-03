@@ -1,6 +1,6 @@
 #pragma once
 
-#include <kms++/mappedframebuffer.h>
+#include <kms++/framebuffer.h>
 #include <kms++/pixelformats.h>
 
 struct omap_bo;
@@ -9,7 +9,7 @@ namespace kms
 {
 class OmapCard;
 
-class OmapFramebuffer : public MappedFramebuffer
+class OmapFramebuffer : public Framebuffer
 {
 public:
 	enum Flags

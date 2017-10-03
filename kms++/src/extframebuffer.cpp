@@ -14,7 +14,7 @@ namespace kms
 
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
 			       vector<uint32_t> handles, vector<uint32_t> pitches, vector<uint32_t> offsets)
-	: MappedFramebuffer(card, width, height)
+	: Framebuffer(card, width, height)
 {
 	m_format = format;
 
@@ -44,7 +44,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
 			       vector<int> fds, vector<uint32_t> pitches, vector<uint32_t> offsets)
-	: MappedFramebuffer(card, width, height)
+	: Framebuffer(card, width, height)
 {
 	int r;
 

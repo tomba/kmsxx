@@ -5,7 +5,7 @@
 namespace kms
 {
 
-class ExtCPUFramebuffer : public IMappedFramebuffer
+class ExtCPUFramebuffer : public IFramebuffer
 {
 public:
 	ExtCPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format,

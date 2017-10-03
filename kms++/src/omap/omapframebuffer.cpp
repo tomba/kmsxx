@@ -32,7 +32,7 @@ OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height
 }
 
 OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, Flags flags)
-	:MappedFramebuffer(card, width, height), m_omap_card(card), m_format(format)
+	:Framebuffer(card, width, height), m_omap_card(card), m_format(format)
 {
 	Create(flags);
 }

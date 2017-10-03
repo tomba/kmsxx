@@ -14,7 +14,7 @@ void init_pykmsomap(py::module &m)
 			.def(py::init<>())
 			;
 
-	py::class_<OmapFramebuffer> omapfb(m, "OmapFramebuffer", py::base<MappedFramebuffer>());
+	py::class_<OmapFramebuffer> omapfb(m, "OmapFramebuffer", py::base<Framebuffer>());
 
 	// XXX we should use py::arithmetic() here to support or and and operators, but it's not supported in the pybind11 we use
 	py::enum_<OmapFramebuffer::Flags>(omapfb, "Flags")

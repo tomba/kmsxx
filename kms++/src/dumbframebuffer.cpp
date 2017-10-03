@@ -25,7 +25,7 @@ DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, co
 }
 
 DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format)
-	:MappedFramebuffer(card, width, height), m_format(format)
+	:Framebuffer(card, width, height), m_format(format)
 {
 	Create();
 }

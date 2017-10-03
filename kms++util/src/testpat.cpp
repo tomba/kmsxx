@@ -13,7 +13,7 @@ using namespace std;
 namespace kms
 {
 
-static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y)
+static RGB get_test_pattern_pixel(IFramebuffer& fb, unsigned x, unsigned y)
 {
 	const unsigned w = fb.width();
 	const unsigned h = fb.height();
@@ -97,7 +97,7 @@ static RGB get_test_pattern_pixel(IMappedFramebuffer& fb, unsigned x, unsigned y
 	}
 }
 
-static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, unsigned end_y, YUVType yuvt)
+static void draw_test_pattern_part(IFramebuffer& fb, unsigned start_y, unsigned end_y, YUVType yuvt)
 {
 	unsigned x, y;
 	unsigned w = fb.width();
@@ -151,7 +151,7 @@ static void draw_test_pattern_part(IMappedFramebuffer& fb, unsigned start_y, uns
 	}
 }
 
-static void draw_test_pattern_impl(IMappedFramebuffer& fb, YUVType yuvt)
+static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 {
 	if (fb.height() < 20) {
 		draw_test_pattern_part(fb, 0, fb.height(), yuvt);
@@ -181,7 +181,7 @@ static void draw_test_pattern_impl(IMappedFramebuffer& fb, YUVType yuvt)
 		t.join();
 }
 
-void draw_test_pattern(IMappedFramebuffer &fb, YUVType yuvt)
+void draw_test_pattern(IFramebuffer &fb, YUVType yuvt)
 {
 #ifdef DRAW_PERF_PRINT
 	Stopwatch sw;

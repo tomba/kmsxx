@@ -8,7 +8,6 @@
 #include "framebuffer.h"
 #include "dumbframebuffer.h"
 #include "extframebuffer.h"
-#include "mappedframebuffer.h"
 #include "plane.h"
 #include "property.h"
 #include "blob.h"

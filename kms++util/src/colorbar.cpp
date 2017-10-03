@@ -35,7 +35,7 @@ static const uint16_t colors16[] = {
 	colors32[11].rgb565(),
 };
 
-static void drm_draw_color_bar_rgb888(IMappedFramebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_rgb888(IFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	for (unsigned y = 0; y < buf.height(); ++y) {
 		RGB bcol = colors32[y * ARRAY_SIZE(colors32) / buf.height()];
@@ -51,7 +51,7 @@ static void drm_draw_color_bar_rgb888(IMappedFramebuffer& buf, int old_xpos, int
 	}
 }
 
-static void drm_draw_color_bar_rgb565(IMappedFramebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_rgb565(IFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	static_assert(ARRAY_SIZE(colors32) == ARRAY_SIZE(colors16), "bad colors arrays");
 
@@ -69,7 +69,7 @@ static void drm_draw_color_bar_rgb565(IMappedFramebuffer& buf, int old_xpos, int
 	}
 }
 
-static void drm_draw_color_bar_semiplanar_yuv(IMappedFramebuffer& buf, int old_xpos, int xpos, int width)
+static void drm_draw_color_bar_semiplanar_yuv(IFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	const uint8_t colors[] = {
 		0xff,
@@ -97,7 +97,7 @@ static void drm_draw_color_bar_semiplanar_yuv(IMappedFramebuffer& buf, int old_x
 	}
 }
 
-void draw_color_bar(IMappedFramebuffer& buf, int old_xpos, int xpos, int width)
+void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width)
 {
 	switch (buf.format()) {
 	case PixelFormat::NV12:

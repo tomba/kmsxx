@@ -6,7 +6,7 @@ using namespace std;
 
 namespace kms
 {
-void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color)
+void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
@@ -56,7 +56,7 @@ void draw_rgb_pixel(IMappedFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	}
 }
 
-void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
+void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
 	ASSERT((x & 1) == 0);
 
@@ -101,7 +101,7 @@ void draw_yuv422_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y, YUV
 	}
 }
 
-void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
+void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 			    YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
 	ASSERT((x & 1) == 0);
@@ -143,7 +143,7 @@ void draw_yuv420_macropixel(IMappedFramebuffer& buf, unsigned x, unsigned y,
 	}
 }
 
-void draw_rect(IMappedFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
+void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
 {
 	unsigned i, j;
 	YUV yuvcolor = color.yuv();
@@ -199,7 +199,7 @@ static bool get_char_pixel(char c, uint32_t x, uint32_t y)
 	return bit;
 }
 
-static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
+static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
 {
 	unsigned x, y;
 	YUV yuvcolor = color.yuv();
@@ -257,7 +257,7 @@ static void draw_char(IMappedFramebuffer& buf, uint32_t xpos, uint32_t ypos, cha
 	}
 }
 
-void draw_text(IMappedFramebuffer& buf, uint32_t x, uint32_t y, const string& str, RGB color)
+void draw_text(IFramebuffer& buf, uint32_t x, uint32_t y, const string& str, RGB color)
 {
 	for(unsigned i = 0; i < str.size(); i++)
 		draw_char(buf, (x + 8 * i), y, str[i], color);

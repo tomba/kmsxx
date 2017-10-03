@@ -5,7 +5,24 @@
 
 namespace kms
 {
-class Framebuffer : public DrmObject
+class IFramebuffer {
+public:
+	virtual ~IFramebuffer() { }
+
+	virtual uint32_t width() const = 0;
+	virtual uint32_t height() const = 0;
+
+	virtual PixelFormat format() const { throw std::runtime_error("not implemented"); }
+	virtual unsigned num_planes() const { throw std::runtime_error("not implemented"); }
+
+	virtual uint32_t stride(unsigned plane) const { throw std::runtime_error("not implemented"); }
+	virtual uint32_t size(unsigned plane) const { throw std::runtime_error("not implemented"); }
+	virtual uint32_t offset(unsigned plane) const { throw std::runtime_error("not implemented"); }
+	virtual uint8_t* map(unsigned plane) { throw std::runtime_error("not implemented"); }
+	virtual int prime_fd(unsigned plane) { throw std::runtime_error("not implemented"); }
+};
+
+class Framebuffer : public DrmObject, public IFramebuffer
 {
 public:
 	Framebuffer(Card& card, uint32_t id);
@@ -21,22 +38,6 @@ protected:
 private:
 	uint32_t m_width;
 	uint32_t m_height;
-};
-
-class IMappedFramebuffer {
-public:
-	virtual ~IMappedFramebuffer() { }
-
-	virtual uint32_t width() const = 0;
-	virtual uint32_t height() const = 0;
-
-	virtual PixelFormat format() const = 0;
-	virtual unsigned num_planes() const = 0;
-
-	virtual uint32_t stride(unsigned plane) const = 0;
-	virtual uint32_t size(unsigned plane) const = 0;
-	virtual uint32_t offset(unsigned plane) const = 0;
-	virtual uint8_t* map(unsigned plane) = 0;
 };
 
 }

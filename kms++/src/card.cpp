@@ -217,11 +217,9 @@ static void page_flip_handler(int fd, unsigned int frame,
 
 void Card::call_page_flip_handlers()
 {
-	drmEventContext ev = {
-		.version = DRM_EVENT_CONTEXT_VERSION,
-		.vblank_handler = 0,
-		.page_flip_handler = page_flip_handler,
-	};
+	drmEventContext ev { };
+	ev.version = DRM_EVENT_CONTEXT_VERSION;
+	ev.page_flip_handler = page_flip_handler;
 
 	drmHandleEvent(fd(), &ev);
 }

@@ -110,15 +110,23 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 	struct v4l2_frmsizeenum v4lfrms = { };
 	v4lfrms.pixel_format = (uint32_t)pixfmt;
 	while (ioctl(m_fd, VIDIOC_ENUM_FRAMESIZES, &v4lfrms) == 0) {
-		if (v4lfrms.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-			if (better_size(&v4lfrms.discrete, iw, ih,
-					best_w, best_h)) {
-				best_w = v4lfrms.discrete.width;
-				best_h = v4lfrms.discrete.height;
-			}
-		} else {
-			break;
+		if (v4lfrms.type != V4L2_FRMSIZE_TYPE_DISCRETE) {
+			v4lfrms.index++;
+			continue;
 		}
+
+		if (v4lfrms.discrete.width > iw || v4lfrms.discrete.height > ih) {
+			//skip
+		} else if (v4lfrms.discrete.width == iw && v4lfrms.discrete.height == ih) {
+			// Exact match
+			best_w = v4lfrms.discrete.width;
+			best_h = v4lfrms.discrete.height;
+			break;
+		} else if (v4lfrms.discrete.width >= best_w || v4lfrms.discrete.height >= ih) {
+			best_w = v4lfrms.discrete.width;
+			best_h = v4lfrms.discrete.height;
+		}
+
 		v4lfrms.index++;
 	};
 
@@ -127,6 +135,8 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 	/* Move it to the middle of the requested area */
 	m_out_x = x + iw / 2 - m_out_width / 2;
 	m_out_y = y + ih / 2 - m_out_height / 2;
+
+	printf("Capture: %ux%u\n", best_w, best_h);
 
 	struct v4l2_format v4lfmt = { };
 	v4lfmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -341,6 +351,7 @@ int main(int argc, char** argv)
 		}
 
 		camera_fds.push_back(fd);
+		printf("Using %s\n", vidpath.c_str());
 
 		if (single_cam)
 			break;

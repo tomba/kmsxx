@@ -181,8 +181,8 @@ private:
 class OutputHandler : private PageFlipHandlerBase
 {
 public:
-	OutputHandler(Card& card, GbmDevice& gdev, const EglState& egl, Connector* connector, Crtc* crtc, Videomode& mode, Plane* plane, float rotation_mult)
-		: m_frame_num(0), m_connector(connector), m_crtc(crtc), m_plane(plane), m_mode(mode),
+	OutputHandler(Card& card, GbmDevice& gdev, const EglState& egl, Connector* connector, Crtc* crtc, Videomode& mode, Plane* root_plane, Plane* plane, float rotation_mult)
+		: m_frame_num(0), m_connector(connector), m_crtc(crtc), m_root_plane(root_plane), m_plane(plane), m_mode(mode),
 		  m_rotation_mult(rotation_mult)
 	{
 		m_surface1 = unique_ptr<GbmEglSurface>(new GbmEglSurface(card, gdev, egl, mode.hdisplay, mode.vdisplay));
@@ -215,21 +215,8 @@ public:
 			planefb = m_surface2->lock_next();
 		}
 
-
 		ret = m_crtc->set_mode(m_connector, *fb, m_mode);
 		FAIL_IF(ret, "failed to set mode");
-
-		Plane* root_plane = 0;
-		for (Plane* p : m_crtc->get_possible_planes()) {
-			if (p->crtc_id() == m_crtc->id()) {
-				root_plane = p;
-				break;
-			}
-		}
-
-		FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
-
-		m_root_plane = root_plane;
 
 		if (m_plane) {
 			ret = m_crtc->set_plane(m_plane, *planefb,
@@ -307,9 +294,9 @@ private:
 
 	Connector* m_connector;
 	Crtc* m_crtc;
+	Plane* m_root_plane;
 	Plane* m_plane;
 	Videomode m_mode;
-	Plane* m_root_plane;
 
 	unique_ptr<GbmEglSurface> m_surface1;
 	unique_ptr<GbmEglSurface> m_surface2;
@@ -329,35 +316,30 @@ void main_gbm()
 	GbmDevice gdev(card);
 	EglState egl(gdev.handle());
 
+	ResourceManager resman(card);
+
 	vector<unique_ptr<OutputHandler>> outputs;
-	vector<Plane*> used_planes;
 
 	float rot_mult = 1;
 
-	for (auto pipe : card.get_connected_pipelines()) {
-		auto connector = pipe.connector;
-		auto crtc = pipe.crtc;
-		auto mode = connector->get_default_mode();
+	for (Connector* conn : card.get_connectors()) {
+		if (!conn->connected())
+			continue;
 
-		Plane* plane = 0;
+		resman.reserve_connector(conn);
 
-		if (s_support_planes) {
-			for (Plane* p : crtc->get_possible_planes()) {
-				if (find(used_planes.begin(), used_planes.end(), p) != used_planes.end())
-					continue;
+		Crtc* crtc = resman.reserve_crtc(conn);
+		auto mode = conn->get_default_mode();
 
-				if (p->plane_type() != PlaneType::Overlay)
-					continue;
+		Plane* root_plane = resman.reserve_generic_plane(crtc);
+		FAIL_IF(!root_plane, "Root plane not available");
 
-				plane = p;
-				break;
-			}
-		}
+		Plane* plane = nullptr;
 
-		if (plane)
-			used_planes.push_back(plane);
+		if (s_support_planes)
+			plane = resman.reserve_generic_plane(crtc);
 
-		auto out = new OutputHandler(card, gdev, egl, connector, crtc, mode, plane, rot_mult);
+		auto out = new OutputHandler(card, gdev, egl, conn, crtc, mode, root_plane, plane, rot_mult);
 		outputs.emplace_back(out);
 
 		rot_mult *= 1.33;

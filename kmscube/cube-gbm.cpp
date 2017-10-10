@@ -219,19 +219,17 @@ public:
 		ret = m_crtc->set_mode(m_connector, *fb, m_mode);
 		FAIL_IF(ret, "failed to set mode");
 
-		if (m_crtc->card().has_atomic()) {
-			Plane* root_plane = 0;
-			for (Plane* p : m_crtc->get_possible_planes()) {
-				if (p->crtc_id() == m_crtc->id()) {
-					root_plane = p;
-					break;
-				}
+		Plane* root_plane = 0;
+		for (Plane* p : m_crtc->get_possible_planes()) {
+			if (p->crtc_id() == m_crtc->id()) {
+				root_plane = p;
+				break;
 			}
-
-			FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
-
-			m_root_plane = root_plane;
 		}
+
+		FAIL_IF(!root_plane, "No primary plane for crtc %d", m_crtc->id());
+
+		m_root_plane = root_plane;
 
 		if (m_plane) {
 			ret = m_crtc->set_plane(m_plane, *planefb,
@@ -287,33 +285,19 @@ private:
 			planefb = m_surface2->lock_next();
 		}
 
-		if (m_crtc->card().has_atomic()) {
-			int r;
+		int r;
 
-			AtomicReq req(m_crtc->card());
+		AtomicReq req(m_crtc->card());
 
-			req.add(m_root_plane, "FB_ID", fb->id());
-			if (m_plane)
-				req.add(m_plane, "FB_ID", planefb->id());
+		req.add(m_root_plane, "FB_ID", fb->id());
+		if (m_plane)
+			req.add(m_plane, "FB_ID", planefb->id());
 
-			r = req.test();
-			FAIL_IF(r, "atomic test failed");
+		r = req.test();
+		FAIL_IF(r, "atomic test failed");
 
-			r = req.commit(this);
-			FAIL_IF(r, "atomic commit failed");
-		} else {
-			int ret;
-
-			ret = m_crtc->page_flip(*fb, this);
-			FAIL_IF(ret, "failed to queue page flip");
-
-			if (m_plane) {
-				ret = m_crtc->set_plane(m_plane, *planefb,
-							0, 0, planefb->width(), planefb->height(),
-							0, 0, planefb->width(), planefb->height());
-				FAIL_IF(ret, "failed to set plane");
-			}
-		}
+		r = req.commit(this);
+		FAIL_IF(r, "atomic commit failed");
 
 		s_flip_pending++;
 	}
@@ -339,6 +323,8 @@ private:
 void main_gbm()
 {
 	Card card;
+
+	FAIL_IF(!card.has_atomic(), "No atomic modesetting");
 
 	GbmDevice gdev(card);
 	EglState egl(gdev.handle());

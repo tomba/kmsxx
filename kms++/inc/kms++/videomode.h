@@ -48,6 +48,8 @@ struct Videomode
 	void set_interlace(bool ilace);
 	void set_hsync(SyncPolarity pol);
 	void set_vsync(SyncPolarity pol);
+
+	std::string to_string() const;
 };
 
 struct Videomode videomode_from_timings(uint32_t clock_khz,

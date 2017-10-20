@@ -1,6 +1,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <math.h>
+#include <sstream>
 
 #include <kms++/kms++.h>
 #include "helpers.h"
@@ -85,6 +86,16 @@ void Videomode::set_vsync(SyncPolarity pol)
 	default:
 		break;
 	}
+}
+
+string Videomode::to_string() const
+{
+	std::stringstream ss;
+	ss << hdisplay << "x" << vdisplay;
+	if (interlace())
+		ss << "i";
+	ss << "@" << calculated_vrefresh();
+	return ss.str();
 }
 
 Videomode videomode_from_timings(uint32_t clock_khz,

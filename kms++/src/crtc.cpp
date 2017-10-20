@@ -58,6 +58,28 @@ void Crtc::restore_mode(Connector* conn)
 		       conns, 1, &c->mode);
 }
 
+int Crtc::set_mode(Connector* conn, const Videomode& mode)
+{
+	AtomicReq req(card());
+
+	unique_ptr<Blob> blob = mode.to_blob(card());
+
+	req.add(conn, {
+			{ "CRTC_ID", this->id() },
+		});
+
+	req.add(this, {
+			{ "ACTIVE", 1 },
+			{ "MODE_ID", blob->id() },
+		});
+
+	int r = req.commit_sync(true);
+
+	refresh();
+
+	return r;
+}
+
 int Crtc::set_mode(Connector* conn, Framebuffer& fb, const Videomode& mode)
 {
 	uint32_t conns[] = { conn->id() };

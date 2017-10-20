@@ -23,8 +23,10 @@ public:
 	WBStreamer(VideoStreamer* streamer, Crtc* crtc, PixelFormat pixfmt)
 		: m_capdev(*streamer)
 	{
+		Videomode m = crtc->mode();
+
 		m_capdev.set_port(crtc->idx());
-		m_capdev.set_format(pixfmt, crtc->mode().hdisplay, crtc->mode().vdisplay);
+		m_capdev.set_format(pixfmt, m.hdisplay, m.vdisplay / (m.interlace() ? 2 : 1));
 		m_capdev.set_queue_size(s_fbs.size());
 
 		for (auto fb : s_free_fbs) {
@@ -87,10 +89,6 @@ public:
 	WBFlipState(Card& card, Crtc* crtc, Plane* plane)
 		: m_card(card), m_crtc(crtc), m_plane(plane)
 	{
-	}
-
-	void setup(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
 		auto fb = s_ready_fbs.back();
 		s_ready_fbs.pop_back();
 
@@ -99,8 +97,8 @@ public:
 		req.add(m_plane, "CRTC_ID", m_crtc->id());
 		req.add(m_plane, "FB_ID", fb->id());
 
-		req.add(m_plane, "CRTC_X", x);
-		req.add(m_plane, "CRTC_Y", y);
+		req.add(m_plane, "CRTC_X", 0);
+		req.add(m_plane, "CRTC_Y", 0);
 		req.add(m_plane, "CRTC_W", min((uint32_t)m_crtc->mode().hdisplay, fb->width()));
 		req.add(m_plane, "CRTC_H", min((uint32_t)m_crtc->mode().vdisplay, fb->height()));
 
@@ -325,17 +323,22 @@ int main(int argc, char** argv)
 	Videomode dst_mode = dst_mode_name.empty() ? dst_conn->get_default_mode() : dst_conn->get_mode(dst_mode_name);
 	dst_crtc->set_mode(dst_conn, dst_mode);
 
-	uint32_t width = src_mode.hdisplay;
-	uint32_t height = src_mode.vdisplay;
+	uint32_t src_width = src_mode.hdisplay;
+	uint32_t src_height = src_mode.vdisplay;
+
+	uint32_t dst_width = src_mode.hdisplay;
+	uint32_t dst_height = src_mode.vdisplay;
+	if (src_mode.interlace())
+		dst_height /= 2;
 
 	printf("src %s, crtc %s\n", src_conn->fullname().c_str(), src_mode.to_string().c_str());
 
 	printf("dst %s, crtc %s\n", dst_conn->fullname().c_str(), dst_mode.to_string().c_str());
 
-	printf("fb %ux%u\n", width, height);
+	printf("src_fb %ux%u, dst_fb %ux%u\n", src_width, src_height, dst_width, dst_height);
 
 	for (int i = 0; i < CAMERA_BUF_QUEUE_SIZE; ++i) {
-		auto fb = new DumbFramebuffer(card, width, height, pixfmt);
+		auto fb = new DumbFramebuffer(card, dst_width, dst_height, pixfmt);
 		s_fbs.push_back(fb);
 		s_free_fbs.push_back(fb);
 	}
@@ -345,12 +348,11 @@ int main(int argc, char** argv)
 	s_free_fbs.pop_back();
 
 	// This draws a moving bar to SRC display
-	BarFlipState barflipper(card, src_crtc, src_plane, width, height);
+	BarFlipState barflipper(card, src_crtc, src_plane, src_width, src_height);
 	barflipper.start_flipping();
 
-	// This shows the captures SRC frames on DST display
+	// This shows the captured SRC frames on DST display
 	WBFlipState wbflipper(card, dst_crtc, dst_plane);
-	wbflipper.setup(0, 0, width, height);
 
 	WBStreamer wb(vid.get_capture_streamer(), src_crtc, pixfmt);
 	wb.start_streaming();

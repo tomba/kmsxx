@@ -20,11 +20,11 @@ static vector<DumbFramebuffer*> s_ready_fbs;
 class WBStreamer
 {
 public:
-	WBStreamer(VideoStreamer* streamer, Crtc* crtc, uint32_t width, uint32_t height, PixelFormat pixfmt)
+	WBStreamer(VideoStreamer* streamer, Crtc* crtc, PixelFormat pixfmt)
 		: m_capdev(*streamer)
 	{
 		m_capdev.set_port(crtc->idx());
-		m_capdev.set_format(pixfmt, width, height);
+		m_capdev.set_format(pixfmt, crtc->mode().hdisplay, crtc->mode().vdisplay);
 		m_capdev.set_queue_size(s_fbs.size());
 
 		for (auto fb : s_free_fbs) {
@@ -101,8 +101,8 @@ public:
 
 		req.add(m_plane, "CRTC_X", x);
 		req.add(m_plane, "CRTC_Y", y);
-		req.add(m_plane, "CRTC_W", width);
-		req.add(m_plane, "CRTC_H", height);
+		req.add(m_plane, "CRTC_W", min((uint32_t)m_crtc->mode().hdisplay, fb->width()));
+		req.add(m_plane, "CRTC_H", min((uint32_t)m_crtc->mode().vdisplay, fb->height()));
 
 		req.add(m_plane, "SRC_X", 0);
 		req.add(m_plane, "SRC_Y", 0);
@@ -161,16 +161,11 @@ private:
 class BarFlipState : private PageFlipHandlerBase
 {
 public:
-	BarFlipState(Card& card, Crtc* crtc)
-		: m_card(card), m_crtc(crtc)
+	BarFlipState(Card& card, Crtc* crtc, Plane* plane, uint32_t width, uint32_t height)
+		: m_card(card), m_crtc(crtc), m_plane(plane)
 	{
-		m_plane = m_crtc->get_primary_plane();
-
-		uint32_t w = m_crtc->mode().hdisplay;
-		uint32_t h = m_crtc->mode().vdisplay;
-
 		for (unsigned i = 0; i < s_num_buffers; ++i)
-			m_fbs[i] = new DumbFramebuffer(card, w, h, PixelFormat::XRGB8888);
+			m_fbs[i] = new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888);
 	}
 
 	~BarFlipState()
@@ -217,7 +212,18 @@ private:
 		draw_bar(fb, m_frame_num);
 
 		req.add(m_plane, {
+				{ "CRTC_ID", m_crtc->id() },
 				{ "FB_ID", fb->id() },
+
+				{ "CRTC_X", 0 },
+				{ "CRTC_Y", 0 },
+				{ "CRTC_W", min((uint32_t)m_crtc->mode().hdisplay, fb->width()) },
+				{ "CRTC_H", min((uint32_t)m_crtc->mode().vdisplay, fb->height()) },
+
+				{ "SRC_X", 0 },
+				{ "SRC_Y", 0 },
+				{ "SRC_W", fb->width() << 16 },
+				{ "SRC_H", fb->height() << 16 },
 			});
 
 		int r = req.commit(this);
@@ -250,8 +256,10 @@ static const char* usage_str =
 
 int main(int argc, char** argv)
 {
-	string src_conn_name = "unknown";
-	string dst_conn_name = "hdmi";
+	string src_conn_name;
+	string src_mode_name;
+	string dst_conn_name;
+	string dst_mode_name;
 	PixelFormat pixfmt = PixelFormat::XRGB8888;
 
 	OptionSet optionset = {
@@ -259,9 +267,17 @@ int main(int argc, char** argv)
 		{
 			src_conn_name = s;
 		}),
+		Option("m|smode=", [&](string s)
+		{
+			src_mode_name = s;
+		}),
 		Option("d|dst=", [&](string s)
 		{
 			dst_conn_name = s;
+		}),
+		Option("M|dmode=", [&](string s)
+		{
+			dst_mode_name = s;
 		}),
 		Option("f|format=", [&](string s)
 		{
@@ -281,41 +297,45 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 
+	if (src_conn_name.empty())
+		EXIT("No source connector defined");
+
+	if (dst_conn_name.empty())
+		EXIT("No destination connector defined");
+
 	VideoDevice vid("/dev/video11");
 
 	Card card;
 	ResourceManager resman(card);
 
+	card.disable_all();
+
 	auto src_conn = resman.reserve_connector(src_conn_name);
 	auto src_crtc = resman.reserve_crtc(src_conn);
-	src_crtc->refresh();
-	Videomode src_mode = src_conn->get_default_mode();
-	DumbFramebuffer src_fb(card, src_mode.hdisplay, src_mode.vdisplay, PixelFormat::ARGB8888);
-	src_crtc->set_mode(src_conn, src_fb, src_mode);
+	auto src_plane = resman.reserve_generic_plane(src_crtc, pixfmt);
+	FAIL_IF(!src_plane, "Plane not found");
+	Videomode src_mode = src_mode_name.empty() ? src_conn->get_default_mode() : src_conn->get_mode(src_mode_name);
+	src_crtc->set_mode(src_conn, src_mode);
 
-	uint32_t src_width = src_crtc->mode().hdisplay;
-	uint32_t src_height = src_crtc->mode().vdisplay;
-
-	printf("src %s, crtc %ux%u\n", src_conn->fullname().c_str(), src_width, src_height);
 
 	auto dst_conn = resman.reserve_connector(dst_conn_name);
 	auto dst_crtc = resman.reserve_crtc(dst_conn);
-	Videomode dst_mode = dst_conn->get_default_mode();
-	DumbFramebuffer dst_fb(card, dst_mode.hdisplay, dst_mode.vdisplay, PixelFormat::ARGB8888);
-	dst_crtc->set_mode(dst_conn, dst_fb, dst_mode);
-	dst_crtc->refresh();
 	auto dst_plane = resman.reserve_overlay_plane(dst_crtc, pixfmt);
 	FAIL_IF(!dst_plane, "Plane not found");
+	Videomode dst_mode = dst_mode_name.empty() ? dst_conn->get_default_mode() : dst_conn->get_mode(dst_mode_name);
+	dst_crtc->set_mode(dst_conn, dst_mode);
 
-	uint32_t dst_width = min((uint32_t)dst_crtc->mode().hdisplay, src_width);
-	uint32_t dst_height = min((uint32_t)dst_crtc->mode().vdisplay, src_height);
+	uint32_t width = src_mode.hdisplay;
+	uint32_t height = src_mode.vdisplay;
 
-	printf("dst %s, crtc %ux%u, plane %ux%u\n", dst_conn->fullname().c_str(),
-	       dst_crtc->mode().hdisplay, dst_crtc->mode().vdisplay,
-	       dst_width, dst_height);
+	printf("src %s, crtc %s\n", src_conn->fullname().c_str(), src_mode.to_string().c_str());
+
+	printf("dst %s, crtc %s\n", dst_conn->fullname().c_str(), dst_mode.to_string().c_str());
+
+	printf("fb %ux%u\n", width, height);
 
 	for (int i = 0; i < CAMERA_BUF_QUEUE_SIZE; ++i) {
-		auto fb = new DumbFramebuffer(card, src_width, src_height, pixfmt);
+		auto fb = new DumbFramebuffer(card, width, height, pixfmt);
 		s_fbs.push_back(fb);
 		s_free_fbs.push_back(fb);
 	}
@@ -325,14 +345,14 @@ int main(int argc, char** argv)
 	s_free_fbs.pop_back();
 
 	// This draws a moving bar to SRC display
-	BarFlipState barflipper(card, src_crtc);
+	BarFlipState barflipper(card, src_crtc, src_plane, width, height);
 	barflipper.start_flipping();
 
 	// This shows the captures SRC frames on DST display
 	WBFlipState wbflipper(card, dst_crtc, dst_plane);
-	wbflipper.setup(0, 0, dst_width, dst_height);
+	wbflipper.setup(0, 0, width, height);
 
-	WBStreamer wb(vid.get_capture_streamer(), src_crtc, src_width, src_height, pixfmt);
+	WBStreamer wb(vid.get_capture_streamer(), src_crtc, pixfmt);
 	wb.start_streaming();
 
 	vector<pollfd> fds(3);

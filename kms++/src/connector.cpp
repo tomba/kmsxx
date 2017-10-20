@@ -130,11 +130,24 @@ Videomode Connector::get_mode(const string& mode) const
 {
 	auto c = m_priv->drm_connector;
 
-	for (int i = 0; i < c->count_modes; i++)
-                if (mode == c->modes[i].name)
-                        return drm_mode_to_video_mode(c->modes[i]);
+	size_t idx = mode.find('@');
 
-        throw invalid_argument(mode + ": mode not found");
+	string name = idx == string::npos ? mode : mode.substr(0, idx);
+	float vrefresh = idx == string::npos ? 0.0 : stod(mode.substr(idx + 1));
+
+	for (int i = 0; i < c->count_modes; i++) {
+		Videomode m = drm_mode_to_video_mode(c->modes[i]);
+
+		if (m.name != name)
+			continue;
+
+		if (vrefresh && vrefresh != m.calculated_vrefresh())
+			continue;
+
+		return m;
+	}
+
+	throw invalid_argument(mode + ": mode not found");
 }
 
 Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool ilace) const

@@ -49,6 +49,8 @@ public:
 
 	void call_page_flip_handlers();
 
+	int disable_all();
+
 private:
 	void restore_modes();
 

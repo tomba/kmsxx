@@ -224,4 +224,24 @@ void Card::call_page_flip_handlers()
 	drmHandleEvent(fd(), &ev);
 }
 
+int Card::disable_all()
+{
+	AtomicReq req(*this);
+
+	for (Crtc* c : m_crtcs) {
+		req.add(c, {
+				{ "ACTIVE", 0 },
+			});
+	}
+
+	for (Plane* p : m_planes) {
+		req.add(p, {
+				{ "FB_ID", 0 },
+				{ "CRTC_ID", 0 },
+			});
+	}
+
+	return req.commit_sync(true);
+}
+
 }

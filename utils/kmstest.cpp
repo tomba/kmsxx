@@ -392,7 +392,7 @@ static void usage()
 	puts(usage_str);
 }
 
-enum class ObjectType
+enum class ArgType
 {
 	Connector,
 	Crtc,
@@ -403,7 +403,7 @@ enum class ObjectType
 
 struct Arg
 {
-	ObjectType type;
+	ArgType type;
 	string arg;
 };
 
@@ -422,23 +422,23 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("c|connector=",
 		[&](string s)
 		{
-			args.push_back(Arg { ObjectType::Connector, s });
+			args.push_back(Arg { ArgType::Connector, s });
 		}),
 		Option("r|crtc=", [&](string s)
 		{
-			args.push_back(Arg { ObjectType::Crtc, s });
+			args.push_back(Arg { ArgType::Crtc, s });
 		}),
 		Option("p|plane=", [&](string s)
 		{
-			args.push_back(Arg { ObjectType::Plane, s });
+			args.push_back(Arg { ArgType::Plane, s });
 		}),
 		Option("f|fb=", [&](string s)
 		{
-			args.push_back(Arg { ObjectType::Framebuffer, s });
+			args.push_back(Arg { ArgType::Framebuffer, s });
 		}),
 		Option("v|view=", [&](string s)
 		{
-			args.push_back(Arg { ObjectType::View, s });
+			args.push_back(Arg { ArgType::View, s });
 		}),
 		Option("|dmt", []()
 		{
@@ -519,7 +519,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 
 	for (auto& arg : output_args) {
 		switch (arg.type) {
-		case ObjectType::Connector:
+		case ArgType::Connector:
 		{
 			outputs.push_back(OutputInfo { });
 			current_output = &outputs.back();
@@ -530,7 +530,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			break;
 		}
 
-		case ObjectType::Crtc:
+		case ArgType::Crtc:
 		{
 			if (!current_output) {
 				outputs.push_back(OutputInfo { });
@@ -549,7 +549,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			break;
 		}
 
-		case ObjectType::Plane:
+		case ArgType::Plane:
 		{
 			if (!current_output) {
 				outputs.push_back(OutputInfo { });
@@ -570,7 +570,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			break;
 		}
 
-		case ObjectType::Framebuffer:
+		case ArgType::Framebuffer:
 		{
 			if (!current_output) {
 				outputs.push_back(OutputInfo { });
@@ -603,7 +603,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			break;
 		}
 
-		case ObjectType::View:
+		case ArgType::View:
 		{
 			if (!current_plane || current_plane->fbs.empty())
 				EXIT("'view' parameter requires a plane and a fb");

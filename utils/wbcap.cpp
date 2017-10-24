@@ -2,6 +2,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
+#include <fstream>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -56,7 +57,7 @@ public:
 		m_capdev.stream_off();
 	}
 
-	void Dequeue()
+	DumbFramebuffer* Dequeue()
 	{
 		auto fb = m_capdev.dequeue();
 
@@ -64,6 +65,8 @@ public:
 		s_wb_fbs.erase(iter);
 
 		s_ready_fbs.insert(s_ready_fbs.begin(), fb);
+
+		return fb;
 	}
 
 	void Queue()
@@ -248,7 +251,10 @@ static const char* usage_str =
 		"Options:\n"
 		"  -s, --src=CONN            Source connector\n"
 		"  -d, --dst=CONN            Destination connector\n"
-		"  -f, --format=4CC          Format"
+		"  -m, --smode=MODE          Source connector videomode\n"
+		"  -M, --dmode=MODE          Destination connector videomode\n"
+		"  -f, --format=4CC          Format\n"
+		"  -w, --write               Write captured frames to wbcap.raw file\n"
 		"  -h, --help                Print this help\n"
 		;
 
@@ -259,6 +265,7 @@ int main(int argc, char** argv)
 	string dst_conn_name;
 	string dst_mode_name;
 	PixelFormat pixfmt = PixelFormat::XRGB8888;
+	bool write_file = false;
 
 	OptionSet optionset = {
 		Option("s|src=", [&](string s)
@@ -280,6 +287,10 @@ int main(int argc, char** argv)
 		Option("f|format=", [&](string s)
 		{
 			pixfmt = FourCCToPixelFormat(s);
+		}),
+		Option("w|write", [&]()
+		{
+			write_file = true;
 		}),
 		Option("h|help", [&]()
 		{
@@ -366,6 +377,13 @@ int main(int argc, char** argv)
 	fds[2].fd = card.fd();
 	fds[2].events =  POLLIN;
 
+	uint32_t dst_frame_num = 0;
+
+	const string filename = "wbcap.raw";
+	unique_ptr<ofstream> os;
+	if (write_file)
+		os = unique_ptr<ofstream>(new ofstream(filename, ofstream::binary));
+
 	while (true) {
 		int r = poll(fds.data(), fds.size(), -1);
 		ASSERT(r > 0);
@@ -376,7 +394,17 @@ int main(int argc, char** argv)
 		if (fds[1].revents) {
 			fds[1].revents = 0;
 
-			wb.Dequeue();
+			DumbFramebuffer* fb = wb.Dequeue();
+
+			if (write_file) {
+				printf("Writing frame %u to %s\n", dst_frame_num, filename.c_str());
+
+				for (unsigned i = 0; i < fb->num_planes(); ++i)
+					os->write((char*)fb->map(i), fb->size(i));
+
+				dst_frame_num++;
+			}
+
 			wbflipper.queue_next();
 		}
 

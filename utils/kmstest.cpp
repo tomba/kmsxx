@@ -56,9 +56,6 @@ static bool s_cvt_v2;
 static bool s_cvt_vid_opt;
 static unsigned s_max_flips;
 
-static set<Crtc*> s_used_crtcs;
-static set<Plane*> s_used_planes;
-
 __attribute__ ((unused))
 static void print_regex_match(smatch sm)
 {
@@ -82,28 +79,15 @@ static void get_connector(ResourceManager& resman, OutputInfo& output, const str
 	output.mode = output.connector->get_default_mode();
 }
 
-static void get_default_crtc(Card& card, OutputInfo& output)
+static void get_default_crtc(ResourceManager& resman, OutputInfo& output)
 {
-	Crtc* crtc = output.connector->get_current_crtc();
+	output.crtc = resman.reserve_crtc(output.connector);
 
-	if (crtc && s_used_crtcs.find(crtc) == s_used_crtcs.end()) {
-		s_used_crtcs.insert(crtc);
-		output.crtc = crtc;
-		return;
-	}
-
-	for (const auto& possible : output.connector->get_possible_crtcs()) {
-		if (s_used_crtcs.find(possible) == s_used_crtcs.end()) {
-			s_used_crtcs.insert(possible);
-			output.crtc = possible;
-			return;
-		}
-	}
-
-	EXIT("Could not find available crtc");
+	if (!output.crtc)
+		EXIT("Could not find available crtc");
 }
 
-static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
+static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_str, OutputInfo& output)
 {
 	// @12:1920x1200i@60
 	// @12:33000000,800/210/30/16/-,480/22/13/10/-,i
@@ -226,9 +210,12 @@ static void parse_crtc(Card& card, const string& crtc_str, OutputInfo& output)
 	} else {
 		EXIT("Failed to parse crtc option '%s'", crtc_str.c_str());
 	}
+
+	if (!resman.reserve_crtc(output.crtc))
+		EXIT("Could not find available crtc");
 }
 
-static void parse_plane(Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)
+static void parse_plane(ResourceManager& resman, Card& card, const string& plane_str, const OutputInfo& output, PlaneInfo& pinfo)
 {
 	// 3:400,400-400x400
 	const regex plane_re("(?:(@?)(\\d+):)?"		// 3:
@@ -257,22 +244,14 @@ static void parse_plane(Card& card, const string& plane_str, const OutputInfo& o
 
 			pinfo.plane = planes[num];
 		}
+
+		pinfo.plane = resman.reserve_plane(pinfo.plane);
 	} else {
-		for (Plane* p : output.crtc->get_possible_planes()) {
-			if (s_used_planes.find(p) != s_used_planes.end())
-				continue;
-
-			if (p->plane_type() != PlaneType::Overlay)
-				continue;
-
-			pinfo.plane = p;
-		}
-
-		if (!pinfo.plane)
-			EXIT("Failed to find available plane");
+		pinfo.plane = resman.reserve_overlay_plane(output.crtc);
 	}
 
-	s_used_planes.insert(pinfo.plane);
+	if (!pinfo.plane)
+		EXIT("Failed to find available plane");
 
 	pinfo.w = stoul(sm[5]);
 	pinfo.h = stoul(sm[6]);
@@ -540,7 +519,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			if (!current_output->connector)
 				get_connector(resman, *current_output);
 
-			parse_crtc(card, arg.arg, *current_output);
+			parse_crtc(resman, card, arg.arg, *current_output);
 
 			current_output->user_set_crtc = true;
 
@@ -560,12 +539,12 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 				get_connector(resman, *current_output);
 
 			if (!current_output->crtc)
-				get_default_crtc(card, *current_output);
+				get_default_crtc(resman, *current_output);
 
 			current_output->planes.push_back(PlaneInfo { });
 			current_plane = &current_output->planes.back();
 
-			parse_plane(card, arg.arg, *current_output, *current_plane);
+			parse_plane(resman, card, arg.arg, *current_output, *current_plane);
 
 			break;
 		}
@@ -581,7 +560,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 				get_connector(resman, *current_output);
 
 			if (!current_output->crtc)
-				get_default_crtc(card, *current_output);
+				get_default_crtc(resman, *current_output);
 
 			int def_w, def_h;
 
@@ -617,7 +596,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	// create default framebuffers if needed
 	for (OutputInfo& o : outputs) {
 		if (!o.crtc) {
-			get_default_crtc(card, o);
+			get_default_crtc(resman, o);
 			o.user_set_crtc = true;
 		}
 
@@ -1048,7 +1027,7 @@ int main(int argc, char **argv)
 			if (o.fbs.empty())
 				continue;
 
-			o.primary_plane = resman.reserve_primary_plane(o.crtc);
+			o.primary_plane = resman.reserve_primary_plane(o.crtc, o.fbs[0]->format());
 
 			if (!o.primary_plane)
 				EXIT("Could not get primary plane for crtc '%u'", o.crtc->id());

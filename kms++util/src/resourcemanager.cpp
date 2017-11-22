@@ -132,6 +132,19 @@ Crtc* ResourceManager::reserve_crtc(Connector* conn)
 	return nullptr;
 }
 
+Crtc* ResourceManager::reserve_crtc(Crtc* crtc)
+{
+	if (!crtc)
+		return nullptr;
+
+	if (contains(m_reserved_crtcs, crtc))
+		return nullptr;
+
+	m_reserved_crtcs.push_back(crtc);
+
+	return crtc;
+}
+
 Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format)
 {
 	if (!crtc)
@@ -152,6 +165,19 @@ Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat fo
 	}
 
 	return nullptr;
+}
+
+Plane* ResourceManager::reserve_plane(Plane* plane)
+{
+	if (!plane)
+		return nullptr;
+
+	if (contains(m_reserved_planes, plane))
+		return nullptr;
+
+	m_reserved_planes.push_back(plane);
+
+	return plane;
 }
 
 Plane* ResourceManager::reserve_generic_plane(Crtc* crtc, PixelFormat format)

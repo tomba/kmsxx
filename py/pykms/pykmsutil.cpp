@@ -25,8 +25,8 @@ void init_pykmstest(py::module &m)
 			.def("reset", &ResourceManager::reset)
 			.def("reserve_connector", (Connector* (ResourceManager::*)(const string& name))&ResourceManager::reserve_connector,
 			     py::arg("name") = string())
-			.def("reserve_crtc", &ResourceManager::reserve_crtc)
-			.def("reserve_plane", &ResourceManager::reserve_plane,
+			.def("reserve_crtc", (Crtc* (ResourceManager::*)(Connector*))&ResourceManager::reserve_crtc)
+			.def("reserve_plane", (Plane* (ResourceManager::*)(Crtc*, PlaneType, PixelFormat))&ResourceManager::reserve_plane,
 			     py::arg("crtc"),
 			     py::arg("type"),
 			     py::arg("format") = PixelFormat::Undefined)

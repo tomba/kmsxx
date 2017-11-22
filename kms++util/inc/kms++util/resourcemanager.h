@@ -1,5 +1,5 @@
 #include <kms++/kms++.h>
-#include <vector>
+#include <set>
 #include <string>
 
 namespace kms {
@@ -24,9 +24,9 @@ public:
 
 private:
 	Card& m_card;
-	std::vector<Connector*> m_reserved_connectors;
-	std::vector<Crtc*> m_reserved_crtcs;
-	std::vector<Plane*> m_reserved_planes;
+	std::set<Connector*> m_reserved_connectors;
+	std::set<Crtc*> m_reserved_crtcs;
+	std::set<Plane*> m_reserved_planes;
 };
 
 }

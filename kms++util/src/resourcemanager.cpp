@@ -5,13 +5,6 @@
 using namespace kms;
 using namespace std;
 
-template<class C, class T>
-auto contains(const C& v, const T& x)
--> decltype(end(v), true)
-{
-	return end(v) != std::find(begin(v), end(v), x);
-}
-
 ResourceManager::ResourceManager(Card& card)
 	: m_card(card)
 {
@@ -24,13 +17,13 @@ void ResourceManager::reset()
 	m_reserved_planes.clear();
 }
 
-static Connector* find_connector(Card& card, const vector<Connector*> reserved)
+static Connector* find_connector(Card& card, const set<Connector*> reserved)
 {
 	for (Connector* conn : card.get_connectors()) {
 		if (!conn->connected())
 			continue;
 
-		if (contains(reserved, conn))
+		if (reserved.count(conn))
 			continue;
 
 		return conn;
@@ -39,7 +32,7 @@ static Connector* find_connector(Card& card, const vector<Connector*> reserved)
 	return nullptr;
 }
 
-static Connector* resolve_connector(Card& card, const string& name, const vector<Connector*> reserved)
+static Connector* resolve_connector(Card& card, const string& name, const set<Connector*> reserved)
 {
 	auto connectors = card.get_connectors();
 
@@ -49,7 +42,7 @@ static Connector* resolve_connector(Card& card, const string& name, const vector
 		if (*endptr == 0) {
 			Connector* c = card.get_connector(id);
 
-			if (!c || contains(reserved, c))
+			if (!c || reserved.count(c))
 				return nullptr;
 
 			return c;
@@ -63,7 +56,7 @@ static Connector* resolve_connector(Card& card, const string& name, const vector
 
 			Connector* c = connectors[idx];
 
-			if (contains(reserved, c))
+			if (reserved.count(c))
 				return nullptr;
 
 			return c;
@@ -74,7 +67,7 @@ static Connector* resolve_connector(Card& card, const string& name, const vector
 		if (to_lower(conn->fullname()).find(to_lower(name)) == string::npos)
 			continue;
 
-		if (contains(reserved, conn))
+		if (reserved.count(conn))
 			continue;
 
 		return conn;
@@ -95,7 +88,7 @@ Connector* ResourceManager::reserve_connector(const string& name)
 	if (!conn)
 		return nullptr;
 
-	m_reserved_connectors.push_back(conn);
+	m_reserved_connectors.insert(conn);
 	return conn;
 }
 
@@ -104,10 +97,10 @@ Connector* ResourceManager::reserve_connector(Connector* conn)
 	if (!conn)
 		return nullptr;
 
-	if (contains(m_reserved_connectors, conn))
+	if (m_reserved_connectors.count(conn))
 		return nullptr;
 
-	m_reserved_connectors.push_back(conn);
+	m_reserved_connectors.insert(conn);
 	return conn;
 }
 
@@ -117,15 +110,15 @@ Crtc* ResourceManager::reserve_crtc(Connector* conn)
 		return nullptr;
 
 	if (Crtc* crtc = conn->get_current_crtc()) {
-		m_reserved_crtcs.push_back(crtc);
+		m_reserved_crtcs.insert(crtc);
 		return crtc;
 	}
 
 	for (Crtc* crtc : conn->get_possible_crtcs()) {
-		if (contains(m_reserved_crtcs, crtc))
+		if (m_reserved_crtcs.count(crtc))
 			continue;
 
-		m_reserved_crtcs.push_back(crtc);
+		m_reserved_crtcs.insert(crtc);
 		return crtc;
 	}
 
@@ -137,10 +130,10 @@ Crtc* ResourceManager::reserve_crtc(Crtc* crtc)
 	if (!crtc)
 		return nullptr;
 
-	if (contains(m_reserved_crtcs, crtc))
+	if (m_reserved_crtcs.count(crtc))
 		return nullptr;
 
-	m_reserved_crtcs.push_back(crtc);
+	m_reserved_crtcs.insert(crtc);
 
 	return crtc;
 }
@@ -157,10 +150,10 @@ Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat fo
 		if (format != PixelFormat::Undefined && !plane->supports_format(format))
 			continue;
 
-		if (contains(m_reserved_planes, plane))
+		if (m_reserved_planes.count(plane))
 			continue;
 
-		m_reserved_planes.push_back(plane);
+		m_reserved_planes.insert(plane);
 		return plane;
 	}
 
@@ -172,10 +165,10 @@ Plane* ResourceManager::reserve_plane(Plane* plane)
 	if (!plane)
 		return nullptr;
 
-	if (contains(m_reserved_planes, plane))
+	if (m_reserved_planes.count(plane))
 		return nullptr;
 
-	m_reserved_planes.push_back(plane);
+	m_reserved_planes.insert(plane);
 
 	return plane;
 }
@@ -192,10 +185,10 @@ Plane* ResourceManager::reserve_generic_plane(Crtc* crtc, PixelFormat format)
 		if (format != PixelFormat::Undefined && !plane->supports_format(format))
 			continue;
 
-		if (contains(m_reserved_planes, plane))
+		if (m_reserved_planes.count(plane))
 			continue;
 
-		m_reserved_planes.push_back(plane);
+		m_reserved_planes.insert(plane);
 		return plane;
 	}
 

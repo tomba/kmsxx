@@ -52,12 +52,15 @@ int main(int argc, char** argv)
 	uint32_t w = mode.hdisplay;
 	uint32_t h = mode.vdisplay;
 
+	w = 800/4;
+	h = 480/4;
+
 	auto fb = new DumbFramebuffer(card, w, h, pixfmt);
 
 	//draw_test_pattern(*fb);
 
 	int r;
-
+#if 0
 	AtomicReq req(card);
 
 	unique_ptr<Blob> mode_blob = mode.to_blob(card);
@@ -91,6 +94,7 @@ int main(int argc, char** argv)
 	r = req.commit_sync(true);
 	if (r)
 		EXIT("Atomic commit failed: %d\n", r);
+#endif
 
 	int testfd = open("/dev/dma_buf-test", O_RDWR);
 	if (testfd < 0)
@@ -110,10 +114,10 @@ int main(int argc, char** argv)
 	struct dma_buf_test_rw_data data;
 	data.ptr = (uint64_t)buf;
 	data.offset = 0;
-	data.size = 4096;
-	data.write = 1;
+	data.size = w * h * 4;
+	data.write = 0;
 
-	r = ioctl(testfd, DMA_BUF_IOC_TEST_KERNEL_MAPPING, &data);
+	r = ioctl(testfd, DMA_BUF_IOC_TEST_DMA_MAPPING, &data);
 	if (r)
 		EXIT("DMA_BUF_IOC_TEST_DMA_MAPPING failed: %s\n", strerror(errno));
 

@@ -105,12 +105,14 @@ void init_pykmsbase(py::module &m)
 
 	py::class_<Blob>(m, "Blob")
 			.def("__init__", [](Blob& instance, Card& card, py::buffer buf) {
-				py::buffer_info info = buf.request();
-				if (info.ndim != 1)
-					throw std::runtime_error("Incompatible buffer dimension!");
+					py::buffer_info info = buf.request();
+					if (info.ndim != 1)
+						throw std::runtime_error("Incompatible buffer dimension!");
 
-				new (&instance) Blob(card, info.ptr, info.size * info.itemsize);
-			})
+					new (&instance) Blob(card, info.ptr, info.size * info.itemsize);
+				},
+				py::keep_alive<1, 3>())	// Keep Card alive until this is destructed
+
 			.def_property_readonly("data", &Blob::data)
 
 			// XXX pybind11 doesn't support a base object (DrmObject) with custom holder-type,

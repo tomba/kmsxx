@@ -11,7 +11,7 @@ using namespace std;
 
 void init_pyvid(py::module &m)
 {
-	py::class_<VideoDevice, VideoDevice*>(m, "VideoDevice")
+	py::class_<VideoDevice>(m, "VideoDevice")
 			.def(py::init<const string&>())
 			.def_property_readonly("fd", &VideoDevice::fd)
 			.def_property_readonly("has_capture", &VideoDevice::has_capture)
@@ -24,7 +24,7 @@ void init_pyvid(py::module &m)
 			.def("get_capture_devices", &VideoDevice::get_capture_devices)
 			;
 
-	py::class_<VideoStreamer, VideoStreamer*>(m, "VideoStreamer")
+	py::class_<VideoStreamer>(m, "VideoStreamer")
 			.def_property_readonly("fd", &VideoStreamer::fd)
 			.def_property_readonly("ports", &VideoStreamer::get_ports)
 			.def("set_port", &VideoStreamer::set_port)

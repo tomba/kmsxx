@@ -10,11 +10,11 @@ using namespace std;
 
 void init_pykmsomap(py::module &m)
 {
-	py::class_<OmapCard>(m, "OmapCard", py::base<Card>())
+	py::class_<OmapCard, Card>(m, "OmapCard")
 			.def(py::init<>())
 			;
 
-	py::class_<OmapFramebuffer> omapfb(m, "OmapFramebuffer", py::base<Framebuffer>());
+	py::class_<OmapFramebuffer, Framebuffer> omapfb(m, "OmapFramebuffer");
 
 	// XXX we should use py::arithmetic() here to support or and and operators, but it's not supported in the pybind11 we use
 	py::enum_<OmapFramebuffer::Flags>(omapfb, "Flags")

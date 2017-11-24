@@ -15,9 +15,7 @@ void init_pyvid(py::module &m);
 void init_pykmsomap(py::module &m);
 #endif
 
-PYBIND11_PLUGIN(pykms) {
-	py::module m("pykms", "kms bindings");
-
+PYBIND11_MODULE(pykms, m) {
 	init_pykmsbase(m);
 
 	init_pykmstest(m);
@@ -27,5 +25,4 @@ PYBIND11_PLUGIN(pykms) {
 #if HAS_LIBDRM_OMAP
 	init_pykmsomap(m);
 #endif
-	return m.ptr();
 }

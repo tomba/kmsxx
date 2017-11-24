@@ -49,6 +49,20 @@ matrix:
           packages: [*packages, 'g++-5']
       env: MYCC=gcc-5 MYCXX=g++-5
 
+    - compiler: gcc
+      addons:
+        apt:
+          sources: *sources
+          packages: [*packages, 'g++-6']
+      env: MYCC=gcc-6 MYCXX=g++-6
+
+    - compiler: gcc
+      addons:
+        apt:
+          sources: *sources
+          packages: [*packages, 'g++-7']
+      env: MYCC=gcc-7 MYCXX=g++-7
+
     - compiler: clang
       addons:
         apt:

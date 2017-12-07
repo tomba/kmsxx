@@ -54,7 +54,12 @@ void init_pykmsbase(py::module &m)
 			.def_property_readonly("fullname", &Connector::fullname)
 			.def("get_default_mode", &Connector::get_default_mode)
 			.def("get_current_crtc", &Connector::get_current_crtc)
-			.def("get_possible_crtcs", &Connector::get_possible_crtcs)
+			.def("get_possible_crtcs", [](Connector* self) {
+				vector<unique_ptr<Crtc, py::nodelete>> v;
+				for (Crtc* p : self->get_possible_crtcs())
+					v.push_back(unique_ptr<Crtc, py::nodelete>(p));
+				return v;
+			})
 			.def("get_modes", &Connector::get_modes)
 			.def("get_mode", (Videomode (Connector::*)(const string& mode) const)&Connector::get_mode)
 			.def("get_mode", (Videomode (Connector::*)(unsigned xres, unsigned yres, float refresh, bool ilace) const)&Connector::get_mode)

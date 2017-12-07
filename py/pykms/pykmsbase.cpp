@@ -24,6 +24,20 @@ void init_pykmsbase(py::module &m)
 				return v;
 			})
 
+			.def_property_readonly("crtcs", [](Card* self) {
+				vector<unique_ptr<Crtc, py::nodelete>> v;
+				for (Crtc* p : self->get_crtcs())
+					v.push_back(unique_ptr<Crtc, py::nodelete>(p));
+				return v;
+			})
+
+			.def_property_readonly("encoders", [](Card* self) {
+				vector<unique_ptr<Encoder, py::nodelete>> v;
+				for (Encoder* p : self->get_encoders())
+					v.push_back(unique_ptr<Encoder, py::nodelete>(p));
+				return v;
+			})
+
 			.def_property_readonly("planes", [](Card* self) {
 				vector<unique_ptr<Plane, py::nodelete>> v;
 				for (Plane* p : self->get_planes())

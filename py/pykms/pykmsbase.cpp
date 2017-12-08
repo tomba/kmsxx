@@ -7,6 +7,16 @@ namespace py = pybind11;
 using namespace kms;
 using namespace std;
 
+// Helper to convert vector<T*> to vector<unique_ptr<T, py::nodelete>>
+template<typename T>
+static vector<unique_ptr<T, py::nodelete>> convert_vector(const vector<T*>& source)
+{
+	vector<unique_ptr<T, py::nodelete>> v;
+	for (T* p : source)
+		v.push_back(unique_ptr<T, py::nodelete>(p));
+	return v;
+}
+
 void init_pykmsbase(py::module &m)
 {
 	py::class_<Card>(m, "Card")
@@ -18,31 +28,19 @@ void init_pykmsbase(py::module &m)
 			// RuntimeError: return_value_policy = move, but the object is neither movable nor copyable!
 			// So we do this manually.
 			.def_property_readonly("connectors", [](Card* self) {
-				vector<unique_ptr<Connector, py::nodelete>> v;
-				for (Connector* p : self->get_connectors())
-					v.push_back(unique_ptr<Connector, py::nodelete>(p));
-				return v;
+				return convert_vector(self->get_connectors());
 			})
 
 			.def_property_readonly("crtcs", [](Card* self) {
-				vector<unique_ptr<Crtc, py::nodelete>> v;
-				for (Crtc* p : self->get_crtcs())
-					v.push_back(unique_ptr<Crtc, py::nodelete>(p));
-				return v;
+				return convert_vector(self->get_crtcs());
 			})
 
 			.def_property_readonly("encoders", [](Card* self) {
-				vector<unique_ptr<Encoder, py::nodelete>> v;
-				for (Encoder* p : self->get_encoders())
-					v.push_back(unique_ptr<Encoder, py::nodelete>(p));
-				return v;
+				return convert_vector(self->get_encoders());
 			})
 
 			.def_property_readonly("planes", [](Card* self) {
-				vector<unique_ptr<Plane, py::nodelete>> v;
-				for (Plane* p : self->get_planes())
-					v.push_back(unique_ptr<Plane, py::nodelete>(p));
-				return v;
+				return convert_vector(self->get_planes());
 			})
 
 			.def_property_readonly("has_atomic", &Card::has_atomic)
@@ -69,10 +67,7 @@ void init_pykmsbase(py::module &m)
 			.def("get_default_mode", &Connector::get_default_mode)
 			.def("get_current_crtc", &Connector::get_current_crtc)
 			.def("get_possible_crtcs", [](Connector* self) {
-				vector<unique_ptr<Crtc, py::nodelete>> v;
-				for (Crtc* p : self->get_possible_crtcs())
-					v.push_back(unique_ptr<Crtc, py::nodelete>(p));
-				return v;
+				return convert_vector(self->get_possible_crtcs());
 			})
 			.def("get_modes", &Connector::get_modes)
 			.def("get_mode", (Videomode (Connector::*)(const string& mode) const)&Connector::get_mode)

@@ -436,7 +436,7 @@ void VideoStreamer::queue(DumbFramebuffer* fb)
 	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
 }
 
-DumbFramebuffer*VideoStreamer::dequeue()
+DumbFramebuffer* VideoStreamer::dequeue()
 {
 	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
 

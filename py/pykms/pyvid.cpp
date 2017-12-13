@@ -34,5 +34,6 @@ void init_pyvid(py::module &m)
 			.def("queue", &VideoStreamer::queue)
 			.def("dequeue", &VideoStreamer::dequeue)
 			.def("stream_on", &VideoStreamer::stream_on)
+			.def("stream_off", &VideoStreamer::stream_off)
 			;
 }

@@ -4,6 +4,8 @@
 #include <regex>
 #include <set>
 #include <chrono>
+#include <cstdint>
+#include <cinttypes>
 
 #include <sys/select.h>
 
@@ -15,6 +17,14 @@
 
 using namespace std;
 using namespace kms;
+
+struct PropInfo {
+	PropInfo(string n, uint64_t v) : prop(NULL), name(n), val(v) {}
+
+	Property *prop;
+	string name;
+	uint64_t val;
+};
 
 struct PlaneInfo
 {
@@ -31,6 +41,8 @@ struct PlaneInfo
 	unsigned view_h;
 
 	vector<Framebuffer*> fbs;
+
+	vector<PropInfo> props;
 };
 
 struct OutputInfo
@@ -38,12 +50,13 @@ struct OutputInfo
 	Connector* connector;
 
 	Crtc* crtc;
-	Plane* primary_plane;
 	Videomode mode;
-	bool user_set_crtc;
-	vector<Framebuffer*> fbs;
+	vector<Framebuffer*> legacy_fbs;
 
 	vector<PlaneInfo> planes;
+
+	vector<PropInfo> conn_props;
+	vector<PropInfo> crtc_props;
 };
 
 static bool s_use_dmt;
@@ -85,6 +98,16 @@ static void get_default_crtc(ResourceManager& resman, OutputInfo& output)
 
 	if (!output.crtc)
 		EXIT("Could not find available crtc");
+}
+
+
+static PlaneInfo *add_default_planeinfo(OutputInfo* output)
+{
+	output->planes.push_back(PlaneInfo { });
+	PlaneInfo *ret = &output->planes.back();
+	ret->w = output->mode.hdisplay;
+	ret->h = output->mode.vdisplay;
+	return ret;
 }
 
 static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_str, OutputInfo& output)
@@ -244,14 +267,7 @@ static void parse_plane(ResourceManager& resman, Card& card, const string& plane
 
 			pinfo.plane = planes[num];
 		}
-
-		pinfo.plane = resman.reserve_plane(pinfo.plane);
-	} else {
-		pinfo.plane = resman.reserve_overlay_plane(output.crtc);
 	}
-
-	if (!pinfo.plane)
-		EXIT("Failed to find available plane");
 
 	pinfo.w = stoul(sm[5]);
 	pinfo.h = stoul(sm[6]);
@@ -267,6 +283,26 @@ static void parse_plane(ResourceManager& resman, Card& card, const string& plane
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }
 
+static void parse_props(const string& prop_str, vector<PropInfo> &props)
+{
+	size_t split = prop_str.find("=");
+	string name, val;
+
+	if (split == string::npos)
+		EXIT("Equal sign ('=') not found in %s", prop_str.c_str());
+
+	name = prop_str.substr(0, split);
+	val = prop_str.substr(split+1);
+
+	props.push_back(PropInfo(name, stoull(val, 0, 0)));
+}
+
+static void get_props(Card& card, vector<PropInfo> &props, const DrmPropObject* propobj)
+{
+	for (auto& pi : props)
+		pi.prop = propobj->get_prop(pi.name);
+}
+
 static vector<Framebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
 {
 	vector<Framebuffer*> v;
@@ -277,11 +313,18 @@ static vector<Framebuffer*> get_default_fb(Card& card, unsigned width, unsigned 
 	return v;
 }
 
-static vector<Framebuffer*> parse_fb(Card& card, const string& fb_str, unsigned def_w, unsigned def_h)
+static void parse_fb(ResourceManager& resman, Card& card, const string& fb_str, OutputInfo* output, PlaneInfo*& pinfo)
 {
-	unsigned w = def_w;
-	unsigned h = def_h;
+	unsigned w, h;
 	PixelFormat format = PixelFormat::XRGB8888;
+
+	if (pinfo) {
+		w = pinfo->w;
+		h = pinfo->h;
+	} else {
+		w = output->mode.hdisplay;
+		h = output->mode.vdisplay;
+	}
 
 	if (!fb_str.empty()) {
 		// XXX the regexp is not quite correct
@@ -307,7 +350,10 @@ static vector<Framebuffer*> parse_fb(Card& card, const string& fb_str, unsigned 
 	for (unsigned i = 0; i < s_num_buffers; ++i)
 		v.push_back(new DumbFramebuffer(card, w, h, format));
 
-	return v;
+	if (pinfo)
+		pinfo->fbs = v;
+	else
+		output->legacy_fbs = v;
 }
 
 static void parse_view(const string& view_str, PlaneInfo& pinfo)
@@ -336,6 +382,7 @@ static const char* usage_str =
 		"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
 		"  -v, --view=VIEW           VIEW is <x>,<y>-<w>x<h>\n"
+		"  -P, --property=PROP=VAL   Set PROP to VAL in the previous DRM object\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
 		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
@@ -378,6 +425,7 @@ enum class ArgType
 	Plane,
 	Framebuffer,
 	View,
+	Property,
 };
 
 struct Arg
@@ -418,6 +466,10 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("v|view=", [&](string s)
 		{
 			args.push_back(Arg { ArgType::View, s });
+		}),
+		Option("P|property=", [&](string s)
+		{
+			args.push_back(Arg { ArgType::Property, s });
 		}),
 		Option("|dmt", []()
 		{
@@ -472,27 +524,6 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 {
 	vector<OutputInfo> outputs;
 
-	if (output_args.size() == 0) {
-		// no output args, show a pattern on all screens
-		for (Connector* conn : card.get_connectors()) {
-			if (!conn->connected())
-				continue;
-
-			OutputInfo output = { };
-			output.connector = resman.reserve_connector(conn);
-			EXIT_IF(!output.connector, "Failed to reserve connector %s", conn->fullname().c_str());
-			output.crtc = resman.reserve_crtc(conn);
-			EXIT_IF(!output.crtc, "Failed to reserve crtc for %s", conn->fullname().c_str());
-			output.mode = output.connector->get_default_mode();
-
-			output.fbs = get_default_fb(card, output.mode.hdisplay, output.mode.vdisplay);
-
-			outputs.push_back(output);
-		}
-
-		return outputs;
-	}
-
 	OutputInfo* current_output = 0;
 	PlaneInfo* current_plane = 0;
 
@@ -521,8 +552,6 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 
 			parse_crtc(resman, card, arg.arg, *current_output);
 
-			current_output->user_set_crtc = true;
-
 			current_plane = 0;
 
 			break;
@@ -541,8 +570,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			if (!current_output->crtc)
 				get_default_crtc(resman, *current_output);
 
-			current_output->planes.push_back(PlaneInfo { });
-			current_plane = &current_output->planes.back();
+			current_plane = add_default_planeinfo(current_output);
 
 			parse_plane(resman, card, arg.arg, *current_output, *current_plane);
 
@@ -562,22 +590,10 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			if (!current_output->crtc)
 				get_default_crtc(resman, *current_output);
 
-			int def_w, def_h;
+			if (!current_plane && card.has_atomic())
+				current_plane = add_default_planeinfo(current_output);
 
-			if (current_plane) {
-				def_w = current_plane->w;
-				def_h = current_plane->h;
-			} else {
-				def_w = current_output->mode.hdisplay;
-				def_h = current_output->mode.vdisplay;
-			}
-
-			auto fbs = parse_fb(card, arg.arg, def_w, def_h);
-
-			if (current_plane)
-				current_plane->fbs = fbs;
-			else
-				current_output->fbs = fbs;
+			parse_fb(resman, card, arg.arg, current_output, current_plane);
 
 			break;
 		}
@@ -590,22 +606,82 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			parse_view(arg.arg, *current_plane);
 			break;
 		}
+
+		case ArgType::Property:
+		{
+			if (!current_output)
+				EXIT("No object to which set the property");
+
+			if (current_plane)
+				parse_props(arg.arg, current_plane->props);
+			else if (current_output->crtc)
+				parse_props(arg.arg, current_output->crtc_props);
+			else if (current_output->connector)
+				parse_props(arg.arg, current_output->conn_props);
+			else
+				EXIT("no object");
+
+			break;
+		}
+		}
+	}
+
+	if (outputs.empty()) {
+		// no outputs defined, show a pattern on all screens
+		for (Connector* conn : card.get_connectors()) {
+			if (!conn->connected())
+				continue;
+
+			OutputInfo output = { };
+			output.connector = resman.reserve_connector(conn);
+			EXIT_IF(!output.connector, "Failed to reserve connector %s", conn->fullname().c_str());
+			output.crtc = resman.reserve_crtc(conn);
+			EXIT_IF(!output.crtc, "Failed to reserve crtc for %s", conn->fullname().c_str());
+			output.mode = output.connector->get_default_mode();
+
+			outputs.push_back(output);
 		}
 	}
 
 	// create default framebuffers if needed
 	for (OutputInfo& o : outputs) {
-		if (!o.crtc) {
-			get_default_crtc(resman, o);
-			o.user_set_crtc = true;
-		}
+		get_props(card, o.conn_props, o.connector);
 
-		if (o.fbs.empty() && o.user_set_crtc)
-			o.fbs = get_default_fb(card, o.mode.hdisplay, o.mode.vdisplay);
+		if (!o.crtc)
+			get_default_crtc(resman, o);
+
+		get_props(card, o.crtc_props, o.crtc);
+
+		if (card.has_atomic()) {
+			if (o.planes.empty())
+				add_default_planeinfo(&o);
+		} else {
+			if (o.legacy_fbs.empty())
+				o.legacy_fbs = get_default_fb(card, o.mode.hdisplay, o.mode.vdisplay);
+		}
 
 		for (PlaneInfo &p : o.planes) {
 			if (p.fbs.empty())
 				p.fbs = get_default_fb(card, p.w, p.h);
+		}
+
+		for (PlaneInfo& p : o.planes) {
+			Plane* plane = p.plane;
+			if (!p.plane) {
+				if (card.has_atomic())
+					p.plane = resman.reserve_generic_plane(o.crtc, p.fbs[0]->format());
+				else
+					p.plane = resman.reserve_overlay_plane(o.crtc, p.fbs[0]->format());
+			} else {
+				p.plane = resman.reserve_plane(p.plane);
+			}
+			if (!p.plane) {
+				if (plane)
+					EXIT("Plane id %u is not available", plane->id());
+				else
+					EXIT("Failed to find available plane");
+			}
+			get_props(card, p.props, p.plane);
 		}
 	}
 
@@ -631,23 +707,36 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 	for (unsigned i = 0; i < outputs.size(); ++i) {
 		const OutputInfo& o = outputs[i];
 
-		printf("Connector %u/@%u: %s\n", o.connector->idx(), o.connector->id(),
+		printf("Connector %u/@%u: %s", o.connector->idx(), o.connector->id(),
 		       o.connector->fullname().c_str());
-		printf("  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
-		if (o.primary_plane)
-			printf(" (plane %u/@%u)", o.primary_plane->idx(), o.primary_plane->id());
+
+		for (const PropInfo &prop: o.conn_props)
+			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+			       prop.val);
+
+		printf("\n  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
+
+		for (const PropInfo &prop: o.crtc_props)
+			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+			       prop.val);
+
 		printf(": %s\n", videomode_to_string(o.mode).c_str());
-		if (!o.fbs.empty()) {
-			auto fb = o.fbs[0];
-			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
-			       PixelFormatToFourCC(fb->format()).c_str());
+
+		if (!o.legacy_fbs.empty()) {
+			auto fb = o.legacy_fbs[0];
+			printf(" (Fb %u %ux%u-%s)", fb->id(), fb->width(), fb->height(), PixelFormatToFourCC(fb->format()).c_str());
 		}
 
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
 			const PlaneInfo& p = o.planes[j];
 			auto fb = p.fbs[0];
-			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->idx(), p.plane->id(),
+			printf("  Plane %u/@%u: %u,%u-%ux%u", p.plane->idx(), p.plane->id(),
 			       p.x, p.y, p.w, p.h);
+			for (const PropInfo &prop: p.props)
+				printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+				       prop.val);
+			printf("\n");
+
 			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
 			       PixelFormatToFourCC(fb->format()).c_str());
 		}
@@ -657,7 +746,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 static void draw_test_patterns(const vector<OutputInfo>& outputs)
 {
 	for (const OutputInfo& o : outputs) {
-		for (auto fb : o.fbs)
+		for (auto fb : o.legacy_fbs)
 			draw_test_pattern(*fb);
 
 		for (const PlaneInfo& p : o.planes)
@@ -680,8 +769,11 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 		auto conn = o.connector;
 		auto crtc = o.crtc;
 
-		if (!o.fbs.empty()) {
-			auto fb = o.fbs[0];
+		if (!o.conn_props.empty() || !o.crtc_props.empty())
+			printf("WARNING: properties not set without atomic modesetting");
+
+		if (!o.legacy_fbs.empty()) {
+			auto fb = o.legacy_fbs[0];
 			int r = crtc->set_mode(conn, *fb, o.mode);
 			if (r)
 				printf("crtc->set_mode() failed for crtc %u: %s\n",
@@ -696,6 +788,8 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 			if (r)
 				printf("crtc->set_plane() failed for plane %u: %s\n",
 				       p.plane->id(), strerror(-r));
+			if (!p.props.empty())
+				printf("WARNING: properties not set without atomic modesetting");
 		}
 	}
 }
@@ -721,15 +815,11 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 	}
 
 	// Disable unused planes
-	for (Plane* plane : card.get_planes()) {
-		//if (find_if(outputs.begin(), outputs.end(), [plane](const OutputInfo& o) { return o.primary_plane == plane; }) != outputs.end())
-		//	continue;
-
+	for (Plane* plane : card.get_planes())
 		disable_req.add(plane, {
 				{ "FB_ID", 0 },
 				{ "CRTC_ID", 0 },
 			});
-	}
 
 	r = disable_req.commit_sync(true);
 	if (r)
@@ -752,27 +842,16 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 				{ "CRTC_ID", crtc->id() },
 			});
 
+		for (const PropInfo &prop: o.conn_props)
+			req.add(conn, prop.prop, prop.val);
+
 		req.add(crtc, {
 				{ "ACTIVE", 1 },
 				{ "MODE_ID", mode_blob->id() },
 			});
 
-		if (!o.fbs.empty()) {
-			auto fb = o.fbs[0];
-
-			req.add(o.primary_plane, {
-					{ "FB_ID", fb->id() },
-					{ "CRTC_ID", crtc->id() },
-					{ "SRC_X", 0 << 16 },
-					{ "SRC_Y", 0 << 16 },
-					{ "SRC_W", fb->width() << 16 },
-					{ "SRC_H", fb->height() << 16 },
-					{ "CRTC_X", 0 },
-					{ "CRTC_Y", 0 },
-					{ "CRTC_W", fb->width() },
-					{ "CRTC_H", fb->height() },
-				});
-		}
+		for (const PropInfo &prop: o.crtc_props)
+			req.add(crtc, prop.prop, prop.val);
 
 		for (const PlaneInfo& p : o.planes) {
 			auto fb = p.fbs[0];
@@ -789,6 +868,9 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 					{ "CRTC_W", p.w },
 					{ "CRTC_H", p.h },
 				});
+
+			for (const PropInfo &prop: p.props)
+				req.add(p.plane, prop.prop, prop.val);
 		}
 	}
 
@@ -880,16 +962,6 @@ private:
 	{
 		unsigned cur = frame_num % s_num_buffers;
 
-		if (!o.fbs.empty()) {
-			auto fb = o.fbs[cur];
-
-			draw_bar(fb, frame_num);
-
-			req.add(o.primary_plane, {
-					{ "FB_ID", fb->id() },
-				});
-		}
-
 		for (const PlaneInfo& p : o.planes) {
 			auto fb = p.fbs[cur];
 
@@ -905,8 +977,8 @@ private:
 	{
 		unsigned cur = frame_num % s_num_buffers;
 
-		if (!o.fbs.empty()) {
-			auto fb = o.fbs[cur];
+		if (!o.legacy_fbs.empty()) {
+			auto fb = o.legacy_fbs[cur];
 
 			draw_bar(fb, frame_num);
 
@@ -1021,18 +1093,6 @@ int main(int argc, char **argv)
 	ResourceManager resman(card);
 
 	vector<OutputInfo> outputs = setups_to_outputs(card, resman, output_args);
-
-	if (card.has_atomic()) {
-		for (OutputInfo& o : outputs) {
-			if (o.fbs.empty())
-				continue;
-
-			o.primary_plane = resman.reserve_primary_plane(o.crtc, o.fbs[0]->format());
-
-			if (!o.primary_plane)
-				EXIT("Could not get primary plane for crtc '%u'", o.crtc->id());
-		}
-	}
 
 	if (!s_flip_mode)
 		draw_test_patterns(outputs);

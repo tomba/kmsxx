@@ -4,6 +4,8 @@
 #include <regex>
 #include <set>
 #include <chrono>
+#include <cstdint>
+#include <cinttypes>
 
 #include <sys/select.h>
 
@@ -15,6 +17,13 @@
 
 using namespace std;
 using namespace kms;
+
+struct PropInfo {
+	PropInfo(Property *p, uint64_t v) : prop(p), val(v) {}
+
+	Property *prop;
+	uint64_t val;
+};
 
 struct PlaneInfo
 {
@@ -31,6 +40,8 @@ struct PlaneInfo
 	unsigned view_h;
 
 	vector<Framebuffer*> fbs;
+
+	vector<PropInfo> props;
 };
 
 struct OutputInfo
@@ -44,6 +55,9 @@ struct OutputInfo
 	vector<Framebuffer*> fbs;
 
 	vector<PlaneInfo> planes;
+
+	vector<PropInfo> conn_props;
+	vector<PropInfo> crtc_props;
 };
 
 static bool s_use_dmt;
@@ -267,6 +281,23 @@ static void parse_plane(ResourceManager& resman, Card& card, const string& plane
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }
 
+static void parse_prop(Card& card, const string& prop_str, vector<PropInfo> &props, const DrmPropObject* propobj)
+{
+	string name, val;
+	Property* prop;
+
+	size_t split = prop_str.find("=");
+
+	if (split == string::npos)
+		EXIT("Equal sign ('=') not found in %s", prop_str.c_str());
+
+	name = prop_str.substr(0, split);
+	val = prop_str.substr(split+1);
+	prop = propobj->get_prop(name);
+
+	props.push_back(PropInfo(prop, stoull(val, 0, 0)));
+}
+
 static vector<Framebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
 {
 	vector<Framebuffer*> v;
@@ -336,6 +367,7 @@ static const char* usage_str =
 		"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
 		"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
 		"  -v, --view=VIEW           VIEW is <x>,<y>-<w>x<h>\n"
+		"  -P, --property=PROP=VAL   Set PROP to VAL in the previous DRM object\n"
 		"      --dmt                 Search for the given mode from DMT tables\n"
 		"      --cea                 Search for the given mode from CEA tables\n"
 		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
@@ -378,6 +410,7 @@ enum class ArgType
 	Plane,
 	Framebuffer,
 	View,
+	Property,
 };
 
 struct Arg
@@ -418,6 +451,10 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 		Option("v|view=", [&](string s)
 		{
 			args.push_back(Arg { ArgType::View, s });
+		}),
+		Option("P|property=", [&](string s)
+		{
+			args.push_back(Arg { ArgType::Property, s });
 		}),
 		Option("|dmt", []()
 		{
@@ -590,6 +627,28 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			parse_view(arg.arg, *current_plane);
 			break;
 		}
+
+		case ArgType::Property:
+		{
+			if (!current_output)
+				EXIT("No object to which set the property");
+
+			if (current_plane)
+				parse_prop(card, arg.arg, current_plane->props,
+					    current_plane->plane);
+			else if (current_output->crtc)
+				parse_prop(card, arg.arg,
+					    current_output->crtc_props,
+					    current_output->crtc);
+			else if (current_output->connector)
+				parse_prop(card, arg.arg,
+					    current_output->conn_props,
+					    current_output->connector);
+			else
+				EXIT("no object");
+
+			break;
+		}
 		}
 	}
 
@@ -631,9 +690,19 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 	for (unsigned i = 0; i < outputs.size(); ++i) {
 		const OutputInfo& o = outputs[i];
 
-		printf("Connector %u/@%u: %s\n", o.connector->idx(), o.connector->id(),
+		printf("Connector %u/@%u: %s", o.connector->idx(), o.connector->id(),
 		       o.connector->fullname().c_str());
-		printf("  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
+
+		for (const PropInfo &prop: o.conn_props)
+			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+			       prop.val);
+
+		printf("\n  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
+
+		for (const PropInfo &prop: o.crtc_props)
+			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+			       prop.val);
+
 		if (o.primary_plane)
 			printf(" (plane %u/@%u)", o.primary_plane->idx(), o.primary_plane->id());
 		printf(": %s\n", videomode_to_string(o.mode).c_str());
@@ -646,8 +715,13 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
 			const PlaneInfo& p = o.planes[j];
 			auto fb = p.fbs[0];
-			printf("  Plane %u/@%u: %u,%u-%ux%u\n", p.plane->idx(), p.plane->id(),
+			printf("  Plane %u/@%u: %u,%u-%ux%u", p.plane->idx(), p.plane->id(),
 			       p.x, p.y, p.w, p.h);
+			for (const PropInfo &prop: p.props)
+				printf(" %s=%" PRIu64, prop.prop->name().c_str(),
+				       prop.val);
+			printf("\n");
+
 			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
 			       PixelFormatToFourCC(fb->format()).c_str());
 		}
@@ -680,6 +754,9 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 		auto conn = o.connector;
 		auto crtc = o.crtc;
 
+		if (!o.conn_props.empty() || !o.crtc_props.empty())
+			printf("WARNING: properties not set without atomic modesetting");
+
 		if (!o.fbs.empty()) {
 			auto fb = o.fbs[0];
 			int r = crtc->set_mode(conn, *fb, o.mode);
@@ -696,6 +773,8 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 			if (r)
 				printf("crtc->set_plane() failed for plane %u: %s\n",
 				       p.plane->id(), strerror(-r));
+			if (!p.props.empty())
+				printf("WARNING: properties not set without atomic modesetting");
 		}
 	}
 }
@@ -752,10 +831,16 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 				{ "CRTC_ID", crtc->id() },
 			});
 
+		for (const PropInfo &prop: o.conn_props)
+			req.add(conn, prop.prop, prop.val);
+
 		req.add(crtc, {
 				{ "ACTIVE", 1 },
 				{ "MODE_ID", mode_blob->id() },
 			});
+
+		for (const PropInfo &prop: o.crtc_props)
+			req.add(crtc, prop.prop, prop.val);
 
 		if (!o.fbs.empty()) {
 			auto fb = o.fbs[0];
@@ -789,6 +874,9 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 					{ "CRTC_W", p.w },
 					{ "CRTC_H", p.h },
 				});
+
+			for (const PropInfo &prop: p.props)
+				req.add(p.plane, prop.prop, prop.val);
 		}
 	}
 

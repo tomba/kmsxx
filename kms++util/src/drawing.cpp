@@ -8,6 +8,9 @@ namespace kms
 {
 void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
+	if (x >= buf.width() || y >= buf.height())
+		throw runtime_error("attempt to draw outside the buffer");
+
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
 	case PixelFormat::ARGB8888:
@@ -58,6 +61,9 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 
 void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
+	if ((x + 1) >= buf.width() || y >= buf.height())
+		throw runtime_error("attempt to draw outside the buffer");
+
 	ASSERT((x & 1) == 0);
 
 	uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
@@ -104,6 +110,9 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 			    YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
+	if ((x + 1) >= buf.width() || (y + 1) >= buf.height())
+		throw runtime_error("attempt to draw outside the buffer");
+
 	ASSERT((x & 1) == 0);
 	ASSERT((y & 1) == 0);
 

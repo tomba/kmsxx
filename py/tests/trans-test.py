@@ -77,7 +77,7 @@ def test_am5_trans_src():
 
     fb = fbs[1]
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
-    pykms.draw_rect(fb, 100, 100, 500, 500, pykms.purple)
+    pykms.draw_rect(fb, 100, 100, fb.width - 200, fb.height - 200, pykms.purple)
 
     crtc.set_props({
         "trans-key-mode": 2,

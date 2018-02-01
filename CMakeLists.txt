@@ -19,6 +19,7 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
 option(BUILD_SHARED_LIBS "Build shared libs" FALSE)
 option(TREAT_WARNINGS_AS_ERRORS "Treat warnings as errors" FALSE)
+option(WITH_ION "Also build Ion allocator support" FALSE)
 
 set(KMSXX_ENABLE_PYTHON ON CACHE BOOL "Enable Python wrappers")
 set(KMSXX_PYTHON_VERSION "python3;python2" CACHE STRING "Python pkgconfig package")

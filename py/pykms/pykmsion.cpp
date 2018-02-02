@@ -13,5 +13,7 @@ void init_pykmsion(py::module &m)
 	py::class_<Ion>(m, "Ion")
 			.def(py::init<>())
 			.def_property_readonly("fd", &Ion::fd)
+			.def("alloc", (int (Ion::*)(int, int))&Ion::alloc)
+			.def("free", (int (Ion::*)(int))&Ion::free)
 			;
 }

@@ -4,6 +4,7 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <unistd.h>
 
 #include <kms++/kms++.h>
 
@@ -82,6 +83,25 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 ExtFramebuffer::~ExtFramebuffer()
 {
 	drmModeRmFB(card().fd(), id());
+
+	for (unsigned i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes[i];
+
+		if (plane.prime_fd && plane.handle) {
+			drm_gem_close closeReq {};
+			int ret;
+
+			closeReq.handle = plane.handle;
+			ret = drmIoctl(card().fd(), DRM_IOCTL_GEM_CLOSE, &closeReq);
+			/*
+			 * do not throw an exception now, DRM core will
+			 * make proper cleanup, but still print an error
+			 */
+			if (ret)
+				printf("Error closing GEM %d (%s)\n", ret, strerror(errno));
+		}
+	}
+
 }
 
 uint8_t* ExtFramebuffer::map(unsigned plane)

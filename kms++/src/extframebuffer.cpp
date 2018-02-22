@@ -87,6 +87,10 @@ ExtFramebuffer::~ExtFramebuffer()
 	for (unsigned i = 0; i < m_num_planes; ++i) {
 		FramebufferPlane& plane = m_planes[i];
 
+		/* unmap buffer */
+		if (plane.map)
+			munmap(plane.map, plane.size);
+
 		if (plane.prime_fd && plane.handle) {
 			drm_gem_close closeReq {};
 			int ret;

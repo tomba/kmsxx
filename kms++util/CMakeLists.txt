@@ -7,7 +7,7 @@ target_include_directories(kms++util PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-target_link_libraries(kms++util kms++ pthread)
+target_link_libraries(kms++util kms++)
 
 set_target_properties(kms++util PROPERTIES
     PUBLIC_HEADER "${PUB_HDRS}")

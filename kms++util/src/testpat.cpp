@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <cassert>
-#include <thread>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -153,32 +152,7 @@ static void draw_test_pattern_part(IFramebuffer& fb, unsigned start_y, unsigned 
 
 static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 {
-	if (fb.height() < 20) {
-		draw_test_pattern_part(fb, 0, fb.height(), yuvt);
-		return;
-	}
-
-	// Create the mmaps before starting the threads
-	for (unsigned i = 0; i < fb.num_planes(); ++i)
-		fb.map(0);
-
-	unsigned num_threads = thread::hardware_concurrency();
-	vector<thread> workers;
-
-	unsigned part = (fb.height() / num_threads) & ~1;
-
-	for (unsigned n = 0; n < num_threads; ++n) {
-		unsigned start = n * part;
-		unsigned end = start + part;
-
-		if (n == num_threads - 1)
-			end = fb.height();
-
-		workers.push_back(thread([&fb, start, end, yuvt]() { draw_test_pattern_part(fb, start, end, yuvt); }));
-	}
-
-	for (thread& t : workers)
-		t.join();
+	draw_test_pattern_part(fb, 0, fb.height(), yuvt);
 }
 
 void draw_test_pattern(IFramebuffer &fb, YUVType yuvt)

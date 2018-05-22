@@ -178,7 +178,7 @@ def main(argv):
 
     fb = flip_handler.fb1
     pykms.draw_color_bar(fb, fb.width - bar_width - bar_speed, bar_speed, bar_width)
-    mode_blob = mode.blob(card)
+    mode_blob = mode.to_blob(card)
 
     req = pykms.AtomicReq(card)
     req.add(conn, 'CRTC_ID', crtc.id)
@@ -195,7 +195,7 @@ def main(argv):
                 'CRTC_W': fb.width,
                 'CRTC_H': fb.height,
     })
-    ret = req.commit(flip_handler, allow_modeset = True)
+    ret = req.commit(0, allow_modeset = True)
     if ret < 0:
         raise RuntimeError('Atomic mode set failed with %d' % ret)
 

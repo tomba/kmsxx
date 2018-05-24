@@ -6,124 +6,44 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <string.h>
+#include <sys/mman.h>
 
-#include <kms++/kms++.h>
-#include <kms++util/kms++util.h>
-
-using namespace std;
-using namespace kms;
-
-/*
- * struct dma_buf_test_rw_data - metadata passed to the kernel to read handle
- * @ptr:       a pointer to an area at least as large as size
- * @offset:    offset into the dma_buf buffer to start reading
- * @size:      size to read or write
- * @write:     1 to write, 0 to read
- */
-struct dma_buf_test_rw_data {
-	uint64_t ptr;
-	uint64_t offset;
-	uint64_t size;
-	int write;
-	int __padding;
+extern "C" {
+#include <libdrm/etnaviv_drmif.h>
 };
 
-#define DMA_BUF_IOC_MAGIC              'I'
-#define DMA_BUF_IOC_TEST_SET_FD \
-	_IO(DMA_BUF_IOC_MAGIC, 0xf0)
-#define DMA_BUF_IOC_TEST_DMA_MAPPING \
-	_IOW(DMA_BUF_IOC_MAGIC, 0xf1, struct dma_buf_test_rw_data)
-#define DMA_BUF_IOC_TEST_KERNEL_MAPPING \
-	_IOW(DMA_BUF_IOC_MAGIC, 0xf2, struct dma_buf_test_rw_data)
+#define FAIL_IF(x, fmt, ...) \
+	if (x) { \
+	fprintf(stderr, "%s:%d: %s:\n" fmt "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \
+	abort(); \
+	}
 
 int main(int argc, char** argv)
 {
-	Card card("/dev/dri/card0");
-	ResourceManager res(card);
-
-	auto pixfmt = PixelFormat::XRGB8888;
-
-	auto conn = res.reserve_connector();
-	auto crtc = res.reserve_crtc(conn);
-	auto plane = res.reserve_overlay_plane(crtc, pixfmt);
-	FAIL_IF(!plane, "available plane not found");
-	auto mode = conn->get_default_mode();
-
-	uint32_t w = mode.hdisplay;
-	uint32_t h = mode.vdisplay;
-
-	w = 800/4;
-	h = 480/4;
-
-	auto fb = new DumbFramebuffer(card, w, h, pixfmt);
-
-	//draw_test_pattern(*fb);
-
 	int r;
-#if 0
-	AtomicReq req(card);
 
-	unique_ptr<Blob> mode_blob = mode.to_blob(card);
+	int disp_fd = open("/dev/dri/card1", O_RDWR | O_CLOEXEC);
+	FAIL_IF(disp_fd < 0, "failed to open card0");
 
-	req.add(conn, {
-			{ "CRTC_ID", crtc->id() },
-		});
+	int etna_fd = open("/dev/dri/card0", O_RDWR | O_CLOEXEC);
+	FAIL_IF(etna_fd < 0, "failed to open card1");
+	struct etna_device* etna = etna_device_new(etna_fd);
 
-	req.add(crtc, {
-			{ "ACTIVE", 1 },
-			{ "MODE_ID", mode_blob->id() },
-		});
+	struct drm_mode_create_dumb creq = drm_mode_create_dumb();
+	creq.width = 640;
+	creq.height = 480;
+	creq.bpp = 32;
+	r = drmIoctl(disp_fd, DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+	FAIL_IF(r, "DRM_IOCTL_MODE_CREATE_DUMB failed");
 
-	req.add(plane, {
-			{ "FB_ID", fb->id() },
-			{ "CRTC_ID", crtc->id() },
-			{ "SRC_X", 0 << 16 },
-			{ "SRC_Y", 0 << 16 },
-			{ "SRC_W", fb->width() << 16 },
-			{ "SRC_H", fb->height() << 16 },
-			{ "CRTC_X", 0 },
-			{ "CRTC_Y", 0 },
-			{ "CRTC_W", fb->width() },
-			{ "CRTC_H", fb->height() },
-		});
+	uint32_t bo_handle = creq.handle;
 
-	r = req.test(true);
-	if (r)
-		EXIT("Atomic test failed: %d\n", r);
+	int bo_fd;
+	r = drmPrimeHandleToFD(disp_fd, bo_handle, DRM_CLOEXEC | O_RDWR, &bo_fd);
+	FAIL_IF(r, "drmPrimeHandleToFD failed");
 
-	r = req.commit_sync(true);
-	if (r)
-		EXIT("Atomic commit failed: %d\n", r);
-#endif
+	struct etna_bo* etna_bo = etna_bo_from_dmabuf(etna, bo_fd);
 
-	int testfd = open("/dev/dma_buf-test", O_RDWR);
-	if (testfd < 0)
-		EXIT("open failed\n");
-
-	r = ioctl(testfd, DMA_BUF_IOC_TEST_SET_FD, fb->prime_fd(0));
-	if (r)
-		EXIT("ioctl failed: %s\n", strerror(errno));
-
-	//printf("press enter to test\n");
-	//getchar();
-
-	uint8_t* buf = (uint8_t*)malloc(fb->size(0));
-	for (uint32_t i = 0; i < fb->size(0); ++i)
-		buf[i] = 0xff;
-
-	struct dma_buf_test_rw_data data;
-	data.ptr = (uint64_t)buf;
-	data.offset = 0;
-	data.size = w * h * 4;
-	data.write = 0;
-
-	r = ioctl(testfd, DMA_BUF_IOC_TEST_DMA_MAPPING, &data);
-	if (r)
-		EXIT("DMA_BUF_IOC_TEST_DMA_MAPPING failed: %s\n", strerror(errno));
-
-
-	printf("press enter to exit\n");
-	getchar();
-
-	delete fb;
+	void* etna_p = etna_bo_map(etna_bo);
+	FAIL_IF(etna_p == MAP_FAILED, "etna_bo_map failed");
 }

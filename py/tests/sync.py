@@ -178,7 +178,7 @@ def main(argv):
 
     fb = flip_handler.fb1
     pykms.draw_color_bar(fb, fb.width - bar_width - bar_speed, bar_speed, bar_width)
-    mode_blob = mode.blob(card)
+    mode_blob = mode.to_blob(card)
 
     req = pykms.AtomicReq(card)
     req.add(conn, 'CRTC_ID', crtc.id)

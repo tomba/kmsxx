@@ -195,7 +195,7 @@ def main(argv):
                 'CRTC_W': fb.width,
                 'CRTC_H': fb.height,
     })
-    ret = req.commit(flip_handler, allow_modeset = True)
+    ret = req.commit(allow_modeset = True)
     if ret < 0:
         raise RuntimeError('Atomic mode set failed with %d' % ret)
 

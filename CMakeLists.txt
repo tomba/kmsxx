@@ -71,6 +71,8 @@ if(LIBDRM_OMAP_FOUND)
     add_definitions(-DHAS_LIBDRM_OMAP)
 endif()
 
+pkg_check_modules(LIBEVDEV libevdev)
+
 enable_testing()
 
 add_subdirectory(kms++)

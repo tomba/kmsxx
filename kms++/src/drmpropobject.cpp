@@ -80,6 +80,11 @@ unique_ptr<Blob> DrmPropObject::get_prop_value_as_blob(const string& name) const
 	return unique_ptr<Blob>(new Blob(card(), blob_id));
 }
 
+int DrmPropObject::set_prop_value(Property* prop, uint64_t value)
+{
+	return drmModeObjectSetProperty(card().fd(), this->id(), this->object_type(), prop->id(), value);
+}
+
 int DrmPropObject::set_prop_value(uint32_t id, uint64_t value)
 {
 	return drmModeObjectSetProperty(card().fd(), this->id(), this->object_type(), id, value);

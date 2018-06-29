@@ -134,7 +134,7 @@ static string format_fb(Framebuffer& fb)
 
 static string format_property(const Property* prop, uint64_t val)
 {
-	string ret = sformat("%s = ", prop->name().c_str());
+	string ret = sformat("%s (%u) = ", prop->name().c_str(), prop->id());
 
 	switch (prop->type()) {
 	case PropertyType::Bitmask:

@@ -1,5 +1,6 @@
 
 #include <cstring>
+#include <cerrno>
 #include <stdexcept>
 #include <sys/mman.h>
 #include <xf86drm.h>

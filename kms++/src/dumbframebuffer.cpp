@@ -1,4 +1,5 @@
 
+#include <cerrno>
 #include <cstring>
 #include <stdexcept>
 #include <sys/mman.h>

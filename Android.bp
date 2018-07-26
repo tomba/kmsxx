@@ -1,0 +1,59 @@
+// Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+cc_library_shared {
+    name: "libkmsxx",
+
+    vendor_available: true,
+    rtti: true,
+
+    srcs: [
+        "kms++/src/atomicreq.cpp",
+        "kms++/src/card.cpp",
+        "kms++/src/crtc.cpp",
+        "kms++/src/drmpropobject.cpp",
+        "kms++/src/encoder.cpp",
+        "kms++/src/framebuffer.cpp",
+        "kms++/src/modedb_cea.cpp",
+        "kms++/src/modedb_dmt.cpp",
+        "kms++/src/pixelformats.cpp",
+        "kms++/src/property.cpp",
+        "kms++/src/blob.cpp",
+        "kms++/src/connector.cpp",
+        "kms++/src/drmobject.cpp",
+        "kms++/src/dumbframebuffer.cpp",
+        "kms++/src/extframebuffer.cpp",
+        "kms++/src/helpers.cpp",
+        "kms++/src/mode_cvt.cpp",
+        "kms++/src/modedb.cpp",
+        "kms++/src/plane.cpp",
+        "kms++/src/videomode.cpp",
+    ],
+
+    cflags: [
+        "-std=c++11",
+        "-Wall",
+        "-Wextra",
+        "-Wno-unused-parameter",
+        "-fexceptions",
+    ],
+
+    shared_libs: [
+        "libdrm",
+    ],
+
+    export_include_dirs: [
+        "kms++/inc",
+    ],
+}

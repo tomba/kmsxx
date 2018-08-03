@@ -1,4 +1,6 @@
 
+#include <cmath>
+
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
 
@@ -195,6 +197,22 @@ void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 		break;
 	default:
 		throw std::invalid_argument("unknown pixelformat");
+	}
+}
+
+void draw_horiz_line(IFramebuffer& fb, uint32_t x1, uint32_t x2, uint32_t y, RGB color)
+{
+	for (uint32_t x = x1; x <= x2; ++x)
+		draw_rgb_pixel(fb, x, y, color);
+}
+
+void draw_circle(IFramebuffer& fb, int32_t xCenter, int32_t yCenter, int32_t radius, RGB color)
+{
+	int32_t r2 = radius * radius;
+
+	for (int y = -radius; y <= radius; y++) {
+		int32_t x = (int)(sqrt(r2 - y * y) + 0.5);
+		draw_horiz_line(fb, xCenter - x, xCenter + x, yCenter - y, color);
 	}
 }
 

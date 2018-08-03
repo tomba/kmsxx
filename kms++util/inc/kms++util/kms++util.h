@@ -22,6 +22,7 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4);
 void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color);
+void draw_circle(IFramebuffer& fb, int32_t xCenter, int32_t yCenter, int32_t radius, RGB color);
 void draw_text(IFramebuffer& buf, uint32_t x, uint32_t y, const std::string& str, RGB color);
 
 void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width);

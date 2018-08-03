@@ -57,6 +57,9 @@ void init_pykmstest(py::module &m)
 	m.def("draw_rect", [](Framebuffer& fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color) {
 		draw_rect(fb, x, y, w, h, color);
 	} );
+	m.def("draw_circle", [](Framebuffer& fb, int32_t xCenter, int32_t yCenter, int32_t radius, RGB color) {
+		draw_circle(fb, xCenter, yCenter, radius, color);
+	} );
 	m.def("draw_text", [](Framebuffer& fb, uint32_t x, uint32_t y, const string& str, RGB color) {
 		draw_text(fb, x, y, str, color); } );
 }

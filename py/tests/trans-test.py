@@ -2,6 +2,18 @@
 
 import pykms
 import time
+import sys
+
+if len(sys.argv) != 2:
+    print("Usage: {} <test-number>".format(sys.argv[1]))
+    print("  1 - test_am5_trans_dest()")
+    print("  2 - test_am5_trans_src()")
+    print("  3 - test_am4_normal_trans_dst()")
+    print("  4 - test_am4_normal_trans_src()")
+    print("  5 - test_am4_alpha_trans_src()")
+    exit(0)
+
+TEST = int(sys.argv[1])
 
 # This hack makes drm initialize the fbcon, setting up the default connector
 card = pykms.Card()
@@ -26,6 +38,7 @@ h = mode.vdisplay
 
 fbs=[]
 
+# See Figure 11-78. DISPC Destination Transparency Color Key Example
 def test_am5_trans_dest():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
@@ -38,7 +51,7 @@ def test_am5_trans_dest():
 
     fb = fbs[1]
     pykms.draw_rect(fb, 0, 0, fb.width, fb.height, pykms.cyan)
-    pykms.draw_rect(fb, 250, 100, 200, 200, pykms.yellow)
+    pykms.draw_circle(fb, 350, 200, 100, pykms.yellow)
 
     crtc.set_props({
         "trans-key-mode": 1,
@@ -47,25 +60,43 @@ def test_am5_trans_dest():
         "alpha_blender": 0,
     })
 
-    plane = 0
+    print("Purple bg. Green, red, white boxes.")
 
-    for i in range(0,2):
-        print("set crtc {}, plane {}, fb {}".format(crtc.id, planes[i].id, fbs[i].id))
+    plane = planes[0]
+    fb = fbs[0]
+    z = 0
 
-        plane = planes[i]
-        fb = fbs[i]
-        plane.set_props({
-            "FB_ID": fb.id,
-            "CRTC_ID": crtc.id,
-            "SRC_W": fb.width << 16,
-            "SRC_H": fb.height << 16,
-            "CRTC_W": fb.width,
-            "CRTC_H": fb.height,
-            "zorder": i,
-        })
+    plane.set_props({
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
+        "zorder": z,
+    })
 
-        time.sleep(1)
+    input("press enter\n")
 
+    print("Cyan bg. Green, red, white boxes. Yellow circle behind the red box.")
+
+    plane = planes[1]
+    fb = fbs[1]
+    z = 1
+
+    plane.set_props({
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
+        "zorder": z,
+    })
+
+    input("press enter\n")
+
+# See Figure 11-77. DISPC Source Transparency Color Key Example
 def test_am5_trans_src():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
@@ -86,24 +117,41 @@ def test_am5_trans_src():
         "alpha_blender": 0,
     })
 
-    plane = 0
+    print("White bg. Red and green boxes.")
 
-    for i in range(0,2):
-        print("set crtc {}, plane {}, fb {}".format(crtc.id, planes[i].id, fbs[i].id))
+    plane = planes[0]
+    fb = fbs[0]
+    z = 0
 
-        plane = planes[i]
-        fb = fbs[i]
-        plane.set_props({
-            "FB_ID": fb.id,
-            "CRTC_ID": crtc.id,
-            "SRC_W": fb.width << 16,
-            "SRC_H": fb.height << 16,
-            "CRTC_W": fb.width,
-            "CRTC_H": fb.height,
-            "zorder": 3 if i == 1 else 0,
-        })
+    plane.set_props({
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
+        "zorder": z,
+    })
 
-        time.sleep(1)
+    input("press enter\n")
+
+    print("Cyan bg. Big white box, containing red and green boxes.")
+
+    plane = planes[1]
+    fb = fbs[1]
+    z = 3
+
+    plane.set_props({
+        "FB_ID": fb.id,
+        "CRTC_ID": crtc.id,
+        "SRC_W": fb.width << 16,
+        "SRC_H": fb.height << 16,
+        "CRTC_W": fb.width,
+        "CRTC_H": fb.height,
+        "zorder": z,
+    })
+
+    input("press enter\n")
 
 def test_am4_normal_trans_dst():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
@@ -129,7 +177,7 @@ def test_am4_normal_trans_dst():
         "alpha_blender": 0,
     })
 
-    time.sleep(1)
+    print("Purple bg. Green, red, white boxes.")
 
     plane = planes[0]
     fb = fbs[0]
@@ -142,7 +190,9 @@ def test_am4_normal_trans_dst():
         "CRTC_H": h,
     })
 
-    time.sleep(1)
+    input("press enter\n")
+
+    print("Blue bg on left, covering green, red, white boxes. Purple bg on right.")
 
     plane = planes[1]
     fb = fbs[1]
@@ -159,7 +209,9 @@ def test_am4_normal_trans_dst():
         "CRTC_H": fb.height,
     })
 
-    time.sleep(1)
+    input("press enter\n")
+
+    print("Blue bg on left, covering green and red boxes. Cyan bg on right, covering white box.")
 
     plane = planes[2]
     fb = fbs[2]
@@ -175,6 +227,8 @@ def test_am4_normal_trans_dst():
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
     })
+
+    input("press enter\n")
 
 def test_am4_normal_trans_src():
     fbs.append(pykms.DumbFramebuffer(card, w, h, "XR24"))
@@ -321,11 +375,16 @@ def test_am4_alpha_trans_src():
     })
 
 
-
-#test_am5_trans_dest()
-test_am5_trans_src()
-#test_am4_normal_trans_dst()
-#test_am4_normal_trans_src()
-#test_am4_alpha_trans_src()
-
-input("press enter to exit\n")
+if TEST == 1:
+    test_am5_trans_dest()
+elif TEST == 2:
+    test_am5_trans_src()
+elif TEST == 3:
+    test_am4_normal_trans_dst()
+elif TEST == 4:
+    test_am4_normal_trans_src()
+elif TEST == 5:
+    test_am4_alpha_trans_src()
+else:
+    print("Bad test number")
+    exit(-1)

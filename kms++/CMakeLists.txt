@@ -15,6 +15,14 @@ if(LIBDRM_OMAP_FOUND)
     set(PUB_HDRS ${PUB_HDRS} ${OMAP_PUB_HDRS})
 endif()
 
+if(WITH_ION)
+    file(GLOB ION_SRCS "src/ion/*.cpp" "src/ion/*.h")
+    file(GLOB ION_PUB_HDRS "inc/kms++/ion/*.h")
+
+    set(SRCS ${SRCS} ${ION_SRCS})
+    set(PUB_HDRS ${PUB_HDRS} ${ION_PUB_HDRS})
+endif()
+
 add_library(kms++ ${SRCS} ${PUB_HDRS})
 
 target_include_directories(kms++ PUBLIC

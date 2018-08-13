@@ -16,6 +16,11 @@ if(LIBDRM_OMAP_FOUND)
     set(SRCS ${SRCS} pykmsomap.cpp)
 endif()
 
+if(WITH_ION)
+    set(SRCS ${SRCS} pykmsion.cpp)
+    add_definitions(-DWITH_ION)
+endif()
+
 add_library(pykms SHARED ${SRCS})
 target_link_libraries(pykms kms++ kms++util ${LIBDRM_LIBRARIES})
 

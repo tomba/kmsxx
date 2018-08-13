@@ -15,6 +15,10 @@ void init_pyvid(py::module &m);
 void init_pykmsomap(py::module &m);
 #endif
 
+#if WITH_ION
+void init_pykmsion(py::module &m);
+#endif
+
 PYBIND11_MODULE(pykms, m) {
 	init_pykmsbase(m);
 
@@ -24,5 +28,9 @@ PYBIND11_MODULE(pykms, m) {
 
 #if HAS_LIBDRM_OMAP
 	init_pykmsomap(m);
+#endif
+
+#if WITH_ION
+	init_pykmsion(m);
 #endif
 }

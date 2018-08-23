@@ -234,7 +234,12 @@ static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_s
 		EXIT("Failed to parse crtc option '%s'", crtc_str.c_str());
 	}
 
-	if (!resman.reserve_crtc(output.crtc))
+	if (output.crtc)
+		output.crtc = resman.reserve_crtc(output.crtc);
+	else
+		output.crtc = resman.reserve_crtc(output.connector);
+
+	if (!output.crtc)
 		EXIT("Could not find available crtc");
 }
 

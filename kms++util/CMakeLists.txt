@@ -9,6 +9,11 @@ target_include_directories(kms++util PUBLIC
 
 target_link_libraries(kms++util kms++)
 
+if (KMSXX_ENABLE_THREADING)
+    target_link_libraries(kms++util pthread)
+    add_definitions(-DHAS_PTHREAD)
+endif()
+
 set_target_properties(kms++util PROPERTIES
     PUBLIC_HEADER "${PUB_HDRS}")
 

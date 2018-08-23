@@ -25,6 +25,8 @@ set(KMSXX_PYTHON_VERSION "python3;python2" CACHE STRING "Python pkgconfig packag
 
 set(KMSXX_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 
+set(KMSXX_ENABLE_THREADING ON CACHE BOOL "Enable threading for parallelized drawing")
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra -Wno-unused-parameter")
 

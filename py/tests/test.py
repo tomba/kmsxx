@@ -58,7 +58,7 @@ req.add(plane, {"FB_ID": fb.id,
 		"CRTC_Y": 0,
 		"CRTC_W": mode.hdisplay,
 		"CRTC_H": mode.vdisplay,
-		"zorder": 0})
+		"zpos": 0})
 
 req.commit_sync(allow_modeset = True)
 

@@ -77,7 +77,7 @@ for plane in plane_list:
                      "CRTC_Y": y,
                      "CRTC_W": fb.width,
                      "CRTC_H": fb.height,
-                     "zorder": z})
+                     "zpos": z})
     r = req.commit_sync()
     print("Plane enable request returned %d\n" % r)
 
@@ -125,7 +125,7 @@ for plane in reversed(plane_list):
                     "CRTC_Y": y,
                     "CRTC_W": fb.width,
                     "CRTC_H": fb.height,
-                    "zorder": z})
+                    "zpos": z})
     r = req.commit_sync(allow_modeset = True)
     print("Plane enable request returned %d\n" % r)
 

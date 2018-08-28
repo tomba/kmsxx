@@ -37,7 +37,7 @@ req.add(plane, {"FB_ID": fb.id,
                 "CRTC_Y": 0,
                 "CRTC_W": fb.width,
                 "CRTC_H": fb.height,
-                "zorder": 0})
+                "zpos": 0})
 r = req.commit_sync()
 print("Plane enable request returned %d\n" % r)
 

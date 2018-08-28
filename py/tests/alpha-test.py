@@ -54,7 +54,7 @@ for i in range(len(planes)):
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": i,
+        "zpos": i,
     })
 
     time.sleep(1)

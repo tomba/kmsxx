@@ -39,7 +39,7 @@ req.add(crtc, {"ACTIVE": 1,
 #		"CRTC_Y": 0,
 #		"CRTC_W": mode.hdisplay,
 #		"CRTC_H": mode.vdisplay,
-#		"zorder": 0})
+#		"zpos": 0})
 
 req.commit_sync(allow_modeset = True)
 
@@ -86,7 +86,7 @@ def show_rot_plane(crtc, plane, fb, rot, x_scale, y_scale):
 			"CRTC_W": crtc_w,
 			"CRTC_H": crtc_h,
 			"rotation": rot,
-			"zorder": 2})
+			"zpos": 2})
 
 	req.commit_sync(allow_modeset = True)
 

@@ -86,7 +86,7 @@ def test_am5_trans_dest():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -104,7 +104,7 @@ def test_am5_trans_dest():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -153,7 +153,7 @@ def test_am5_trans_src():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -171,7 +171,7 @@ def test_am5_trans_src():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -223,7 +223,7 @@ def test_am4_normal_trans_dst():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -241,7 +241,7 @@ def test_am4_normal_trans_dst():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -289,7 +289,7 @@ def test_am4_normal_trans_src():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")
@@ -307,7 +307,7 @@ def test_am4_normal_trans_src():
         "SRC_H": fb.height << 16,
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
-        "zorder": z,
+        "zpos": z,
     })
 
     input("press enter\n")

@@ -195,6 +195,18 @@ bool Connector::connected() const
 			m_priv->drm_connector->connection == DRM_MODE_UNKNOWNCONNECTION;
 }
 
+ConnectorStatus Connector::connector_status() const
+{
+	switch (m_priv->drm_connector->connection) {
+	case DRM_MODE_CONNECTED:
+		return ConnectorStatus::Connected;
+	case DRM_MODE_DISCONNECTED:
+		return ConnectorStatus::Disconnected;
+	default:
+		return ConnectorStatus::Unknown;
+	}
+}
+
 vector<Crtc*> Connector::get_possible_crtcs() const
 {
 	vector<Crtc*> crtcs;

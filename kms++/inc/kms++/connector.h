@@ -10,6 +10,13 @@ namespace kms
 
 struct ConnectorPriv;
 
+enum class ConnectorStatus
+{
+	Unknown,
+	Connected,
+	Disconnected,
+};
+
 class Connector : public DrmPropObject
 {
 	friend class Card;
@@ -24,7 +31,9 @@ public:
 	Crtc* get_current_crtc() const;
 	std::vector<Crtc*> get_possible_crtcs() const;
 
+	// true if connected or unknown
 	bool connected() const;
+	ConnectorStatus connector_status() const;
 
 	const std::string& fullname() const { return m_fullname; }
 	uint32_t connector_type() const;

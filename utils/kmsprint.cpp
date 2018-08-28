@@ -68,10 +68,17 @@ static string format_connector(Connector& c)
 	str = sformat("Connector %u (%u) %s",
 		      c.idx(), c.id(), c.fullname().c_str());
 
-	if (c.connected())
+	switch (c.connector_status()) {
+	case ConnectorStatus::Connected:
 		str += " (connected)";
-	else
+		break;
+	case ConnectorStatus::Disconnected:
 		str += " (disconnected)";
+		break;
+	default:
+		str += " (unknown)";
+		break;
+	}
 
 	return str;
 }

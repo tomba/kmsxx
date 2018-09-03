@@ -4,7 +4,8 @@ import pykms
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector("HDMI")
+#conn = res.reserve_connector("HDMI")
+conn = card.get_first_connected_connector
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)

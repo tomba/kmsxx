@@ -637,9 +637,9 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	}
 
 	if (outputs.empty()) {
-		// no outputs defined, show a pattern on all screens
+		// no outputs defined, show a pattern on all connected screens
 		for (Connector* conn : card.get_connectors()) {
-			if (!conn->connected())
+			if (conn->connector_status() != ConnectorStatus::Connected)
 				continue;
 
 			OutputInfo output = { };

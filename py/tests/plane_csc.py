@@ -4,12 +4,11 @@ import pykms
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector("HDMI")
+conn = res.reserve_connector("")
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
 plane = res.reserve_generic_plane(crtc, pykms.PixelFormat.UYVY)
-#plane = res.reserve_generic_plane(crtc, pykms.PixelFormat.Undefined)
 
 print("Got plane %d %d" % (plane.idx, plane.id))
 
@@ -27,17 +26,7 @@ r = req.commit_sync(allow_modeset = True)
 input("Press enter to enable plane idx %d at %s" % (plane.idx, conn.fullname))
 
 req = pykms.AtomicReq(card)
-req.add(plane, {"FB_ID": fb.id,
-                "CRTC_ID": crtc.id,
-                "SRC_X": 0 << 16,
-                "SRC_Y": 0 << 16,
-                "SRC_W": fb.width << 16,
-                "SRC_H": fb.height << 16,
-                "CRTC_X": 0,
-                "CRTC_Y": 0,
-                "CRTC_W": fb.width,
-                "CRTC_H": fb.height,
-                "zpos": 0})
+req.add_plane(plane, fb, crtc)
 r = req.commit_sync()
 print("Plane enable request returned %d\n" % r)
 

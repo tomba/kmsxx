@@ -1101,6 +1101,9 @@ int main(int argc, char **argv)
 
 	Card card(s_device_path);
 
+	if (!card.is_master())
+		EXIT("Could not get DRM master permission. Card already in use?");
+
 	if (!card.has_atomic() && s_flip_sync)
 		EXIT("Synchronized flipping requires atomic modesetting");
 

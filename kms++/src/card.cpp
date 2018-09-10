@@ -32,7 +32,7 @@ Card::Card(const std::string& device)
 	int r;
 
 	r = drmSetMaster(fd);
-	m_master = r == 0;
+	m_is_master = r == 0;
 
 	if (getenv("KMSXX_DISABLE_UNIVERSAL_PLANES") == 0) {
 		r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_UNIVERSAL_PLANES, 1);
@@ -135,6 +135,7 @@ Card::~Card()
 void Card::drop_master()
 {
 	drmDropMaster(fd());
+	m_is_master = false;
 }
 
 void Card::restore_modes()

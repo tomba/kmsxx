@@ -33,7 +33,7 @@ public:
 	Plane* get_plane(uint32_t id) const;
 	Property* get_prop(uint32_t id) const;
 
-	bool master() const { return m_master; }
+	bool is_master() const { return m_is_master; }
 	bool has_atomic() const { return m_has_atomic; }
 	bool has_has_universal_planes() const { return m_has_universal_planes; }
 
@@ -64,7 +64,7 @@ private:
 	std::vector<Framebuffer*> m_framebuffers;
 
 	int m_fd;
-	bool m_master;
+	bool m_is_master;
 
 	bool m_has_atomic;
 	bool m_has_universal_planes;

@@ -80,6 +80,64 @@ class DrmEventType(Enum):
     VBLANK = 0x01
     FLIP_COMPLETE = 0x02
 
+#
+# AtomicReq API extensions
+#
+
+def __atomic_req_add_connector(req, conn, crtc):
+    req.add(conn, "CRTC_ID", crtc.id if crtc else 0)
+
+def __atomic_req_add_crtc(req, crtc, mode_blob):
+    if mode_blob:
+        req.add(crtc, {"ACTIVE": 1, "MODE_ID": mode_blob.id})
+    else:
+        req.add(crtc, {"ACTIVE": 0, "MODE_ID": 0})
+
+def __atomic_req_add_plane(req, plane, fb, crtc,
+                           src=None, dst=None, zpos=None,
+                           params={}):
+    if not src and fb:
+        src = (0, 0, fb.width, fb.height)
+
+    if not dst:
+        dst = src
+
+    m = {"FB_ID": fb.id if fb else 0,
+         "CRTC_ID": crtc.id if fb else 0}
+
+    if src is not None:
+        src_x = int(round(src[0] * 65536))
+        src_y = int(round(src[1] * 65536))
+        src_w = int(round(src[2] * 65536))
+        src_h = int(round(src[3] * 65536))
+
+        m["SRC_X"] = src_x
+        m["SRC_Y"] = src_y
+        m["SRC_W"] = src_w
+        m["SRC_H"] = src_h
+
+    if dst is not None:
+        crtc_x = int(round(dst[0]))
+        crtc_y = int(round(dst[1]))
+        crtc_w = int(round(dst[2]))
+        crtc_h = int(round(dst[3]))
+
+        m["CRTC_X"] = crtc_x
+        m["CRTC_Y"] = crtc_y
+        m["CRTC_W"] = crtc_w
+        m["CRTC_H"] = crtc_h
+
+    if zpos is not None:
+        m["zpos"] = zpos
+
+    m.update(params)
+
+    req.add(plane, m)
+
+pykms.AtomicReq.add_connector = __atomic_req_add_connector
+pykms.AtomicReq.add_crtc = __atomic_req_add_crtc
+pykms.AtomicReq.add_plane = __atomic_req_add_plane
+
 # struct drm_event {
 #   __u32 type;
 #   __u32 length;

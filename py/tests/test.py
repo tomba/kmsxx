@@ -43,22 +43,9 @@ card.disable_planes()
 
 req = pykms.AtomicReq(card)
 
-req.add(conn, "CRTC_ID", crtc.id)
-
-req.add(crtc, {"ACTIVE": 1,
-		"MODE_ID": modeb.id})
-
-req.add(plane, {"FB_ID": fb.id,
-		"CRTC_ID": crtc.id,
-		"SRC_X": 0 << 16,
-		"SRC_Y": 0 << 16,
-		"SRC_W": mode.hdisplay << 16,
-		"SRC_H": mode.vdisplay << 16,
-		"CRTC_X": 0,
-		"CRTC_Y": 0,
-		"CRTC_W": mode.hdisplay,
-		"CRTC_H": mode.vdisplay,
-		"zpos": 0})
+req.add_connector(conn, crtc)
+req.add_crtc(crtc, modeb)
+req.add_plane(plane, fb, crtc, dst=(0, 0, mode.hdisplay, mode.vdisplay))
 
 req.commit_sync(allow_modeset = True)
 

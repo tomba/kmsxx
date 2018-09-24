@@ -5,7 +5,7 @@ import time
 import sys
 
 if len(sys.argv) != 2:
-    print("Usage: {} <test-number>".format(sys.argv[1]))
+    print("Usage: {} <test-number>".format(sys.argv[0]))
     print("  1 - test_am5_trans_dest()")
     print("  2 - test_am5_trans_src()")
     print("  3 - test_am4_normal_trans_dst()")

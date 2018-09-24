@@ -103,7 +103,7 @@ def __atomic_req_add_plane(req, plane, fb, crtc,
         dst = src
 
     m = {"FB_ID": fb.id if fb else 0,
-         "CRTC_ID": crtc.id if fb else 0}
+         "CRTC_ID": crtc.id if crtc else 0}
 
     if src is not None:
         src_x = int(round(src[0] * 65536))

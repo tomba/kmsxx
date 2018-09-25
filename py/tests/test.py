@@ -2,36 +2,32 @@
 
 import sys
 import pykms
+import argparse
 
-# draw test pattern via dmabuf?
-dmabuf = False
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--connector", default="")
+parser.add_argument("--dmabuf", action="store_true", help="use dmabuf")
+parser.add_argument("--omap", action="store_true", help="use omapcard")
+args = parser.parse_args()
 
-# Use omap?
-omap = False
-
-if omap:
+if args.omap:
 	card = pykms.OmapCard()
 else:
 	card = pykms.Card()
 
-if len(sys.argv) > 1:
-    conn_name = sys.argv[1]
-else:
-    conn_name = ""
-
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector(conn_name)
+conn = res.reserve_connector(args.connector)
 crtc = res.reserve_crtc(conn)
 plane = res.reserve_generic_plane(crtc)
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
 
-if omap:
+if args.omap:
 	origfb = pykms.OmapFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 else:
 	origfb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 
-if dmabuf:
+if args.dmabuf:
 	fb = pykms.ExtFramebuffer(card, origfb.width, origfb.height, origfb.format,
 		[origfb.fd(0)], [origfb.stride(0)], [origfb.offset(0)])
 else:

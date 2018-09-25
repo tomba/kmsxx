@@ -3,25 +3,35 @@
 import pykms
 import time
 import sys
+import argparse
 
-if len(sys.argv) != 2:
-    print("Usage: {} <test-number>".format(sys.argv[0]))
-    print("  1 - test_am5_trans_dest()")
-    print("  2 - test_am5_trans_src()")
-    print("  3 - test_am4_normal_trans_dst()")
-    print("  4 - test_am4_normal_trans_src()")
-    print("  5 - test_am4_alpha_trans_src()")
-    exit(0)
+tests = {
+    1: "test_am5_trans_dest",
+    2: "test_am5_trans_src",
+    3: "test_am4_normal_trans_dst",
+    4: "test_am4_normal_trans_src",
+    5: "test_am4_alpha_trans_src",
+}
 
-TEST = int(sys.argv[1])
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--connector", default="")
+parser.add_argument("test", type=int, help="test number 1-" + str(len(tests)))
+args = parser.parse_args()
 
-# This hack makes drm initialize the fbcon, setting up the default connector
-card = pykms.Card()
-card = 0
+#if len(sys.argv) != 2:
+#    print("Usage: {} <test-number>".format(sys.argv[0]))
+#    print("  1 - test_am5_trans_dest()")
+#    print("  2 - test_am5_trans_src()")
+#    print("  3 - test_am4_normal_trans_dst()")
+#    print("  4 - test_am4_normal_trans_src()")
+#    print("  5 - test_am4_alpha_trans_src()")
+#    exit(0)
+
+TEST = args.test
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector()
+conn = res.reserve_connector(args.connector)
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 
@@ -402,17 +412,5 @@ def test_am4_alpha_trans_src():
     print("left side: unchanged. right side: cyan bg, purple box, green box inside purple.")
     input("press enter\n")
 
-
-if TEST == 1:
-    test_am5_trans_dest()
-elif TEST == 2:
-    test_am5_trans_src()
-elif TEST == 3:
-    test_am4_normal_trans_dst()
-elif TEST == 4:
-    test_am4_normal_trans_src()
-elif TEST == 5:
-    test_am4_alpha_trans_src()
-else:
-    print("Bad test number")
-    exit(-1)
+print(tests[args.test])
+locals()[tests[args.test]]()

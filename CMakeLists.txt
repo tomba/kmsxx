@@ -73,6 +73,11 @@ if(LIBDRM_OMAP_FOUND)
     add_definitions(-DHAS_LIBDRM_OMAP)
 endif()
 
+pkg_check_modules(LIBPNG libpng)
+if(LIBPNG_FOUND)
+    add_definitions(-DHAS_LIBPNG)
+endif()
+
 enable_testing()
 
 add_subdirectory(kms++)

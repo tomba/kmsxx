@@ -5,7 +5,7 @@ add_executable (kmstest kmstest.cpp)
 target_link_libraries(kmstest kms++ kms++util ${LIBDRM_LIBRARIES})
 
 add_executable (kmsview kmsview.cpp)
-target_link_libraries(kmsview kms++ kms++util ${LIBDRM_LIBRARIES})
+target_link_libraries(kmsview kms++ kms++util ${LIBDRM_LIBRARIES} ${LIBPNG_LIBRARIES})
 
 add_executable (kmsprint kmsprint.cpp)
 target_link_libraries(kmsprint kms++ kms++util ${LIBDRM_LIBRARIES})

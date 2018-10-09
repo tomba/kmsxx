@@ -2,11 +2,17 @@
 
 import pykms
 import time
+import test_helpers
+
+parser = test_helpers.ArgumentParserHelper(
+	description='Simple alpha property test.')
+parser.add_conn_args()
 
 card = pykms.Card()
-res = pykms.ResourceManager(card)
-conn = res.reserve_connector("")
-crtc = res.reserve_crtc(conn)
+args = test_helpers.ArgsHelper(parser.parse_args(), card)
+res = args.get_res()
+conn = args.get_conn()
+crtc = args.get_crtc()
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
 format = pykms.PixelFormat.ARGB8888

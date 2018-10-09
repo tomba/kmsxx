@@ -4,6 +4,7 @@ import pykms
 import time
 import random
 import argparse
+import test_helpers
 
 def plane_commit(card, crtc, plane, fb, x, y, w, h) :
 	req = pykms.AtomicReq(card)
@@ -11,25 +12,17 @@ def plane_commit(card, crtc, plane, fb, x, y, w, h) :
 	r = req.commit_sync()
 	assert r == 0, "Plane commit failed: %d" % r
 
-
-parser = argparse.ArgumentParser(description='Simple scaling stress test.')
-parser.add_argument('--plane', '-p', dest='plane', default="",
-		    required=False, help='plane number to use')
-parser.add_argument('--connector', '-c', dest='connector', default="",
-		    required=False, help='connector to output')
-
-args = parser.parse_args()
+parser = test_helpers.ArgumentParserHelper(
+	description='Simple scaling stress test.')
+parser.add_default_args()
 
 card = pykms.Card()
-res = pykms.ResourceManager(card)
-conn = res.reserve_connector(args.connector)
-crtc = res.reserve_crtc(conn)
+args = test_helpers.ArgsHelper(parser.parse_args(), card)
+res = args.get_res()
+conn = args.get_conn()
+crtc = args.get_crtc()
 format = pykms.PixelFormat.NV12
-
-if args.plane == "":
-	plane = res.reserve_generic_plane(crtc, format)
-else:
-	plane = card.planes[int(args.plane)]
+plane = args.get_plane(format)
 
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)

@@ -59,6 +59,16 @@ uint16_t RGB::bgr565() const
 	return ((b >> 3) << 11) | ((g >> 2) << 5) | ((r >> 3) << 0);
 }
 
+uint16_t RGB::argb4444() const
+{
+	return ((a >> 4) << 12) | ((r >> 4) << 8) | ((g >> 4) << 4) | ((b >> 4) << 0);
+}
+
+uint16_t RGB::argb1555() const
+{
+	return ((!!a) << 15) | ((r >> 3) << 10) | ((g >> 3) << 5) | ((b >> 3) << 0);
+}
+
 YUV RGB::yuv(YUVType type) const
 {
 	return YUV(*this, type);

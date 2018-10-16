@@ -114,6 +114,8 @@ static void draw_test_pattern_part(IFramebuffer& fb, unsigned start_y, unsigned 
 	case PixelFormat::BGR888:
 	case PixelFormat::RGB565:
 	case PixelFormat::BGR565:
+	case PixelFormat::ARGB4444:
+	case PixelFormat::ARGB1555:
 		for (y = start_y; y < end_y; y++) {
 			for (x = 0; x < w; x++) {
 				RGB pixel = get_test_pattern_pixel(fb, x, y);

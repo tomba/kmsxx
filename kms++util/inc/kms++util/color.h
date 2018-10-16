@@ -27,6 +27,8 @@ struct RGB
 	uint32_t abgr8888() const;
 	uint16_t rgb565() const;
 	uint16_t bgr565() const;
+	uint16_t argb4444() const;
+	uint16_t argb1555() const;
 	YUV yuv(YUVType type = YUVType::BT601_Lim) const;
 
 	uint8_t b;

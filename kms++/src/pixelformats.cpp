@@ -26,6 +26,9 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 	{ PixelFormat::XBGR8888, { 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::ARGB8888, { 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::ABGR8888, { 1, { { 32, 1, 1 } }, } },
+
+	{ PixelFormat::ARGB4444, { 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::ARGB1555, { 1, { { 16, 1, 1 } }, } },
 };
 
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format)

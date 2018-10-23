@@ -691,10 +691,22 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	return outputs;
 }
 
+static char sync_to_char(SyncPolarity pol)
+{
+	switch (pol) {
+	case SyncPolarity::Positive:
+		return '+';
+	case SyncPolarity::Negative:
+		return '-';
+	default:
+		return '?';
+	}
+}
+
 static std::string videomode_to_string(const Videomode& m)
 {
-	string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
-	string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
+	string h = sformat("%u/%u/%u/%u/%c", m.hdisplay, m.hfp(), m.hsw(), m.hbp(), sync_to_char(m.hsync()));
+	string v = sformat("%u/%u/%u/%u/%c", m.vdisplay, m.vfp(), m.vsw(), m.vbp(), sync_to_char(m.vsync()));
 
 	return sformat("%s %.3f %s %s %u (%.2f) %#x %#x",
 		       m.name.c_str(),

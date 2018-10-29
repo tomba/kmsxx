@@ -57,8 +57,6 @@ int main(int argc, char** argv)
 	const uint32_t dst_height = 480;
 	auto dst_fmt = PixelFormat::XRGB8888;
 
-	const string filename = "wb-out.raw";
-
 	OptionSet optionset = {
 		Option("f|format=", [&](string s)
 		{
@@ -77,6 +75,9 @@ int main(int argc, char** argv)
 		puts(usage_str);
 		exit(-1);
 	}
+
+	const string filename = sformat("wb-out-%ux%u_%4.4s.raw", dst_width, dst_height,
+					PixelFormatToFourCC(dst_fmt).c_str());
 
 	VideoDevice vid("/dev/video10");
 

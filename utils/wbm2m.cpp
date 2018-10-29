@@ -2,6 +2,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <algorithm>
+#include <regex>
 #include <fstream>
 #include <map>
 #include <system_error>
@@ -19,7 +20,8 @@ using namespace kms;
 static const char* usage_str =
 		"Usage: wbm2m [OPTIONS]\n\n"
 		"Options:\n"
-		"  -f, --format=4CC          Output format"
+		"  -f, --format=4CC          Output format\n"
+		"  -c, --crop=CROP           CROP is <x>,<y>-<w>x<h>\n"
 		"  -h, --help                Print this help\n"
 		;
 
@@ -45,6 +47,21 @@ static void read_frame(DumbFramebuffer* fb, unsigned frame_num)
 	s_bar_pos_map[fb] = pos;
 }
 
+static void parse_crop(const string& crop_str, uint32_t& c_left, uint32_t& c_top,
+		       uint32_t& c_width, uint32_t& c_height)
+{
+	const regex crop_re("(\\d+),(\\d+)-(\\d+)x(\\d+)");		// 400,400-400x400
+
+	smatch sm;
+	if (!regex_match(crop_str, sm, crop_re))
+		EXIT("Failed to parse crop option '%s'", crop_str.c_str());
+
+	c_left = stoul(sm[1]);
+	c_top = stoul(sm[2]);
+	c_width = stoul(sm[3]);
+	c_height = stoul(sm[4]);
+}
+
 int main(int argc, char** argv)
 {
 	// XXX get from args
@@ -55,12 +72,20 @@ int main(int argc, char** argv)
 
 	const uint32_t dst_width = 800;
 	const uint32_t dst_height = 480;
+	uint32_t c_top, c_left, c_width, c_height;
+
 	auto dst_fmt = PixelFormat::XRGB8888;
+	bool use_selection = false;
 
 	OptionSet optionset = {
 		Option("f|format=", [&](string s)
 		{
 			dst_fmt = FourCCToPixelFormat(s);
+		}),
+		Option("c|crop=", [&](string s)
+		{
+			parse_crop(s, c_left, c_top, c_width, c_height);
+			use_selection = true;
 		}),
 		Option("h|help", [&]()
 		{
@@ -91,6 +116,11 @@ int main(int argc, char** argv)
 
 	out->set_format(src_fmt, src_width, src_height);
 	in->set_format(dst_fmt, dst_width, dst_height);
+
+	if (use_selection) {
+		out->set_selection(c_left, c_top, c_width, c_height);
+		printf("crop -> %u,%u-%ux%u\n", c_left, c_top, c_width, c_height);
+	}
 
 	out->set_queue_size(NUM_SRC_BUFS);
 	in->set_queue_size(NUM_DST_BUFS);

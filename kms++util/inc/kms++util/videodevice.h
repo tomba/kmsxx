@@ -71,6 +71,8 @@ public:
 
 	std::vector<kms::PixelFormat> get_formats();
 	void set_format(kms::PixelFormat fmt, uint32_t width, uint32_t height);
+	void get_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
+	void set_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_queue_size(uint32_t queue_size);
 	void queue(kms::DumbFramebuffer* fb);
 	kms::DumbFramebuffer* dequeue();

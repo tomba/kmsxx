@@ -30,6 +30,15 @@ void init_pyvid(py::module &m)
 			.def("set_port", &VideoStreamer::set_port)
 			.def_property_readonly("formats", &VideoStreamer::get_formats)
 			.def("set_format", &VideoStreamer::set_format)
+			.def("get_selection", [](VideoStreamer *self) {
+				uint32_t left, top, width, height;
+				self->get_selection(left, top, width, height);
+				return make_tuple(left, top, width, height);
+			} )
+			.def("set_selection", [](VideoStreamer *self, uint32_t left, uint32_t top, uint32_t width, uint32_t height) {
+				self->set_selection(left, top, width, height);
+				return make_tuple(left, top, width, height);
+			} )
 			.def("set_queue_size", &VideoStreamer::set_queue_size)
 			.def("queue", &VideoStreamer::queue)
 			.def("dequeue", &VideoStreamer::dequeue)

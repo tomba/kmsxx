@@ -96,6 +96,63 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 	}
 }
 
+static void v4l2_get_selection(int fd, uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height, uint32_t buf_type)
+{
+	int r;
+	struct v4l2_selection selection;
+
+	if (buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT ||
+	    buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
+		selection.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+		selection.target = V4L2_SEL_TGT_CROP;
+	} else if (buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+		   buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
+		selection.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		selection.target = V4L2_SEL_TGT_COMPOSE;
+	} else {
+		FAIL("buf_type (%d) is not valid\n", buf_type);
+	}
+
+	r = ioctl(fd, VIDIOC_G_SELECTION, &selection);
+	ASSERT(r == 0);
+
+	left = selection.r.left;
+	top = selection.r.top;
+	width = selection.r.width;
+	height = selection.r.height;
+}
+
+static void v4l2_set_selection(int fd, uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height, uint32_t buf_type)
+{
+	int r;
+	struct v4l2_selection selection;
+
+	if (buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT ||
+	    buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE) {
+		selection.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
+		selection.target = V4L2_SEL_TGT_CROP;
+	} else if (buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
+		   buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
+		selection.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		selection.target = V4L2_SEL_TGT_COMPOSE;
+	} else {
+		FAIL("buf_type (%d) is not valid\n", buf_type);
+	}
+
+	selection.r.left = left;
+	selection.r.top = top;
+	selection.r.width = width;
+	selection.r.height = height;
+
+	r = ioctl(fd, VIDIOC_S_SELECTION, &selection);
+	ASSERT(r == 0);
+
+	left = selection.r.left;
+	top = selection.r.top;
+	width = selection.r.width;
+	height = selection.r.height;
+}
+
 static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type)
 {
 	v4l2_requestbuffers v4lreqbuf { };
@@ -412,6 +469,16 @@ std::vector<PixelFormat> VideoStreamer::get_formats()
 void VideoStreamer::set_format(PixelFormat fmt, uint32_t width, uint32_t height)
 {
 	v4l2_set_format(m_fd, fmt, width, height, get_buf_type(m_type));
+}
+
+void VideoStreamer::get_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height)
+{
+	v4l2_get_selection(m_fd, left, top, width, height, get_buf_type(m_type));
+}
+
+void VideoStreamer::set_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height)
+{
+	v4l2_set_selection(m_fd, left, top, width, height, get_buf_type(m_type));
 }
 
 void VideoStreamer::set_queue_size(uint32_t queue_size)

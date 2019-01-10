@@ -6,6 +6,7 @@
 #include <string.h>
 #include <algorithm>
 #include <cerrno>
+#include <algorithm>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -17,19 +18,97 @@ using namespace std;
 namespace kms
 {
 
-Card::Card()
-	: Card("/dev/dri/card0")
+static int open_device_by_path(string path)
 {
+	int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
+	if (fd < 0)
+		throw invalid_argument(string(strerror(errno)) + " opening device " + path);
+	return fd;
 }
 
-
-Card::Card(const std::string& device)
+// open Nth DRM card with the given driver name
+static int open_device_by_driver(string name, uint32_t idx)
 {
-	int fd = open(device.c_str(), O_RDWR | O_CLOEXEC);
-	if (fd < 0)
-		throw invalid_argument(string(strerror(errno)) + " opening " + device);
-	m_fd = fd;
+	uint32_t matches = 0;
 
+	transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+	for (uint32_t i = 0; ; ++i) {
+		string path = "/dev/dri/card" + to_string(i);
+
+		int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
+		if (fd < 0) {
+			// presume no more card nodes
+			throw invalid_argument("no card found for " + name + ":" + to_string(idx));
+		}
+
+		drmVersionPtr ver = drmGetVersion(fd);
+		string drv_name = string(ver->name, ver->name_len);
+		drmFreeVersion(ver);
+
+		transform(drv_name.begin(), drv_name.end(), drv_name.begin(), ::tolower);
+
+		if (name == drv_name) {
+			if (idx == matches)
+				return fd;
+			matches++;
+		}
+
+		close(fd);
+	}
+}
+
+Card::Card()
+{
+	const char* drv_p = getenv("KMSXX_DRIVER");
+	const char* dev_p = getenv("KMSXX_DEVICE");
+
+	if (dev_p) {
+		string dev(dev_p);
+		m_fd = open_device_by_path(dev);
+	} else if (drv_p) {
+		string drv(drv_p);
+
+		auto isplit = find(drv.begin(), drv.end(), ':');
+
+		if (isplit == drv.begin())
+			throw runtime_error("Invalid KMSXX_DRIVER");
+
+		string name;
+		uint32_t num = 0;
+
+		if (isplit == drv.end()) {
+			name = drv;
+		} else {
+			name = string(drv.begin(), isplit);
+			string numstr = string(isplit + 1, drv.end());
+			num = stoul(numstr);
+		}
+
+		m_fd = open_device_by_driver(name, num);
+	} else {
+		m_fd = open_device_by_path("/dev/dri/card0");
+	}
+
+	setup();
+}
+
+Card::Card(const std::string& driver, uint32_t idx)
+{
+	m_fd = open_device_by_driver(driver, idx);
+
+	setup();
+}
+
+Card::Card(const std::string& dev_path)
+{
+	m_fd = open_device_by_path(dev_path);
+
+	setup();
+}
+
+void Card::setup()
+{
 	drmVersionPtr ver = drmGetVersion(m_fd);
 	m_version_major = ver->version_major;
 	m_version_minor = ver->version_minor;

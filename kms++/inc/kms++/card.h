@@ -14,7 +14,8 @@ class Card
 	friend class Framebuffer;
 public:
 	Card();
-	Card(const std::string& device);
+	Card(const std::string& dev_path);
+	Card(const std::string& driver, uint32_t idx);
 	virtual ~Card();
 
 	Card(const Card& other) = delete;
@@ -54,6 +55,7 @@ public:
 	const std::string& version_name() const { return m_version_name; }
 
 private:
+	void setup();
 	void restore_modes();
 
 	std::map<uint32_t, DrmObject*> m_obmap;

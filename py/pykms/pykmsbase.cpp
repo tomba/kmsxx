@@ -22,6 +22,7 @@ void init_pykmsbase(py::module &m)
 	py::class_<Card>(m, "Card")
 			.def(py::init<>())
 			.def(py::init<const string&>())
+			.def(py::init<const string&, uint32_t>())
 			.def_property_readonly("fd", &Card::fd)
 			.def_property_readonly("get_first_connected_connector", &Card::get_first_connected_connector)
 

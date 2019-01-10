@@ -51,6 +51,8 @@ public:
 
 	int disable_all();
 
+	const std::string& version_name() const { return m_version_name; }
+
 private:
 	void restore_modes();
 
@@ -68,5 +70,12 @@ private:
 
 	bool m_has_atomic;
 	bool m_has_universal_planes;
+
+	int m_version_major;
+	int m_version_minor;
+	int m_version_patchlevel;
+	std::string m_version_name;
+	std::string m_version_date;
+	std::string m_version_desc;
 };
 }

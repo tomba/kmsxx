@@ -30,6 +30,15 @@ Card::Card(const std::string& device)
 		throw invalid_argument(string(strerror(errno)) + " opening " + device);
 	m_fd = fd;
 
+	drmVersionPtr ver = drmGetVersion(m_fd);
+	m_version_major = ver->version_major;
+	m_version_minor = ver->version_minor;
+	m_version_patchlevel = ver->version_patchlevel;
+	m_version_name = string(ver->name, ver->name_len);
+	m_version_date = string(ver->date, ver->date_len);
+	m_version_desc = string(ver->desc, ver->desc_len);
+	drmFreeVersion(ver);
+
 	int r;
 
 	r = drmSetMaster(m_fd);

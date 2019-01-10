@@ -46,6 +46,8 @@ void init_pykmsbase(py::module &m)
 
 			.def_property_readonly("has_atomic", &Card::has_atomic)
 			.def("get_prop", (Property* (Card::*)(uint32_t) const)&Card::get_prop)
+
+			.def_property_readonly("version_name", &Card::version_name);
 			;
 
 	py::class_<DrmObject, unique_ptr<DrmObject, py::nodelete>>(m, "DrmObject")

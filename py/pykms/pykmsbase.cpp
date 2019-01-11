@@ -20,6 +20,8 @@ static vector<unique_ptr<T, py::nodelete>> convert_vector(const vector<T*>& sour
 void init_pykmsbase(py::module &m)
 {
 	py::class_<Card>(m, "Card")
+			.def_static("open_modesetting_card", []() { return Card::open_modesetting_card(); })
+
 			.def(py::init<>())
 			.def(py::init<const string&>())
 			.def(py::init<const string&, uint32_t>())

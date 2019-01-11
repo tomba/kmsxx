@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <algorithm>
+#include <sys/stat.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -17,6 +18,25 @@ using namespace std;
 
 namespace kms
 {
+
+unique_ptr<Card> Card::open_modesetting_card()
+{
+	for (uint32_t i = 0; ; ++i) {
+		string path = "/dev/dri/card" + to_string(i);
+
+		struct stat buffer;
+		if (stat(path.c_str(), &buffer))
+			break;
+
+		unique_ptr<Card> card = unique_ptr<Card>(new Card(path));
+
+		if (card->get_connectors().size() > 0 &&
+		    card->get_crtcs().size() > 0)
+			return card;
+	}
+
+	throw runtime_error("No modesetting DRM card found");
+}
 
 static int open_device_by_path(string path)
 {

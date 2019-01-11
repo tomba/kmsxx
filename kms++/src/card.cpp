@@ -32,7 +32,7 @@ Card::Card(const std::string& device)
 
 	int r;
 
-	r = drmSetMaster(fd);
+	r = drmSetMaster(m_fd);
 	m_is_master = r == 0;
 
 	if (getenv("KMSXX_DISABLE_UNIVERSAL_PLANES") == 0) {
@@ -54,7 +54,7 @@ Card::Card(const std::string& device)
 #endif
 
 	uint64_t has_dumb;
-	r = drmGetCap(fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
+	r = drmGetCap(m_fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
 	if (r || !has_dumb)
 		throw invalid_argument("Dumb buffers not available");
 

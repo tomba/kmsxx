@@ -143,8 +143,7 @@ void Card::setup()
 
 	uint64_t has_dumb;
 	r = drmGetCap(m_fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
-	if (r || !has_dumb)
-		throw invalid_argument("Dumb buffers not available");
+	m_has_dumb = r == 0 && has_dumb;
 
 	auto res = drmModeGetResources(m_fd);
 	if (res) {

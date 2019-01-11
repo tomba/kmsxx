@@ -37,6 +37,7 @@ public:
 	bool is_master() const { return m_is_master; }
 	bool has_atomic() const { return m_has_atomic; }
 	bool has_has_universal_planes() const { return m_has_universal_planes; }
+	bool has_dumb_buffers() const { return m_has_dumb; }
 
 	const std::vector<Connector*> get_connectors() const { return m_connectors; }
 	const std::vector<Encoder*> get_encoders() const { return m_encoders; }
@@ -72,6 +73,7 @@ private:
 
 	bool m_has_atomic;
 	bool m_has_universal_planes;
+	bool m_has_dumb;
 
 	int m_version_major;
 	int m_version_minor;

@@ -147,42 +147,42 @@ void Card::setup()
 		throw invalid_argument("Dumb buffers not available");
 
 	auto res = drmModeGetResources(m_fd);
-	if (!res)
-		throw invalid_argument("Can't get card resources");
+	if (res) {
+		for (int i = 0; i < res->count_connectors; ++i) {
+			uint32_t id = res->connectors[i];
+			auto ob = new Connector(*this, id, i);
+			m_obmap[id] = ob;
+			m_connectors.push_back(ob);
+		}
 
-	for (int i = 0; i < res->count_connectors; ++i) {
-		uint32_t id = res->connectors[i];
-		auto ob = new Connector(*this, id, i);
-		m_obmap[id] = ob;
-		m_connectors.push_back(ob);
+		for (int i = 0; i < res->count_crtcs; ++i) {
+			uint32_t id = res->crtcs[i];
+			auto ob = new Crtc(*this, id, i);
+			m_obmap[id] = ob;
+			m_crtcs.push_back(ob);
+		}
+
+		for (int i = 0; i < res->count_encoders; ++i) {
+			uint32_t id = res->encoders[i];
+			auto ob = new Encoder(*this, id, i);
+			m_obmap[id] = ob;
+			m_encoders.push_back(ob);
+		}
+
+		drmModeFreeResources(res);
+
+		auto planeRes = drmModeGetPlaneResources(m_fd);
+		if (planeRes) {
+			for (uint i = 0; i < planeRes->count_planes; ++i) {
+				uint32_t id = planeRes->planes[i];
+				auto ob = new Plane(*this, id, i);
+				m_obmap[id] = ob;
+				m_planes.push_back(ob);
+			}
+
+			drmModeFreePlaneResources(planeRes);
+		}
 	}
-
-	for (int i = 0; i < res->count_crtcs; ++i) {
-		uint32_t id = res->crtcs[i];
-		auto ob = new Crtc(*this, id, i);
-		m_obmap[id] = ob;
-		m_crtcs.push_back(ob);
-	}
-
-	for (int i = 0; i < res->count_encoders; ++i) {
-		uint32_t id = res->encoders[i];
-		auto ob = new Encoder(*this, id, i);
-		m_obmap[id] = ob;
-		m_encoders.push_back(ob);
-	}
-
-	drmModeFreeResources(res);
-
-	auto planeRes = drmModeGetPlaneResources(m_fd);
-
-	for (uint i = 0; i < planeRes->count_planes; ++i) {
-		uint32_t id = planeRes->planes[i];
-		auto ob = new Plane(*this, id, i);
-		m_obmap[id] = ob;
-		m_planes.push_back(ob);
-	}
-
-	drmModeFreePlaneResources(planeRes);
 
 	// collect all possible props
 	for (auto ob : get_objects()) {

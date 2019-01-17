@@ -497,7 +497,7 @@ static void usage()
 
 int main(int argc, char **argv)
 {
-	string dev_path = "/dev/dri/card0";
+	string dev_path;
 
 	OptionSet optionset = {
 		Option("|device=", [&dev_path](string s)

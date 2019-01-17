@@ -444,7 +444,7 @@ struct Arg
 	string arg;
 };
 
-static string s_device_path = "/dev/dri/card0";
+static string s_device_path;
 
 static vector<Arg> parse_cmdline(int argc, char **argv)
 {

@@ -14,10 +14,7 @@ class Card
 {
 	friend class Framebuffer;
 public:
-	static std::unique_ptr<Card> open_modesetting_card();
-
-	Card();
-	Card(const std::string& dev_path);
+	Card(const std::string& dev_path = "");
 	Card(const std::string& driver, uint32_t idx);
 	virtual ~Card();
 

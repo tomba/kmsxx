@@ -9,8 +9,7 @@ namespace kms
 class OmapCard : public Card
 {
 public:
-	OmapCard();
-	OmapCard(const std::string& device);
+	OmapCard(const std::string& device = "");
 	virtual ~OmapCard();
 
 	struct omap_device* dev() const { return m_omap_dev; }

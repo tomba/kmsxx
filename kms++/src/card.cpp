@@ -39,15 +39,29 @@ static vector<string> glob(const string& pattern)
 	return filenames;
 }
 
-unique_ptr<Card> Card::open_modesetting_card()
+static int open_first_kms_device()
 {
 	vector<string> paths = glob("/dev/dri/card*");
 
 	for (const string& path : paths) {
-		unique_ptr<Card> card = unique_ptr<Card>(new Card(path));
+		int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
+		if (fd < 0)
+			throw invalid_argument(string(strerror(errno)) + " opening device " + path);
 
-		if (card->has_kms())
-			return card;
+		auto res = drmModeGetResources(fd);
+		if (!res) {
+			close(fd);
+			continue;
+		}
+
+		bool has_kms = res->count_crtcs > 0 && res->count_connectors > 0 && res->count_encoders > 0;
+
+		drmModeFreeResources(res);
+
+		if (has_kms)
+			return fd;
+
+		close(fd);
 	}
 
 	throw runtime_error("No modesetting DRM card found");
@@ -90,12 +104,14 @@ static int open_device_by_driver(string name, uint32_t idx)
 	throw invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
 }
 
-Card::Card()
+Card::Card(const std::string& dev_path)
 {
 	const char* drv_p = getenv("KMSXX_DRIVER");
 	const char* dev_p = getenv("KMSXX_DEVICE");
 
-	if (dev_p) {
+	if (!dev_path.empty()) {
+		m_fd = open_device_by_path(dev_path);
+	} else if (dev_p) {
 		string dev(dev_p);
 		m_fd = open_device_by_path(dev);
 	} else if (drv_p) {
@@ -119,7 +135,7 @@ Card::Card()
 
 		m_fd = open_device_by_driver(name, num);
 	} else {
-		m_fd = open_device_by_path("/dev/dri/card0");
+		m_fd = open_first_kms_device();
 	}
 
 	setup();
@@ -128,13 +144,6 @@ Card::Card()
 Card::Card(const std::string& driver, uint32_t idx)
 {
 	m_fd = open_device_by_driver(driver, idx);
-
-	setup();
-}
-
-Card::Card(const std::string& dev_path)
-{
-	m_fd = open_device_by_path(dev_path);
 
 	setup();
 }

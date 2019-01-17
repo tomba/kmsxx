@@ -38,7 +38,7 @@ static void usage()
 int main(int argc, char** argv)
 {
 	uint32_t time = 0;
-	string dev_path = "/dev/dri/card0";
+	string dev_path;
 	string conn_name;
 
 	OptionSet optionset = {

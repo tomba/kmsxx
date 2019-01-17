@@ -46,8 +46,7 @@ unique_ptr<Card> Card::open_modesetting_card()
 	for (const string& path : paths) {
 		unique_ptr<Card> card = unique_ptr<Card>(new Card(path));
 
-		if (card->get_connectors().size() > 0 &&
-		    card->get_crtcs().size() > 0)
+		if (card->has_kms())
 			return card;
 	}
 
@@ -257,6 +256,11 @@ void Card::drop_master()
 {
 	drmDropMaster(fd());
 	m_is_master = false;
+}
+
+bool Card::has_kms() const
+{
+	return m_connectors.size() > 0 && m_encoders.size() > 0 && m_crtcs.size() > 0;
 }
 
 void Card::restore_modes()

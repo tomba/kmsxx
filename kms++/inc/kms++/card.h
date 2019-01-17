@@ -41,6 +41,7 @@ public:
 	bool has_atomic() const { return m_has_atomic; }
 	bool has_has_universal_planes() const { return m_has_universal_planes; }
 	bool has_dumb_buffers() const { return m_has_dumb; }
+	bool has_kms() const;
 
 	const std::vector<Connector*> get_connectors() const { return m_connectors; }
 	const std::vector<Encoder*> get_encoders() const { return m_encoders; }

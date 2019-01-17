@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <algorithm>
-#include <sys/stat.h>
+#include <glob.h>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -19,15 +19,31 @@ using namespace std;
 namespace kms
 {
 
+static vector<string> glob(const string& pattern)
+{
+	glob_t glob_result;
+	memset(&glob_result, 0, sizeof(glob_result));
+
+	int r = glob(pattern.c_str(), 0, NULL, &glob_result);
+	if(r != 0) {
+		globfree(&glob_result);
+		throw runtime_error("failed to find DRM cards");
+	}
+
+	vector<string> filenames;
+	for(size_t i = 0; i < glob_result.gl_pathc; ++i)
+		filenames.push_back(string(glob_result.gl_pathv[i]));
+
+	globfree(&glob_result);
+
+	return filenames;
+}
+
 unique_ptr<Card> Card::open_modesetting_card()
 {
-	for (uint32_t i = 0; ; ++i) {
-		string path = "/dev/dri/card" + to_string(i);
+	vector<string> paths = glob("/dev/dri/card*");
 
-		struct stat buffer;
-		if (stat(path.c_str(), &buffer))
-			break;
-
+	for (const string& path : paths) {
 		unique_ptr<Card> card = unique_ptr<Card>(new Card(path));
 
 		if (card->get_connectors().size() > 0 &&
@@ -49,18 +65,13 @@ static int open_device_by_path(string path)
 // open Nth DRM card with the given driver name
 static int open_device_by_driver(string name, uint32_t idx)
 {
-	uint32_t matches = 0;
-
 	transform(name.begin(), name.end(), name.begin(), ::tolower);
 
-	for (uint32_t i = 0; ; ++i) {
-		string path = "/dev/dri/card" + to_string(i);
+	uint32_t num_matches = 0;
+	vector<string> paths = glob("/dev/dri/card*");
 
-		int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
-		if (fd < 0) {
-			// presume no more card nodes
-			throw invalid_argument("no card found for " + name + ":" + to_string(idx));
-		}
+	for (const string& path : paths) {
+		int fd = open_device_by_path(path);
 
 		drmVersionPtr ver = drmGetVersion(fd);
 		string drv_name = string(ver->name, ver->name_len);
@@ -69,13 +80,15 @@ static int open_device_by_driver(string name, uint32_t idx)
 		transform(drv_name.begin(), drv_name.end(), drv_name.begin(), ::tolower);
 
 		if (name == drv_name) {
-			if (idx == matches)
+			if (idx == num_matches)
 				return fd;
-			matches++;
+			num_matches++;
 		}
 
 		close(fd);
 	}
+
+	throw invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
 }
 
 Card::Card()

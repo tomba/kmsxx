@@ -13,7 +13,7 @@ args = parser.parse_args()
 if args.omap:
 	card = pykms.OmapCard()
 else:
-	card = pykms.Card.open_modesetting_card()
+	card = pykms.Card()
 
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector(args.connector)

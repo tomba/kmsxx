@@ -444,7 +444,7 @@ struct Arg
 	string arg;
 };
 
-static string s_device_path;
+static string s_device_path = "/dev/dri/card0";
 
 static vector<Arg> parse_cmdline(int argc, char **argv)
 {
@@ -1111,34 +1111,29 @@ int main(int argc, char **argv)
 {
 	vector<Arg> output_args = parse_cmdline(argc, argv);
 
-	unique_ptr<Card> card;
+	Card card(s_device_path);
 
-	if (s_device_path.empty())
-		card = Card::open_modesetting_card();
-	else
-		card = unique_ptr<Card>(new Card(s_device_path));
-
-	if (!card->is_master())
+	if (!card.is_master())
 		EXIT("Could not get DRM master permission. Card already in use?");
 
-	if (!card->has_atomic() && s_flip_sync)
+	if (!card.has_atomic() && s_flip_sync)
 		EXIT("Synchronized flipping requires atomic modesetting");
 
-	ResourceManager resman(*card);
+	ResourceManager resman(card);
 
-	vector<OutputInfo> outputs = setups_to_outputs(*card, resman, output_args);
+	vector<OutputInfo> outputs = setups_to_outputs(card, resman, output_args);
 
 	if (!s_flip_mode)
 		draw_test_patterns(outputs);
 
 	print_outputs(outputs);
 
-	set_crtcs_n_planes(*card, outputs);
+	set_crtcs_n_planes(card, outputs);
 
 	printf("press enter to exit\n");
 
 	if (s_flip_mode)
-		main_flip(*card, outputs);
+		main_flip(card, outputs);
 	else
 		getchar();
 }

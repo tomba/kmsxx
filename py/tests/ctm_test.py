@@ -2,6 +2,7 @@
 
 import sys
 import pykms
+import argparse
 
 def ctm_to_blob(ctm, card):
     len=9
@@ -22,21 +23,55 @@ def ctm_to_blob(ctm, card):
     return pykms.Blob(card, arr);
 
 
-if len(sys.argv) > 1:
-    conn_name = sys.argv[1]
-else:
-    conn_name = ""
+parser = argparse.ArgumentParser(description='Simple CRTC CTM-property test.')
+parser.add_argument('--connector', '-c', dest='connector',
+		    required=False, help='connector to output')
+parser.add_argument('--mode', '-m', dest='modename',
+		    required=False, help='Video mode name to use')
+parser.add_argument('--plane', '-p', dest='plane', type=int,
+		    required=False, help='plane number to use')
+args = parser.parse_args()
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector(conn_name)
+conn = res.reserve_connector(args.connector)
 crtc = res.reserve_crtc(conn)
-mode = conn.get_default_mode()
+format = pykms.PixelFormat.ARGB8888
+if args.modename == None:
+    mode = conn.get_default_mode()
+else:
+    mode = conn.get_mode(args.modename)
+modeb = mode.to_blob(card)
 
 fb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 pykms.draw_test_pattern(fb);
 
-crtc.set_mode(conn, fb, mode)
+if args.plane == None:
+	plane = res.reserve_generic_plane(crtc, fb.format)
+else:
+	plane = card.planes[args.plane]
+
+card.disable_planes()
+crtc.disable_mode()
+
+input("press enter to set ctm at the same time with crtc mode\n")
+
+ctm = [ 0.0,	1.0,	0.0,
+        0.0,	0.0,	1.0,
+        1.0,	0.0,	0.0 ]
+
+ctmb = ctm_to_blob(ctm, card)
+
+req = pykms.AtomicReq(card)
+req.add(conn, "CRTC_ID", crtc.id)
+req.add(crtc, {"ACTIVE": 1,
+               "MODE_ID": modeb.id,
+               "CTM": ctmb.id})
+req.add_plane(plane, fb, crtc)
+r = req.commit_sync(allow_modeset = True)
+assert r == 0, "Initial commit failed: %d" % r
+
+print("r->b g->r b->g ctm active\n")
 
 input("press enter to set normal ctm\n")
 
@@ -47,18 +82,6 @@ ctm = [ 1.0,	0.0,	0.0,
 ctmb = ctm_to_blob(ctm, card)
 
 crtc.set_prop("CTM", ctmb.id)
-
-input("press enter to set new ctm\n")
-
-ctm = [ 0.0,	1.0,	0.0,
-        0.0,	0.0,	1.0,
-        1.0,	0.0,	0.0 ]
-
-ctmb = ctm_to_blob(ctm, card)
-
-crtc.set_prop("CTM", ctmb.id)
-
-print("r->b g->r b->g ctm active\n")
 
 input("press enter to set new ctm\n")
 

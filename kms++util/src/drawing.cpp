@@ -28,6 +28,48 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		*p = color.abgr8888();
 		break;
 	}
+	case PixelFormat::RGBX8888:
+	case PixelFormat::RGBA8888:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.rgba8888();
+		break;
+	}
+	case PixelFormat::BGRX8888:
+	case PixelFormat::BGRA8888:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.bgra8888();
+		break;
+	}
+	case PixelFormat::XRGB2101010:
+	case PixelFormat::ARGB2101010:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.argb2101010();
+		break;
+	}
+	case PixelFormat::XBGR2101010:
+	case PixelFormat::ABGR2101010:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.abgr2101010();
+		break;
+	}
+	case PixelFormat::RGBX1010102:
+	case PixelFormat::RGBA1010102:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.rgba1010102();
+		break;
+	}
+	case PixelFormat::BGRX1010102:
+	case PixelFormat::BGRA1010102:
+	{
+		uint32_t *p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		*p = color.bgra1010102();
+		break;
+	}
 	case PixelFormat::RGB888:
 	{
 		uint8_t *p = buf.map(0) + buf.stride(0) * y + x * 3;
@@ -210,7 +252,7 @@ void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 		}
 		break;
 	default:
-		throw std::invalid_argument("unknown pixelformat");
+		throw std::invalid_argument("draw_rect: unknown pixelformat");
 	}
 }
 
@@ -296,7 +338,7 @@ static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, R
 		}
 		break;
 	default:
-		throw std::invalid_argument("unknown pixelformat");
+		throw std::invalid_argument("draw_char: unknown pixelformat");
 	}
 }
 

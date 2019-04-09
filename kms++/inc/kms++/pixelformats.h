@@ -24,8 +24,13 @@ enum class PixelFormat : uint32_t
 
 	XRGB8888 = MakeFourCC("XR24"),
 	XBGR8888 = MakeFourCC("XB24"),
+	RGBX8888 = MakeFourCC("RX24"),
+	BGRX8888 = MakeFourCC("BX24"),
+
 	ARGB8888 = MakeFourCC("AR24"),
 	ABGR8888 = MakeFourCC("AB24"),
+	RGBA8888 = MakeFourCC("RA24"),
+	BGRA8888 = MakeFourCC("BA24"),
 
 	RGB888 = MakeFourCC("RG24"),
 	BGR888 = MakeFourCC("BG24"),
@@ -35,6 +40,16 @@ enum class PixelFormat : uint32_t
 
 	ARGB4444 = MakeFourCC("AR12"),
 	ARGB1555 = MakeFourCC("AR15"),
+
+	XRGB2101010 = MakeFourCC("XR30"),
+	XBGR2101010 = MakeFourCC("XB30"),
+	RGBX1010102 = MakeFourCC("RX30"),
+	BGRX1010102 = MakeFourCC("BX30"),
+
+	ARGB2101010 = MakeFourCC("AR30"),
+	ABGR2101010 = MakeFourCC("AB30"),
+	RGBA1010102 = MakeFourCC("RA30"),
+	BGRA1010102 = MakeFourCC("BA30"),
 };
 
 static inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
@@ -52,6 +67,12 @@ static inline std::string PixelFormatToFourCC(PixelFormat f)
 	return std::string(buf);
 }
 
+enum class PixelColorType
+{
+	RGB,
+	YUV,
+};
+
 struct PixelFormatPlaneInfo
 {
 	uint8_t bitspp;
@@ -61,6 +82,7 @@ struct PixelFormatPlaneInfo
 
 struct PixelFormatInfo
 {
+	PixelColorType type;
 	uint8_t num_planes;
 	struct PixelFormatPlaneInfo planes[4];
 };

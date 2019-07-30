@@ -484,10 +484,11 @@ static void print_modes(Card& card)
 static const char* usage_str =
 		"Usage: kmsprint [OPTIONS]\n\n"
 		"Options:\n"
-		"  -l, --list        Print list instead of tree\n"
-		"  -m, --modes       Print modes\n"
-		"      --xmode       Print modes using X modeline\n"
-		"  -p, --props       Print properties\n"
+		"      --device=DEVICE     DEVICE is the path to DRM card to open\n"
+		"  -l, --list              Print list instead of tree\n"
+		"  -m, --modes             Print modes\n"
+		"      --xmode             Print modes using X modeline\n"
+		"  -p, --props             Print properties\n"
 		;
 
 static void usage()

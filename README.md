@@ -88,6 +88,8 @@ Variable                          | Description
 --------------------------------- | -------------
 KMSXX_DISABLE_UNIVERSAL_PLANES    | Set to disable the use of universal planes
 KMSXX_DISABLE_ATOMIC              | Set to disable the use of atomic modesetting
+KMSXX_DEVICE                      | Path to the card device node to use
+KMSXX_DRIVER                      | Name of the driver to use. The format is either "drvname" or "drvname:idx"
 
 ## Python notes
 

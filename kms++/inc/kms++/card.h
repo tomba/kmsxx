@@ -10,6 +10,16 @@
 
 namespace kms
 {
+struct CardVersion
+{
+	int major;
+	int minor;
+	int patchlevel;
+	std::string name;
+	std::string date;
+	std::string desc;
+};
+
 class Card
 {
 	friend class Framebuffer;
@@ -54,7 +64,8 @@ public:
 
 	int disable_all();
 
-	const std::string& version_name() const { return m_version_name; }
+	const std::string& version_name() const { return m_version.name; }
+	const CardVersion& version() const { return m_version; }
 
 private:
 	void setup();
@@ -76,11 +87,6 @@ private:
 	bool m_has_universal_planes;
 	bool m_has_dumb;
 
-	int m_version_major;
-	int m_version_minor;
-	int m_version_patchlevel;
-	std::string m_version_name;
-	std::string m_version_date;
-	std::string m_version_desc;
+	CardVersion m_version;
 };
 }

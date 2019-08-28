@@ -101,8 +101,13 @@ int main(int argc, char** argv)
 		exit(-1);
 	}
 
+	printf("%ux%u-%s -> %ux%u-%s\n", src_width, src_height, PixelFormatToFourCC(src_fmt).c_str(),
+	       dst_width, dst_height, PixelFormatToFourCC(dst_fmt).c_str());
+
 	const string filename = sformat("wb-out-%ux%u_%4.4s.raw", dst_width, dst_height,
 					PixelFormatToFourCC(dst_fmt).c_str());
+
+	printf("writing to %s\n", filename.c_str());
 
 	VideoDevice vid("/dev/video10");
 

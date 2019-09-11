@@ -15,6 +15,18 @@
 using namespace std;
 using namespace kms;
 
+/*
+ * V4L2 and DRM differ in their interpretation of YUV420::NV12
+ *
+ * V4L2 NV12 is a Y and UV co-located planes in a single plane buffer.
+ * DRM NV12 is a Y and UV planes presented as dual plane buffer,
+ * which is known as NM12 in V4L2.
+ *
+ * Since here we have hybrid DRM/V4L2 user space helper functions
+ * we need to translate DRM::NV12 to V4L2:NM12 pixel format back
+ * and forth to keep the data view consistent.
+ */
+
 /* V4L2 helper funcs */
 static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
 {
@@ -24,7 +36,11 @@ static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
 	desc.type = buf_type;
 
 	while (ioctl(fd, VIDIOC_ENUM_FMT, &desc) == 0) {
-		v.push_back((PixelFormat)desc.pixelformat);
+		if (desc.pixelformat == V4L2_PIX_FMT_NV12M)
+			v.push_back(PixelFormat::NV12);
+		else if (desc.pixelformat != V4L2_PIX_FMT_NV12)
+			v.push_back((PixelFormat)desc.pixelformat);
+
 		desc.index++;
 	}
 
@@ -47,8 +63,14 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 
 	if (mplane) {
 		v4l2_pix_format_mplane& mp = v4lfmt.fmt.pix_mp;
+		uint32_t used_fmt;
 
-		mp.pixelformat = (uint32_t)fmt;
+		if (fmt == PixelFormat::NV12)
+			used_fmt = V4L2_PIX_FMT_NV12M;
+		else
+			used_fmt = (uint32_t)fmt;
+
+		mp.pixelformat = used_fmt;
 		mp.width = width;
 		mp.height = height;
 
@@ -65,7 +87,7 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 		r = ioctl(fd, VIDIOC_S_FMT, &v4lfmt);
 		ASSERT(r == 0);
 
-		ASSERT(mp.pixelformat == (uint32_t)fmt);
+		ASSERT(mp.pixelformat == used_fmt);
 		ASSERT(mp.width == width);
 		ASSERT(mp.height == height);
 

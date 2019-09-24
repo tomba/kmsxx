@@ -34,16 +34,7 @@ static string format_mode(const Videomode& m, unsigned idx)
 			       m.flags,
 			       m.type);
 	} else {
-		string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
-		string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
-
-		str += sformat("%-12s %7.3f %-16s %-16s %2u (%.2f) %#10x %#6x",
-			       m.name.c_str(),
-			       m.clock / 1000.0,
-			       h.c_str(), v.c_str(),
-			       m.vrefresh, m.calculated_vrefresh(),
-			       m.flags,
-			       m.type);
+		str += m.to_string_long_padded();
 	}
 
 	return str;

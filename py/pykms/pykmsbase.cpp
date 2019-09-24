@@ -229,6 +229,9 @@ void init_pykmsbase(py::module &m)
 
 			.def_property("hsync", &Videomode::hsync, &Videomode::set_hsync)
 			.def_property("vsync", &Videomode::vsync, &Videomode::set_vsync)
+
+			.def("to_string_short", &Videomode::to_string_short)
+			.def("to_string_long", &Videomode::to_string_long)
 			;
 
 

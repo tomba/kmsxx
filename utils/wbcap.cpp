@@ -342,9 +342,9 @@ int main(int argc, char** argv)
 	if (src_mode.interlace())
 		dst_height /= 2;
 
-	printf("src %s, crtc %s\n", src_conn->fullname().c_str(), src_mode.to_string().c_str());
+	printf("src %s, crtc %s\n", src_conn->fullname().c_str(), src_mode.to_string_short().c_str());
 
-	printf("dst %s, crtc %s\n", dst_conn->fullname().c_str(), dst_mode.to_string().c_str());
+	printf("dst %s, crtc %s\n", dst_conn->fullname().c_str(), dst_mode.to_string_short().c_str());
 
 	printf("src_fb %ux%u, dst_fb %ux%u\n", src_width, src_height, dst_width, dst_height);
 

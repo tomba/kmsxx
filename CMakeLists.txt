@@ -79,6 +79,8 @@ add_subdirectory(kms++)
 add_subdirectory(kms++util)
 add_subdirectory(utils)
 
+add_subdirectory(ext/fmt)
+
 if(KMSXX_ENABLE_KMSCUBE)
 	add_subdirectory(kmscube)
 endif()

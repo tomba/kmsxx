@@ -6,6 +6,7 @@
 #include <fstream>
 #include <map>
 #include <system_error>
+#include <fmt/format.h>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -104,8 +105,8 @@ int main(int argc, char** argv)
 	printf("%ux%u-%s -> %ux%u-%s\n", src_width, src_height, PixelFormatToFourCC(src_fmt).c_str(),
 	       dst_width, dst_height, PixelFormatToFourCC(dst_fmt).c_str());
 
-	const string filename = sformat("wb-out-%ux%u_%4.4s.raw", dst_width, dst_height,
-					PixelFormatToFourCC(dst_fmt).c_str());
+	const string filename = fmt::format("wb-out-{}x{}-{}.raw", dst_width, dst_height,
+					PixelFormatToFourCC(dst_fmt));
 
 	printf("writing to %s\n", filename.c_str());
 

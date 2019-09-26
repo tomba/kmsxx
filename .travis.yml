@@ -1,6 +1,6 @@
-# Ubuntu 14.04 Trusty support
+# Ubuntu 18.04 Trusty support
 sudo: required
-dist: trusty
+dist: bionic
 
 # Only build test master & travis
 branches:
@@ -13,8 +13,6 @@ language: cpp
 
 addons:
   apt:
-    sources: &sources
-      - ubuntu-toolchain-r-test
     packages: &packages
       - libegl1-mesa-dev
       - libgles2-mesa-dev
@@ -30,45 +28,69 @@ matrix:
     - compiler: gcc
       addons:
         apt:
-          sources: *sources
           packages: [*packages, 'g++-4.8']
       env: MYCC=gcc-4.8 MYCXX=g++-4.8
 
     - compiler: gcc
       addons:
         apt:
-          sources: *sources
-          packages: [*packages, 'g++-4.9']
-      # g++-4.9 gives a warning, disable it
-      env: MYCC=gcc-4.9 MYCXX=g++-4.9 CXXFLAGS=-Wno-maybe-uninitialized
-
-    - compiler: gcc
-      addons:
-        apt:
-          sources: *sources
           packages: [*packages, 'g++-5']
       env: MYCC=gcc-5 MYCXX=g++-5
 
     - compiler: gcc
       addons:
         apt:
-          sources: *sources
           packages: [*packages, 'g++-6']
       env: MYCC=gcc-6 MYCXX=g++-6
 
     - compiler: gcc
       addons:
         apt:
-          sources: *sources
           packages: [*packages, 'g++-7']
       env: MYCC=gcc-7 MYCXX=g++-7
+
+    - compiler: gcc
+      addons:
+        apt:
+          packages: [*packages, 'g++-8']
+      env: MYCC=gcc-8 MYCXX=g++-8
 
     - compiler: clang
       addons:
         apt:
-          sources: [*sources, 'llvm-toolchain-precise-3.8']
-          packages: [*packages, 'clang-3.8']
-      env: MYCC=clang-3.8 MYCXX=clang++-3.8
+          packages: [*packages, 'clang-3.9']
+      env: MYCC=clang-3.9 MYCXX=clang++-3.9
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-4.0']
+      env: MYCC=clang-4.0 MYCXX=clang++-4.0
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-5.0']
+      env: MYCC=clang-5.0 MYCXX=clang++-5.0
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-6.0']
+      env: MYCC=clang-6.0 MYCXX=clang++-6.0
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-7']
+      env: MYCC=clang-7 MYCXX=clang++-7
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-8']
+      env: MYCC=clang-8 MYCXX=clang++-8
+
 
 # Build steps
 script:

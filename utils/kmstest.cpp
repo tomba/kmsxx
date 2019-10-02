@@ -691,32 +691,6 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	return outputs;
 }
 
-static char sync_to_char(SyncPolarity pol)
-{
-	switch (pol) {
-	case SyncPolarity::Positive:
-		return '+';
-	case SyncPolarity::Negative:
-		return '-';
-	default:
-		return '?';
-	}
-}
-
-static std::string videomode_to_string(const Videomode& m)
-{
-	string h = sformat("%u/%u/%u/%u/%c", m.hdisplay, m.hfp(), m.hsw(), m.hbp(), sync_to_char(m.hsync()));
-	string v = sformat("%u/%u/%u/%u/%c", m.vdisplay, m.vfp(), m.vsw(), m.vbp(), sync_to_char(m.vsync()));
-
-	return sformat("%s %.3f %s %s %u (%.2f) %#x %#x",
-		       m.name.c_str(),
-		       m.clock / 1000.0,
-		       h.c_str(), v.c_str(),
-		       m.vrefresh, m.calculated_vrefresh(),
-		       m.flags,
-		       m.type);
-}
-
 static void print_outputs(const vector<OutputInfo>& outputs)
 {
 	for (unsigned i = 0; i < outputs.size(); ++i) {
@@ -735,7 +709,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
 			       prop.val);
 
-		printf(": %s\n", videomode_to_string(o.mode).c_str());
+		printf(": %s\n", o.mode.to_string_long().c_str());
 
 		if (!o.legacy_fbs.empty()) {
 			auto fb = o.legacy_fbs[0];

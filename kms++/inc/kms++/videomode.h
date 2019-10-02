@@ -49,7 +49,9 @@ struct Videomode
 	void set_hsync(SyncPolarity pol);
 	void set_vsync(SyncPolarity pol);
 
-	std::string to_string() const;
+	std::string to_string_short() const;
+	std::string to_string_long() const;
+	std::string to_string_long_padded() const;
 };
 
 struct Videomode videomode_from_timings(uint32_t clock_khz,

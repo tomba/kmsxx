@@ -22,7 +22,7 @@ target_include_directories(kms++ PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-target_link_libraries(kms++ ${LIBDRM_LIBRARIES} ${LIBDRM_OMAP_LIBRARIES})
+target_link_libraries(kms++ ${LIBDRM_LIBRARIES} ${LIBDRM_OMAP_LIBRARIES} fmt::fmt)
 
 set_target_properties(kms++ PROPERTIES
     PUBLIC_HEADER "${PUB_HDRS}")

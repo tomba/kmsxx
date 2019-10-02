@@ -28,6 +28,3 @@ std::string join(const std::vector<T>& values, const std::string& delim, std::fu
 	}
 	return ss.str();
 }
-
-std::string sformat(const char *fmt, ...)
-	__attribute__ ((format (printf, 1, 2)));

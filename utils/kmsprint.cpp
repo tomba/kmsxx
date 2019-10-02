@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <fmt/format.h>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -22,11 +23,11 @@ static string format_mode(const Videomode& m, unsigned idx)
 {
 	string str;
 
-	str = sformat("  %2u ", idx);
+	str = fmt::format("  {:2} ", idx);
 
 	if (s_opts.x_modeline) {
-		str += sformat("%12s %6u %4u %4u %4u %4u %4u %4u %4u %4u  %2u %#x %#x",
-			       m.name.c_str(),
+		str += fmt::format("{:12} {:6} {:4} {:4} {:4} {:4} {:4} {:4} {:4} {:4} {:3} {:#x} {:#x}",
+			       m.name,
 			       m.clock,
 			       m.hdisplay, m.hsync_start, m.hsync_end, m.htotal,
 			       m.vdisplay, m.vsync_start, m.vsync_end, m.vtotal,
@@ -34,16 +35,7 @@ static string format_mode(const Videomode& m, unsigned idx)
 			       m.flags,
 			       m.type);
 	} else {
-		string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
-		string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
-
-		str += sformat("%-12s %7.3f %-16s %-16s %2u (%.2f) %#10x %#6x",
-			       m.name.c_str(),
-			       m.clock / 1000.0,
-			       h.c_str(), v.c_str(),
-			       m.vrefresh, m.calculated_vrefresh(),
-			       m.flags,
-			       m.type);
+		str += m.to_string_long_padded();
 	}
 
 	return str;
@@ -51,13 +43,13 @@ static string format_mode(const Videomode& m, unsigned idx)
 
 static string format_mode_short(const Videomode& m)
 {
-	string h = sformat("%u/%u/%u/%u", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
-	string v = sformat("%u/%u/%u/%u", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
+	string h = fmt::format("{}/{}/{}/{}", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
+	string v = fmt::format("{}/{}/{}/{}", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
 
-	return sformat("%s %.3f %s %s %u (%.2f)",
-		       m.name.c_str(),
+	return fmt::format("{} {:.3f} {} {} {} ({:.2f})",
+		       m.name,
 		       m.clock / 1000.0,
-		       h.c_str(), v.c_str(),
+		       h, v,
 		       m.vrefresh, m.calculated_vrefresh());
 }
 
@@ -65,8 +57,8 @@ static string format_connector(Connector& c)
 {
 	string str;
 
-	str = sformat("Connector %u (%u) %s",
-		      c.idx(), c.id(), c.fullname().c_str());
+	str = fmt::format("Connector {} ({}) {}",
+		      c.idx(), c.id(), c.fullname());
 
 	switch (c.connector_status()) {
 	case ConnectorStatus::Connected:
@@ -85,15 +77,15 @@ static string format_connector(Connector& c)
 
 static string format_encoder(Encoder& e)
 {
-	return sformat("Encoder %u (%u) %s",
-		       e.idx(), e.id(), e.get_encoder_type().c_str());
+	return fmt::format("Encoder {} ({}) {}",
+		       e.idx(), e.id(), e.get_encoder_type());
 }
 
 static string format_crtc(Crtc& c)
 {
 	string str;
 
-	str = sformat("Crtc %u (%u)", c.idx(), c.id());
+	str = fmt::format("Crtc {} ({})", c.idx(), c.id());
 
 	if (c.mode_valid())
 		str += " " + format_mode_short(c.mode());
@@ -105,17 +97,17 @@ static string format_plane(Plane& p)
 {
 	string str;
 
-	str = sformat("Plane %u (%u)", p.idx(), p.id());
+	str = fmt::format("Plane {} ({})", p.idx(), p.id());
 
 	if (p.fb_id())
-		str += sformat(" fb-id: %u", p.fb_id());
+		str += fmt::format(" fb-id: {}", p.fb_id());
 
 	string crtcs = join<Crtc*>(p.get_possible_crtcs(), " ", [](Crtc* crtc) { return to_string(crtc->idx()); });
 
-	str += sformat(" (crtcs: %s)", crtcs.c_str());
+	str += fmt::format(" (crtcs: {})", crtcs);
 
 	if (p.card().has_atomic()) {
-		str += sformat(" %u,%u %ux%u -> %u,%u %ux%u",
+		str += fmt::format(" {},{} {}x{} -> {},{} {}x{}",
 			       (uint32_t)p.get_prop_value("SRC_X") >> 16,
 			       (uint32_t)p.get_prop_value("SRC_Y") >> 16,
 			       (uint32_t)p.get_prop_value("SRC_W") >> 16,
@@ -128,20 +120,20 @@ static string format_plane(Plane& p)
 
 	string fmts = join<PixelFormat>(p.get_formats(), " ", [](PixelFormat fmt) { return PixelFormatToFourCC(fmt); });
 
-	str += sformat(" (%s)", fmts.c_str());
+	str += fmt::format(" ({})", fmts);
 
 	return str;
 }
 
 static string format_fb(Framebuffer& fb)
 {
-	return sformat("FB %u %ux%u",
+	return fmt::format("FB {} {}x{}",
 		       fb.id(), fb.width(), fb.height());
 }
 
 static string format_property(const Property* prop, uint64_t val)
 {
-	string ret = sformat("%s (%u) = ", prop->name().c_str(), prop->id());
+	string ret = fmt::format("{} ({}) = ", prop->name(), prop->id());
 
 	switch (prop->type()) {
 	case PropertyType::Bitmask:
@@ -151,10 +143,11 @@ static string format_property(const Property* prop, uint64_t val)
 		for (auto kvp : prop->get_enums()) {
 			if (val & (1 << kvp.first))
 				v.push_back(kvp.second);
-			vall.push_back(sformat("%s=0x%x", kvp.second.c_str(), 1 << kvp.first));
+			vall.push_back(fmt::format("{}={:#x}", kvp.second, 1 << kvp.first));
 		}
 
-		ret += sformat("0x%" PRIx64 " (%s) [%s]", val, join(v, "|").c_str(), join(vall, "|").c_str());
+		// XXX
+		ret += fmt::format("{:#x} ({}) [{}]", val, join(v, "|"), join(vall, "|"));
 
 		break;
 	}
@@ -167,9 +160,9 @@ static string format_property(const Property* prop, uint64_t val)
 			Blob blob(prop->card(), blob_id);
 			auto data = blob.data();
 
-			ret += sformat("blob-id %u len %zu", blob_id, data.size());
+			ret += fmt::format("blob-id {} len {}", blob_id, data.size());
 		} else {
-			ret += sformat("blob-id %u", blob_id);
+			ret += fmt::format("blob-id {}", blob_id);
 		}
 
 		break;
@@ -183,17 +176,17 @@ static string format_property(const Property* prop, uint64_t val)
 		for (auto kvp : prop->get_enums()) {
 			if (val == kvp.first)
 				cur = kvp.second;
-			vall.push_back(sformat("%s=%" PRIu64, kvp.second.c_str(), kvp.first));
+			vall.push_back(fmt::format("{}={}", kvp.second, kvp.first));
 		}
 
-		ret += sformat("%" PRIu64 " (%s) [%s]", val, cur.c_str(), join(vall, "|").c_str());
+		ret += fmt::format("{} ({}) [{}]", val, cur, join(vall, "|"));
 
 		break;
 	}
 
 	case PropertyType::Object:
 	{
-		ret += sformat("object id %u", (uint32_t)val);
+		ret += fmt::format("object id {}", val);
 		break;
 	}
 
@@ -201,7 +194,7 @@ static string format_property(const Property* prop, uint64_t val)
 	{
 		auto values = prop->get_values();
 
-		ret += sformat("%" PRIu64 " [%" PRIu64 " - %" PRIu64 "]",
+		ret += fmt::format("{} [{} - {}]",
 			       val, values[0], values[1]);
 
 		break;
@@ -211,7 +204,7 @@ static string format_property(const Property* prop, uint64_t val)
 	{
 		auto values = prop->get_values();
 
-		ret += sformat("%" PRIi64 " [%" PRIi64 " - %" PRIi64 "]",
+		ret += fmt::format("{} [{} - {}]",
 			       (int64_t)val, (int64_t)values[0], (int64_t)values[1]);
 
 		break;
@@ -317,14 +310,16 @@ static const map<TreeGlyph, string> glyphs_ascii = {
 
 };
 
-const char* get_glyph(TreeGlyph glyph)
+const string& get_glyph(TreeGlyph glyph)
 {
+	static const string s_empty = "  ";
+
 	if (s_glyph_mode == TreeGlyphMode::None)
-		return "  ";
+		return s_empty;
 
 	const map<TreeGlyph, string>& glyphs = s_glyph_mode == TreeGlyphMode::UTF8 ? glyphs_utf8 : glyphs_ascii;
 
-	return glyphs.at(glyph).c_str();
+	return glyphs.at(glyph);
 }
 
 static void print_entry(const Entry& e, const string& prefix, bool is_child, bool is_last)
@@ -337,7 +332,7 @@ static void print_entry(const Entry& e, const string& prefix, bool is_child, boo
 		prefix2 = prefix + (is_last ? get_glyph(TreeGlyph::Space) : get_glyph(TreeGlyph::Vertical));
 	}
 
-	printf("%s%s\n", prefix1.c_str(), e.title.c_str());
+	fmt::print("{}{}\n", prefix1, e.title);
 
 	bool has_children = e.children.size() > 0;
 
@@ -345,7 +340,7 @@ static void print_entry(const Entry& e, const string& prefix, bool is_child, boo
 
 	for (const string& str : e.lines) {
 		string p = data_prefix + get_glyph(TreeGlyph::Space);
-		printf("%s%s\n", p.c_str(), str.c_str());
+		fmt::print("{}{}\n", p, str);
 	}
 
 	for (const Entry& child : e.children) {
@@ -399,16 +394,16 @@ static void print_as_list(Card& card)
 	}
 
 	for (DrmPropObject* ob: obs) {
-		printf("%s\n", format_ob(ob).c_str());
+		fmt::print("{}\n", format_ob(ob));
 
 		if (s_opts.print_props) {
 			for (string str : format_props(ob))
-				printf("    %s\n", str.c_str());
+				fmt::print("    {}\n", str);
 		}
 	}
 
 	for (Framebuffer* fb: fbs) {
-		printf("%s\n", format_ob(fb).c_str());
+		fmt::print("{}\n", format_ob(fb));
 	}
 }
 
@@ -473,11 +468,11 @@ static void print_modes(Card& card)
 		if (!conn->connected())
 			continue;
 
-		printf("%s\n", format_ob(conn).c_str());
+		fmt::print("{}\n", format_ob(conn));
 
 		auto modes = conn->get_modes();
 		for (unsigned i = 0; i < modes.size(); ++i)
-			printf("%s\n", format_mode(modes[i], i).c_str());
+			fmt::print("{}\n", format_mode(modes[i], i));
 	}
 }
 

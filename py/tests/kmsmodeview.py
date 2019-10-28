@@ -293,8 +293,11 @@ def mode_to_str(mode):
 mode_buttons = []
 
 card = pykms.Card()
-conn = card.get_first_connected_connector()
-crtc = conn.get_current_crtc()
+
+res = pykms.ResourceManager(card)
+conn = res.reserve_connector()
+crtc = res.reserve_crtc(conn)
+plane = res.reserve_generic_plane(crtc)
 modes = conn.get_modes()
 i = 0
 for m in modes:

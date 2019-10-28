@@ -9,6 +9,8 @@
 
 #include <sys/select.h>
 
+#include <fmt/format.h>
+
 #include <kms++/kms++.h>
 #include <kms++/modedb.h>
 #include <kms++/mode_cvt.h>
@@ -74,7 +76,7 @@ static void print_regex_match(smatch sm)
 {
 	for (unsigned i = 0; i < sm.size(); ++i) {
 		string str = sm[i].str();
-		printf("%u: %s\n", i, str.c_str());
+		fmt::print("{}: {}\n", i, str);
 	}
 }
 
@@ -696,38 +698,35 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 	for (unsigned i = 0; i < outputs.size(); ++i) {
 		const OutputInfo& o = outputs[i];
 
-		printf("Connector %u/@%u: %s", o.connector->idx(), o.connector->id(),
-		       o.connector->fullname().c_str());
+		fmt::print("Connector {}/@{}: {}", o.connector->idx(), o.connector->id(),
+			   o.connector->fullname());
 
 		for (const PropInfo &prop: o.conn_props)
-			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
-			       prop.val);
+			fmt::print(" {}={}", prop.prop->name(), prop.val);
 
-		printf("\n  Crtc %u/@%u", o.crtc->idx(), o.crtc->id());
+		fmt::print("\n  Crtc {}/@{}", o.crtc->idx(), o.crtc->id());
 
 		for (const PropInfo &prop: o.crtc_props)
-			printf(" %s=%" PRIu64, prop.prop->name().c_str(),
-			       prop.val);
+			fmt::print(" {}={}", prop.prop->name(), prop.val);
 
-		printf(": %s\n", o.mode.to_string_long().c_str());
+		fmt::print(": {}\n", o.mode.to_string_long());
 
 		if (!o.legacy_fbs.empty()) {
 			auto fb = o.legacy_fbs[0];
-			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(), PixelFormatToFourCC(fb->format()).c_str());
+			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(), PixelFormatToFourCC(fb->format()));
 		}
 
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
 			const PlaneInfo& p = o.planes[j];
 			auto fb = p.fbs[0];
-			printf("  Plane %u/@%u: %u,%u-%ux%u", p.plane->idx(), p.plane->id(),
-			       p.x, p.y, p.w, p.h);
+			fmt::print("  Plane {}/@{}: {},{}-{}x{}", p.plane->idx(), p.plane->id(),
+				   p.x, p.y, p.w, p.h);
 			for (const PropInfo &prop: p.props)
-				printf(" %s=%" PRIu64, prop.prop->name().c_str(),
-				       prop.val);
-			printf("\n");
+				fmt::print(" {}={}", prop.prop->name(), prop.val);
+			fmt::print("\n");
 
-			printf("    Fb %u %ux%u-%s\n", fb->id(), fb->width(), fb->height(),
-			       PixelFormatToFourCC(fb->format()).c_str());
+			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(),
+				   PixelFormatToFourCC(fb->format()));
 		}
 	}
 }
@@ -773,8 +772,8 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 			auto fb = o.legacy_fbs[0];
 			r = crtc->set_mode(conn, *fb, o.mode);
 			if (r)
-				printf("crtc->set_mode() failed for crtc %u: %s\n",
-				       crtc->id(), strerror(-r));
+				fmt::print(stderr, "crtc->set_mode() failed for crtc {}: {}\n",
+					   crtc->id(), strerror(-r));
 		}
 
 		for (const PlaneInfo& p : o.planes) {
@@ -788,8 +787,8 @@ static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outp
 						p.x, p.y, p.w, p.h,
 						0, 0, fb->width(), fb->height());
 			if (r)
-				printf("crtc->set_plane() failed for plane %u: %s\n",
-				       p.plane->id(), strerror(-r));
+				fmt::print(stderr, "crtc->set_plane() failed for plane {}: {}\n",
+					   p.plane->id(), strerror(-r));
 		}
 	}
 }
@@ -931,10 +930,10 @@ private:
 
 		if (m_frame_num  % 100 == 0) {
 			std::chrono::duration<float> fsec = now - m_prev_print;
-			printf("Connector %s: fps %f, slowest %.2f ms\n",
-			       m_name.c_str(),
-			       100.0 / fsec.count(),
-			       m_slowest_frame.count() * 1000);
+			fmt::print("Connector {}: fps {:.2f}, slowest {:.2f} ms\n",
+				   m_name.c_str(),
+				   100.0 / fsec.count(),
+				   m_slowest_frame.count() * 1000);
 			m_prev_print = now;
 			m_slowest_frame = std::chrono::duration<float>::min();
 		}
@@ -1070,10 +1069,10 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 
 		r = select(fd + 1, &fds, NULL, NULL, NULL);
 		if (r < 0) {
-			fprintf(stderr, "select() failed with %d: %m\n", errno);
+			fmt::print(stderr, "select() failed with {}: {}\n", errno, strerror(errno));
 			break;
 		} else if (FD_ISSET(0, &fds)) {
-			fprintf(stderr, "Exit due to user-input\n");
+			fmt::print(stderr, "Exit due to user-input\n");
 			break;
 		} else if (FD_ISSET(fd, &fds)) {
 			card.call_page_flip_handlers();
@@ -1104,7 +1103,7 @@ int main(int argc, char **argv)
 
 	set_crtcs_n_planes(card, outputs);
 
-	printf("press enter to exit\n");
+	fmt::print("press enter to exit\n");
 
 	if (s_flip_mode)
 		main_flip(card, outputs);

@@ -70,6 +70,7 @@ static bool s_cvt;
 static bool s_cvt_v2;
 static bool s_cvt_vid_opt;
 static unsigned s_max_flips;
+static bool s_print_crc;
 
 __attribute__ ((unused))
 static void print_regex_match(smatch sm)
@@ -400,6 +401,7 @@ static const char* usage_str =
 		"      --cvt=CVT             Create videomode with CVT. CVT is 'v1', 'v2' or 'v2o'\n"
 		"      --flip[=max]          Do page flipping for each output with an optional maximum flips count\n"
 		"      --sync                Synchronize page flipping\n"
+		"      --crc                 Print CRC16 for framebuffer contents\n"
 		"\n"
 		"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (@<id>).\n"
 		"<connector> can also be given by name.\n"
@@ -514,6 +516,9 @@ static vector<Arg> parse_cmdline(int argc, char **argv)
 				usage();
 				exit(-1);
 			}
+		}),
+		Option("|crc", []() {
+			s_print_crc = true;
 		}),
 		Option("h|help", [&]()
 		{
@@ -693,6 +698,48 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	return outputs;
 }
 
+static uint16_t crc16(uint16_t crc, uint8_t data)
+{
+	const uint16_t CRC16_IBM = 0x8005;
+
+	for (uint8_t i = 0; i < 8; i++) {
+		if (((crc & 0x8000) >> 8) ^ (data & 0x80))
+			crc = (crc << 1)  ^ CRC16_IBM;
+		else
+			crc = (crc << 1);
+
+		data <<= 1;
+	}
+
+	return crc;
+}
+
+static string fb_crc(IFramebuffer *fb)
+{
+	uint8_t *p = fb->map(0);
+	uint16_t r, g, b;
+
+	r = g = b = 0;
+
+	for (unsigned y = 0; y < fb->height(); ++y) {
+		for (unsigned x = 0; x < fb->width(); ++x) {
+			uint32_t *p32 = (uint32_t*)(p + fb->stride(0) * y + x * 4);
+			RGB rgb(*p32);
+
+			r = crc16(r, rgb.r);
+			r = crc16(r, 0);
+
+			g = crc16(g, rgb.g);
+			g = crc16(g, 0);
+
+			b = crc16(b, rgb.b);
+			b = crc16(b, 0);
+		}
+	}
+
+	return fmt::format("{:#06x} {:#06x} {:#06x}", r, g, b);
+}
+
 static void print_outputs(const vector<OutputInfo>& outputs)
 {
 	for (unsigned i = 0; i < outputs.size(); ++i) {
@@ -727,6 +774,8 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 
 			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(),
 				   PixelFormatToFourCC(fb->format()));
+			if (s_print_crc)
+				fmt::print("      CRC16 {}\n", fb_crc(fb).c_str());
 		}
 	}
 }

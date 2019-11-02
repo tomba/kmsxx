@@ -43,3 +43,5 @@ target_link_libraries(kmscube kms++ kms++util
     ${WL_LIBRARIES}
     ${WL_EGL_LIBRARIES}
 )
+
+install(TARGETS kmscube DESTINATION bin)

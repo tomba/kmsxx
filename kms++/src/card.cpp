@@ -1,9 +1,9 @@
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
 #include <utility>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 #include <algorithm>
 #include <cerrno>
 #include <algorithm>

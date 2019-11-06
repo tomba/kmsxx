@@ -1,6 +1,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <math.h>
+#include <cmath>
 #include <sstream>
 #include <fmt/format.h>
 

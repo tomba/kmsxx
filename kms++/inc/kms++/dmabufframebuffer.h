@@ -7,12 +7,12 @@
 namespace kms
 {
 
-class ExtFramebuffer : public Framebuffer
+class DmabufFramebuffer : public Framebuffer
 {
 public:
-	ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-		       std::vector<uint32_t> handles, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets);
-	virtual ~ExtFramebuffer();
+	DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
+			  std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets);
+	virtual ~DmabufFramebuffer();
 
 	uint32_t width() const { return Framebuffer::width(); }
 	uint32_t height() const { return Framebuffer::height(); }
@@ -24,10 +24,13 @@ public:
 	uint32_t stride(unsigned plane) const { return m_planes[plane].stride; }
 	uint32_t size(unsigned plane) const { return m_planes[plane].size; }
 	uint32_t offset(unsigned plane) const { return m_planes[plane].offset; }
+	uint8_t* map(unsigned plane);
+	int prime_fd(unsigned plane);
 
 private:
 	struct FramebufferPlane {
 		uint32_t handle;
+		int prime_fd;
 		uint32_t size;
 		uint32_t stride;
 		uint32_t offset;

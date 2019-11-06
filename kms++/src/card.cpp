@@ -296,7 +296,7 @@ DrmObject* Card::get_object(uint32_t id) const
 	return nullptr;
 }
 
-const vector<DrmObject*> Card::get_objects() const
+std::vector<kms::DrmObject*> Card::get_objects() const
 {
 	vector<DrmObject*> v;
 	for(auto pair : m_obmap)

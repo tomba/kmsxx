@@ -34,7 +34,7 @@ public:
 	std::vector<uint32_t> get_blob_ids() const;
 private:
 	Property(Card& card, uint32_t id);
-	~Property();
+	~Property() override;
 
 	PropertyType m_type;
 

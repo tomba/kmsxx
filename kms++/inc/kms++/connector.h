@@ -46,9 +46,9 @@ public:
 	std::vector<Encoder*> get_encoders() const;
 private:
 	Connector(Card& card, uint32_t id, uint32_t idx);
-	~Connector();
+	~Connector() override;
 
-	void setup();
+	void setup() override;
 	void restore_mode();
 
 	ConnectorPriv* m_priv;

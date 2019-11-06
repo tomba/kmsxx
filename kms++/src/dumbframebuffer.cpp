@@ -28,16 +28,6 @@ DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, co
 DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format)
 	:Framebuffer(card, width, height), m_format(format)
 {
-	Create();
-}
-
-DumbFramebuffer::~DumbFramebuffer()
-{
-	Destroy();
-}
-
-void DumbFramebuffer::Create()
-{
 	int r;
 
 	const PixelFormatInfo& format_info = get_pixel_format_info(m_format);
@@ -50,10 +40,10 @@ void DumbFramebuffer::Create()
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
-		creq.width = width();
-		creq.height = height() / pi.ysub;
+		creq.width = width;
+		creq.height = height / pi.ysub;
 		creq.bpp = pi.bitspp;
-		r = drmIoctl(card().fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
+		r = drmIoctl(card.fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
 			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed: ") + strerror(errno));
 
@@ -70,7 +60,7 @@ void DumbFramebuffer::Create()
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
 	uint32_t offsets[4] = {  m_planes[0].offset, m_planes[1].offset };
 	uint32_t id;
-	r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
+	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
@@ -78,7 +68,7 @@ void DumbFramebuffer::Create()
 	set_id(id);
 }
 
-void DumbFramebuffer::Destroy()
+DumbFramebuffer::~DumbFramebuffer()
 {
 	/* delete framebuffer */
 	drmModeRmFB(card().fd(), id());

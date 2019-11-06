@@ -28,7 +28,7 @@ else:
 	origfb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
 
 if args.dmabuf:
-	fb = pykms.ExtFramebuffer(card, origfb.width, origfb.height, origfb.format,
+        fb = pykms.DmabufFramebuffer(card, origfb.width, origfb.height, origfb.format,
 		[origfb.fd(0)], [origfb.stride(0)], [origfb.offset(0)])
 else:
 	fb = origfb

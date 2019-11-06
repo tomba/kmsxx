@@ -42,9 +42,9 @@ public:
 	int gamma_size() const;
 private:
 	Crtc(Card& card, uint32_t id, uint32_t idx);
-	~Crtc();
+	~Crtc() override;
 
-	void setup();
+	void setup() override;
 	void restore_mode(Connector *conn);
 
 	CrtcPriv* m_priv;

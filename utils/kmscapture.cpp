@@ -38,7 +38,7 @@ public:
 	int fd() const { return m_fd; }
 	void start_streaming();
 private:
-	ExtFramebuffer* GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt);
+	DmabufFramebuffer* GetDmabufFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt);
 	int m_fd;	/* camera file descriptor */
 	Crtc* m_crtc;
 	Plane* m_plane;
@@ -68,7 +68,7 @@ static int buffer_export(int v4lfd, enum v4l2_buf_type bt, uint32_t index, int *
 	return 0;
 }
 
-ExtFramebuffer* CameraPipeline::GetExtFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt)
+DmabufFramebuffer* CameraPipeline::GetDmabufFrameBuffer(Card& card, uint32_t i, PixelFormat pixfmt)
 {
 	int r, dmafd;
 
@@ -82,7 +82,7 @@ ExtFramebuffer* CameraPipeline::GetExtFrameBuffer(Card& card, uint32_t i, PixelF
 	vector<uint32_t> pitches { m_in_width * (format_info.planes[0].bitspp / 8) };
 	vector<uint32_t> offsets { 0 };
 
-	return new ExtFramebuffer(card, m_in_width, m_in_height, pixfmt,
+	return new DmabufFramebuffer(card, m_in_width, m_in_height, pixfmt,
 				  fds, pitches, offsets);
 }
 
@@ -173,7 +173,7 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc *crtc, Plane* plane,
 		Framebuffer *fb;
 
 		if (m_buffer_provider == BufferProvider::V4L2)
-			fb = GetExtFrameBuffer(card, i, pixfmt);
+			fb = GetDmabufFrameBuffer(card, i, pixfmt);
 		else
 			fb = new DumbFramebuffer(card, m_in_width,
 						 m_in_height, pixfmt);

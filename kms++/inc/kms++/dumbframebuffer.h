@@ -36,9 +36,6 @@ private:
 		uint8_t *map;
 	};
 
-	void Create();
-	void Destroy();
-
 	unsigned m_num_planes;
 	struct FramebufferPlane m_planes[4];
 

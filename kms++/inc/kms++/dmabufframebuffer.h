@@ -27,6 +27,9 @@ public:
 	uint8_t* map(unsigned plane);
 	int prime_fd(unsigned plane);
 
+	void begin_cpu_access(CpuAccess access);
+	void end_cpu_access();
+
 private:
 	struct FramebufferPlane {
 		uint32_t handle;
@@ -41,6 +44,8 @@ private:
 	struct FramebufferPlane m_planes[4];
 
 	PixelFormat m_format;
+
+	uint32_t m_sync_flags = 0;
 };
 
 }

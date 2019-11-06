@@ -4,8 +4,10 @@
 
 #include <stdexcept>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include <linux/dma-buf.h>
 
 #include <kms++/kms++.h>
 
@@ -76,6 +78,52 @@ int DmabufFramebuffer::prime_fd(unsigned plane)
 	FramebufferPlane& p = m_planes[plane];
 
 	return p.prime_fd;
+}
+
+void DmabufFramebuffer::begin_cpu_access(CpuAccess access)
+{
+	if (m_sync_flags != 0)
+		throw runtime_error("begin_cpu sync already started");
+
+	switch (access) {
+	case CpuAccess::Read:
+		m_sync_flags = DMA_BUF_SYNC_READ;
+		break;
+	case CpuAccess::Write:
+		m_sync_flags = DMA_BUF_SYNC_WRITE;
+		break;
+	case CpuAccess::ReadWrite:
+		m_sync_flags = DMA_BUF_SYNC_RW;
+		break;
+	}
+
+	dma_buf_sync dbs {
+		.flags = DMA_BUF_SYNC_START | m_sync_flags
+	};
+
+	for (uint32_t p = 0; p < m_num_planes; ++p) {
+		int r = ioctl(prime_fd(p), DMA_BUF_IOCTL_SYNC, &dbs);
+		if (r)
+			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+	}
+}
+
+void DmabufFramebuffer::end_cpu_access()
+{
+	if (m_sync_flags == 0)
+		throw runtime_error("begin_cpu sync not started");
+
+	dma_buf_sync dbs {
+		.flags = DMA_BUF_SYNC_END | m_sync_flags
+	};
+
+	for (uint32_t p = 0; p < m_num_planes; ++p) {
+		int r = ioctl(prime_fd(p), DMA_BUF_IOCTL_SYNC, &dbs);
+		if (r)
+			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+	}
+
+	m_sync_flags = 0;
 }
 
 }

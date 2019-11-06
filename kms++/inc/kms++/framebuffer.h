@@ -5,6 +5,13 @@
 
 namespace kms
 {
+enum class CpuAccess
+{
+	Read,
+	Write,
+	ReadWrite,
+};
+
 class IFramebuffer {
 public:
 	virtual ~IFramebuffer() { }
@@ -20,6 +27,9 @@ public:
 	virtual uint32_t offset(unsigned plane) const { throw std::runtime_error("not implemented"); }
 	virtual uint8_t* map(unsigned plane) { throw std::runtime_error("not implemented"); }
 	virtual int prime_fd(unsigned plane) { throw std::runtime_error("not implemented"); }
+
+	virtual void begin_cpu_access(CpuAccess access) { }
+	virtual void end_cpu_access() { }
 };
 
 class Framebuffer : public DrmObject, public IFramebuffer

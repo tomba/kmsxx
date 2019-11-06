@@ -17,6 +17,21 @@
 
 #include <kms++util/kms++util.h>
 
+#include "ion.h"
+#include "ti-pat.h"
+#include <linux/dma-buf.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+
 using namespace std;
 using namespace kms;
 
@@ -315,12 +330,241 @@ static void get_props(Card& card, vector<PropInfo> &props, const DrmPropObject* 
 		pi.prop = propobj->get_prop(pi.name);
 }
 
+class Ion
+{
+public:
+	enum class IonHeapType
+	{
+		SYSTEM,
+		SYSTEM_CONTIG,
+		CARVEOUT,
+		CHUNK,
+		DMA,
+	};
+
+	Ion()
+	{
+		m_fd = open("/dev/ion", O_RDWR);
+		if (m_fd < 0)
+			throw runtime_error("Failed to open /dev/ion");
+
+		ion_heap_data heaps[10] {};
+
+		ion_heap_query ihq {};
+		ihq.cnt = ARRAY_SIZE(heaps);
+		ihq.heaps = (uint64_t)&heaps;
+
+		int r = ioctl(m_fd, ION_IOC_HEAP_QUERY, &ihq);
+		if (r < 0)
+			throw runtime_error("ION heap query failed");
+
+		for (uint32_t i = 0; i < ihq.cnt; ++i) {
+			const auto& h = heaps[i];
+			m_heaps.push_back({h.name, h.heap_id, (IonHeapType)h.type});
+		}
+	}
+
+	~Ion()
+	{
+		close(m_fd);
+		m_fd = 0;
+	}
+
+	int alloc(size_t size, IonHeapType type, bool cached = false)
+	{
+		uint32_t id_mask = 0;
+		for (const auto& h : m_heaps) {
+			if (h.type == type)
+				id_mask |= 1 << h.id;
+		}
+
+		if (id_mask == 0)
+			throw runtime_error("ION alloc failed: no heaps found");
+
+		ion_allocation_data iad {};
+		iad.len = size;
+		iad.heap_id_mask = id_mask;
+		iad.flags = cached ? ION_FLAG_CACHED : 0;
+
+		int r = ioctl(m_fd, ION_IOC_ALLOC, &iad);
+		if (r < 0)
+			throw runtime_error("ION alloc failed");
+
+		return iad.fd;
+	}
+
+private:
+	int m_fd;
+
+	struct IonHeap
+	{
+		string name;
+		uint32_t id;
+		IonHeapType type;
+	};
+
+	vector<IonHeap> m_heaps;
+};
+
+class Pat
+{
+public:
+	Pat()
+	{
+		m_fd = open("/dev/31010000.pat", O_RDWR);
+		FAIL_IF(m_fd < 0, "failed to open PAT");
+	}
+
+	int export_buf(int backing_fd)
+	{
+		ti_pat_export_data ped {};
+		ped.fd = backing_fd;
+		ped.flags = 0;
+
+		int r = ioctl(m_fd, TI_PAT_IOC_EXPORT, &ped);
+		FAIL_IF(r, "pat map failed");
+
+		return ped.fd;
+	}
+
+private:
+	int m_fd;
+};
+
+static Ion s_ion;
+static Pat s_pat;
+
+class PatFramebuffer : public DmabufFramebuffer
+{
+public:
+	PatFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format, int fd, int backing_fd, uint32_t pitch)
+		: DmabufFramebuffer(card, width, height, format, vector<int> { fd }, { pitch }, { 0 }),
+		  m_backing_fd(backing_fd)
+	{
+
+	}
+
+	uint8_t* map(unsigned plane)
+	{
+		assert(plane == 0);
+
+		if (!m_backing_fd)
+			throw invalid_argument("cannot mmap non-dmabuf fb");
+
+		if (m_map)
+			return m_map;
+
+		m_map = (uint8_t *)mmap(0, size(plane), PROT_READ | PROT_WRITE, MAP_SHARED,
+						  m_backing_fd, 0);
+		if (m_map == MAP_FAILED)
+			throw invalid_argument(string("mmap failed: ") + strerror(errno));
+
+		return m_map;
+	}
+
+	int prime_fd(unsigned plane)
+	{
+		assert(plane == 0);
+
+		if (!m_backing_fd)
+			throw invalid_argument("no primefb for non-dmabuf fb");
+
+		return m_backing_fd;
+	}
+
+
+	void begin_cpu_access(CpuAccess access)
+	{
+		printf("PAT SYNC\n");
+
+		if (m_sync_flags != 0)
+			throw runtime_error("begin_cpu sync already started");
+
+		switch (access) {
+		case CpuAccess::Read:
+			m_sync_flags = DMA_BUF_SYNC_READ;
+			break;
+		case CpuAccess::Write:
+			m_sync_flags = DMA_BUF_SYNC_WRITE;
+			break;
+		case CpuAccess::ReadWrite:
+			m_sync_flags = DMA_BUF_SYNC_RW;
+			break;
+		}
+
+		dma_buf_sync dbs {
+			.flags = DMA_BUF_SYNC_START | m_sync_flags
+		};
+
+		int r = ioctl(m_backing_fd, DMA_BUF_IOCTL_SYNC, &dbs);
+		if (r)
+			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+	}
+
+	void end_cpu_access()
+	{
+		if (m_sync_flags == 0)
+			throw runtime_error("begin_cpu sync not started");
+
+		dma_buf_sync dbs {
+			.flags = DMA_BUF_SYNC_END | m_sync_flags
+		};
+
+		int r = ioctl(m_backing_fd, DMA_BUF_IOCTL_SYNC, &dbs);
+		if (r)
+			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+
+		m_sync_flags = 0;
+	}
+private:
+	int m_backing_fd = 0;
+	uint8_t *m_map;
+	uint32_t m_sync_flags = 0;
+};
+
+Framebuffer* create_fb(Card& card, uint32_t width, uint32_t height, PixelFormat format)
+{
+	if (false) {
+		return new DumbFramebuffer(card, width, height, format);
+	} else {
+		const PixelFormatInfo& format_info = get_pixel_format_info(format);
+
+		int ion_buf_fd = s_ion.alloc(width * height *  format_info.planes[0].bitspp, Ion::IonHeapType::SYSTEM, true);
+
+		printf("got fd %d\n", ion_buf_fd);
+
+		if (false) {
+			vector<int> fds = { ion_buf_fd };
+			vector<uint32_t> pitches = { width * 4 };
+			vector<uint32_t> offsets = { 0 };
+
+			return new DmabufFramebuffer(card, width, height, format, fds, pitches, offsets);
+		} else {
+			int pat_fd = open("/dev/31010000.pat", O_RDWR);
+			FAIL_IF(pat_fd < 0, "failed to open PAT");
+
+			ti_pat_export_data ped {};
+			ped.fd = ion_buf_fd;
+			ped.flags = 0;
+
+			int r = ioctl(pat_fd, TI_PAT_IOC_EXPORT, &ped);
+			FAIL_IF(r, "pat map failed");
+
+			printf("pat buf fd %d\n", ped.fd);
+
+			int pat_buf_fd = ped.fd;
+
+			return new PatFramebuffer(card, width, height, format, pat_buf_fd, ion_buf_fd,  width * 4);
+		}
+	}
+}
+
 static vector<Framebuffer*> get_default_fb(Card& card, unsigned width, unsigned height)
 {
 	vector<Framebuffer*> v;
 
 	for (unsigned i = 0; i < s_num_buffers; ++i)
-		v.push_back(new DumbFramebuffer(card, width, height, PixelFormat::XRGB8888));
+		v.push_back(create_fb(card, width, height, PixelFormat::XRGB8888));
 
 	return v;
 }
@@ -360,7 +604,7 @@ static void parse_fb(Card& card, const string& fb_str, OutputInfo* output, Plane
 	vector<Framebuffer*> v;
 
 	for (unsigned i = 0; i < s_num_buffers; ++i)
-		v.push_back(new DumbFramebuffer(card, w, h, format));
+		v.push_back(create_fb(card, w, h, format));
 
 	if (pinfo)
 		pinfo->fbs = v;
@@ -950,11 +1194,15 @@ private:
 
 	static void draw_bar(Framebuffer* fb, unsigned frame_num)
 	{
+		fb->begin_cpu_access(CpuAccess::Write);
+
 		int old_xpos = frame_num < s_num_buffers ? -1 : get_bar_pos(fb, frame_num - s_num_buffers);
 		int new_xpos = get_bar_pos(fb, frame_num);
 
 		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
 		draw_text(*fb, fb->width() / 2, 0, to_string(frame_num), RGB(255, 255, 255));
+
+		fb->end_cpu_access();
 	}
 
 	static void do_flip_output(AtomicReq& req, unsigned frame_num, const OutputInfo& o)

@@ -2,6 +2,7 @@
 
 #include "framebuffer.h"
 #include "pixelformats.h"
+#include <vector>
 
 namespace kms
 {

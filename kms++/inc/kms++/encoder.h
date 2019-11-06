@@ -20,7 +20,7 @@ public:
 	const std::string& get_encoder_type() const;
 private:
 	Encoder(Card& card, uint32_t id, uint32_t idx);
-	~Encoder();
+	~Encoder() override;
 
 	EncoderPriv* m_priv;
 };

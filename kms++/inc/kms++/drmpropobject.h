@@ -31,7 +31,7 @@ protected:
 	DrmPropObject(Card& card, uint32_t object_type);
 	DrmPropObject(Card& card, uint32_t id, uint32_t object_type, uint32_t idx = 0);
 
-	virtual ~DrmPropObject();
+	~DrmPropObject() override;
 
 private:
 	std::map<uint32_t, uint64_t> m_prop_values;

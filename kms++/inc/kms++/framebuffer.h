@@ -36,10 +36,10 @@ class Framebuffer : public DrmObject, public IFramebuffer
 {
 public:
 	Framebuffer(Card& card, uint32_t id);
-	virtual ~Framebuffer();
+	~Framebuffer() override;
 
-	uint32_t width() const { return m_width; }
-	uint32_t height() const { return m_height; }
+	uint32_t width() const override { return m_width; }
+	uint32_t height() const override { return m_height; }
 
 	void flush();
 protected:

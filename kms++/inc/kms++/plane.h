@@ -35,7 +35,7 @@ public:
 	uint32_t gamma_size() const;
 private:
 	Plane(Card& card, uint32_t id, uint32_t idx);
-	~Plane();
+	~Plane() override;
 
 	PlanePriv* m_priv;
 };

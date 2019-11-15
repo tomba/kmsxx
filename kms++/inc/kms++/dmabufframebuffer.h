@@ -11,7 +11,7 @@ class DmabufFramebuffer : public Framebuffer
 {
 public:
 	DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-			  std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets);
+			  std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets, std::vector<uint64_t> modifiers = {});
 	~DmabufFramebuffer() override;
 
 	uint32_t width() const override { return Framebuffer::width(); }
@@ -37,6 +37,7 @@ private:
 		uint32_t size;
 		uint32_t stride;
 		uint32_t offset;
+		uint64_t modifier;
 		uint8_t *map;
 	};
 

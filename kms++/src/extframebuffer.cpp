@@ -15,7 +15,7 @@ namespace kms
 {
 
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-			       vector<uint32_t> handles, vector<uint32_t> pitches, vector<uint32_t> offsets)
+			       vector<uint32_t> handles, vector<uint32_t> pitches, vector<uint32_t> offsets, vector<uint64_t> modifiers)
 	: Framebuffer(card, width, height)
 {
 	m_format = format;
@@ -33,6 +33,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 		plane.handle = handles[i];
 		plane.stride = pitches[i];
 		plane.offset = offsets[i];
+		plane.modifier = modifiers.empty() ? 0 : modifiers[i];
 		plane.size = plane.stride * height;
 		plane.map = 0;
 	}
@@ -41,7 +42,16 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	handles.resize(4);
 	pitches.resize(4);
 	offsets.resize(4);
-	int r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
+	int r;
+
+	if (modifiers.empty()) {
+		r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
+	}
+	else {
+		modifiers.resize(4);
+		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
+	}
+
 	if (r)
 		throw std::invalid_argument(string("Failed to create ExtFramebuffer: ") + strerror(r));
 

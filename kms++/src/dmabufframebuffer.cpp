@@ -17,7 +17,7 @@ namespace kms
 {
 
 DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
-				     vector<int> fds, vector<uint32_t> pitches, vector<uint32_t> offsets)
+				     vector<int> fds, vector<uint32_t> pitches, vector<uint32_t> offsets, vector<uint64_t> modifiers)
 	: Framebuffer(card, width, height)
 {
 	int r;
@@ -42,6 +42,7 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 
 		plane.stride = pitches[i];
 		plane.offset = offsets[i];
+		plane.modifier = modifiers.empty() ? 0 : modifiers[i];
 		plane.size = plane.stride * height;
 		plane.map = 0;
 	}
@@ -50,10 +51,20 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 	uint32_t bo_handles[4] = { m_planes[0].handle, m_planes[1].handle, m_planes[2].handle, m_planes[3].handle };
 	pitches.resize(4);
 	offsets.resize(4);
-	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
-			  bo_handles, pitches.data(), offsets.data(), &id, 0);
-	if (r)
-		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+
+	if (modifiers.empty()) {
+		r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
+				  bo_handles, pitches.data(), offsets.data(), &id, 0);
+		if (r)
+			throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+	}
+	else {
+		modifiers.resize(4);
+		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format,
+					       bo_handles, pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
+		if (r)
+			throw invalid_argument(string("drmModeAddFB2WithModifiers failed: ") + strerror(errno));
+	}
 
 	set_id(id);
 }

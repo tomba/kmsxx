@@ -36,7 +36,7 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		const PixelFormatPlaneInfo& pi = format_info.planes[i];
-		FramebufferPlane& plane = m_planes[i];
+		FramebufferPlane& plane = m_planes.at(i);
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
@@ -74,7 +74,7 @@ DumbFramebuffer::~DumbFramebuffer()
 	drmModeRmFB(card().fd(), id());
 
 	for (uint i = 0; i < m_num_planes; ++i) {
-		FramebufferPlane& plane = m_planes[i];
+		FramebufferPlane& plane = m_planes.at(i);
 
 		/* unmap buffer */
 		if (plane.map)
@@ -91,7 +91,7 @@ DumbFramebuffer::~DumbFramebuffer()
 
 uint8_t* DumbFramebuffer::map(unsigned plane)
 {
-	FramebufferPlane& p = m_planes[plane];
+	FramebufferPlane& p = m_planes.at(plane);
 
 	if (p.map)
 		return p.map;
@@ -114,15 +114,15 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 
 int DumbFramebuffer::prime_fd(unsigned int plane)
 {
-	if (m_planes[plane].prime_fd >= 0)
-		return m_planes[plane].prime_fd;
+	if (m_planes.at(plane).prime_fd >= 0)
+		return m_planes.at(plane).prime_fd;
 
-	int r = drmPrimeHandleToFD(card().fd(), m_planes[plane].handle,
-				   DRM_CLOEXEC | O_RDWR, &m_planes[plane].prime_fd);
+	int r = drmPrimeHandleToFD(card().fd(), m_planes.at(plane).handle,
+				   DRM_CLOEXEC | O_RDWR, &m_planes.at(plane).prime_fd);
 	if (r)
 		throw std::runtime_error("drmPrimeHandleToFD failed");
 
-	return m_planes[plane].prime_fd;
+	return m_planes.at(plane).prime_fd;
 }
 
 }

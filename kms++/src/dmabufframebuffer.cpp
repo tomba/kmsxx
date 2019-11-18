@@ -32,7 +32,7 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 		throw std::invalid_argument("the size of fds, pitches and offsets has to match number of planes");
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
-		FramebufferPlane& plane = m_planes[i];
+		FramebufferPlane& plane = m_planes.at(i);
 
 		plane.prime_fd = fds[i];
 
@@ -65,7 +65,7 @@ DmabufFramebuffer::~DmabufFramebuffer()
 
 uint8_t* DmabufFramebuffer::map(unsigned plane)
 {
-	FramebufferPlane& p = m_planes[plane];
+	FramebufferPlane& p = m_planes.at(plane);
 
 	if (p.map)
 		return p.map;
@@ -80,7 +80,7 @@ uint8_t* DmabufFramebuffer::map(unsigned plane)
 
 int DmabufFramebuffer::prime_fd(unsigned plane)
 {
-	FramebufferPlane& p = m_planes[plane];
+	FramebufferPlane& p = m_planes.at(plane);
 
 	return p.prime_fd;
 }

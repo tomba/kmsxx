@@ -28,10 +28,9 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 		throw std::invalid_argument("the size of handles, pitches and offsets has to match number of planes");
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
-		FramebufferPlane& plane = m_planes[i];
+		FramebufferPlane& plane = m_planes.at(i);
 
 		plane.handle = handles[i];
-
 		plane.stride = pitches[i];
 		plane.offset = offsets[i];
 		plane.size = plane.stride * height;

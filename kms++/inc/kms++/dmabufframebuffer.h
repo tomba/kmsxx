@@ -20,10 +20,10 @@ public:
 	PixelFormat format() const override { return m_format; }
 	unsigned num_planes() const override { return m_num_planes; }
 
-	uint32_t handle(unsigned plane) const { return m_planes[plane].handle; }
-	uint32_t stride(unsigned plane) const override { return m_planes[plane].stride; }
-	uint32_t size(unsigned plane) const override { return m_planes[plane].size; }
-	uint32_t offset(unsigned plane) const override { return m_planes[plane].offset; }
+	uint32_t handle(unsigned plane) const { return m_planes.at(plane).handle; }
+	uint32_t stride(unsigned plane) const override { return m_planes.at(plane).stride; }
+	uint32_t size(unsigned plane) const override { return m_planes.at(plane).size; }
+	uint32_t offset(unsigned plane) const override { return m_planes.at(plane).offset; }
 	uint8_t* map(unsigned plane) override;
 	int prime_fd(unsigned plane) override;
 
@@ -41,7 +41,7 @@ private:
 	};
 
 	unsigned m_num_planes;
-	struct FramebufferPlane m_planes[4];
+	std::array<FramebufferPlane, 4> m_planes;
 
 	PixelFormat m_format;
 

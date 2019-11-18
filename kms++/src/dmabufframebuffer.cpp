@@ -28,6 +28,9 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 
 	m_num_planes = format_info.num_planes;
 
+	if (fds.size() != m_num_planes || pitches.size() != m_num_planes || offsets.size() != m_num_planes)
+		throw std::invalid_argument("the size of fds, pitches and offsets has to match number of planes");
+
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		FramebufferPlane& plane = m_planes[i];
 
@@ -45,6 +48,8 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 
 	uint32_t id;
 	uint32_t bo_handles[4] = { m_planes[0].handle, m_planes[1].handle, m_planes[2].handle, m_planes[3].handle };
+	pitches.resize(4);
+	offsets.resize(4);
 	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
 			  bo_handles, pitches.data(), offsets.data(), &id, 0);
 	if (r)

@@ -24,6 +24,9 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 
 	m_num_planes = format_info.num_planes;
 
+	if (handles.size() != m_num_planes || pitches.size() != m_num_planes || offsets.size() != m_num_planes)
+		throw std::invalid_argument("the size of handles, pitches and offsets has to match number of planes");
+
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		FramebufferPlane& plane = m_planes[i];
 
@@ -36,6 +39,9 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	}
 
 	uint32_t id;
+	handles.resize(4);
+	pitches.resize(4);
+	offsets.resize(4);
 	int r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
 	if (r)
 		throw std::invalid_argument(string("Failed to create ExtFramebuffer: ") + strerror(r));

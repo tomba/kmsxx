@@ -24,8 +24,11 @@ target_include_directories(kms++ PUBLIC
 
 target_link_libraries(kms++ ${LIBDRM_LIBRARIES} ${LIBDRM_OMAP_LIBRARIES} fmt::fmt)
 
+# Set a dummy SOVERSION just to avoid having a naked .so file in the filesystem.
+# This version number doesn't make any promise about API/ABI stability.
 set_target_properties(kms++ PROPERTIES
-    PUBLIC_HEADER "${PUB_HDRS}")
+    PUBLIC_HEADER "${PUB_HDRS}"
+    SOVERSION 0)
 
 install(TARGETS kms++
     LIBRARY DESTINATION lib

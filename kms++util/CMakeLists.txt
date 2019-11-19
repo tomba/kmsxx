@@ -14,8 +14,11 @@ if (KMSXX_ENABLE_THREADING)
     add_definitions(-DHAS_PTHREAD)
 endif()
 
+# Set a dummy SOVERSION just to avoid havig a naked .so file in the filesystem.
+# This version number doesn't make any promise about API/ABI stability.
 set_target_properties(kms++util PROPERTIES
-    PUBLIC_HEADER "${PUB_HDRS}")
+    PUBLIC_HEADER "${PUB_HDRS}"
+    SOVERSION 0)
 
 install(TARGETS kms++util
     LIBRARY DESTINATION lib

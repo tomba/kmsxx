@@ -26,6 +26,7 @@ set(KMSXX_PYTHON_VERSION "python3;python2" CACHE STRING "Python pkgconfig packag
 set(KMSXX_ENABLE_KMSCUBE OFF CACHE BOOL "Enable kmscube")
 
 set(KMSXX_ENABLE_THREADING ON CACHE BOOL "Enable threading for parallelized drawing")
+set(KMSXX_ENABLE_LIBDRMOMAP ON CACHE BOOL "Enable OMAP-specific extensions")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wextra -Wno-unused-parameter")
@@ -68,7 +69,12 @@ endif()
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDRM libdrm>=2.4.71 REQUIRED)
 
-pkg_check_modules(LIBDRM_OMAP libdrm_omap)
+if (KMSXX_ENABLE_LIBDRMOMAP)
+    pkg_check_modules(LIBDRM_OMAP libdrm_omap)
+else()
+    set(LIBDRM_OMAP_FOUND FALSE)
+endif()
+
 if(LIBDRM_OMAP_FOUND)
     add_definitions(-DHAS_LIBDRM_OMAP)
 endif()

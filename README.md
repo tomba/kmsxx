@@ -72,13 +72,14 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 You can use the following cmake flags to control the build. Use `-DFLAG=VALUE` to set them.
 
-Option name           | Values          | Default         | Notes
---------------------- | -------------   | --------------- | --------
-CMAKE_BUILD_TYPE      | Release/Debug   | Release         |
-BUILD_SHARED_LIBS     | ON/OFF          | OFF             |
-KMSXX_ENABLE_PYTHON   | ON/OFF          | ON              |
-KMSXX_ENABLE_KMSCUBE  | ON/OFF          | OFF             |
-KMSXX_PYTHON_VERSION  | python3/python2 | python3;python2 | Name of the python pkgconfig file
+Option name              | Values          | Default         | Notes
+------------------------ | -------------   | --------------- | --------
+CMAKE_BUILD_TYPE         | Release/Debug   | Release         |
+BUILD_SHARED_LIBS        | ON/OFF          | OFF             |
+KMSXX_ENABLE_PYTHON      | ON/OFF          | ON              |
+KMSXX_ENABLE_KMSCUBE     | ON/OFF          | OFF             |
+KMSXX_ENABLE_LIBDRMOMAP  | ON/OFF          | OFF             |
+KMSXX_PYTHON_VERSION     | python3/python2 | python3;python2 | Name of the python pkgconfig file
 
 ## Env variables
 

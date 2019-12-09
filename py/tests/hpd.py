@@ -4,8 +4,7 @@ import pyudev
 import pykms
 
 card = pykms.Card()
-res = pykms.ResourceManager(card)
-conn = res.reserve_connector("hdmi")
+conns = card.connectors
 
 context = pyudev.Context()
 
@@ -16,7 +15,8 @@ monitor.filter_by('drm')
 
 for device in iter(monitor.poll, None):
 	if 'HOTPLUG' in device:
-		conn.refresh()
-		mode = conn.get_modes()
 		print("HPD")
-		print(mode)
+		for conn in conns:
+			conn.refresh()
+			modes = conn.get_modes()
+			print("  ", conn.fullname, ["{}x{}".format(m.hdisplay, m.vdisplay) for m in modes])

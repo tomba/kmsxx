@@ -59,10 +59,10 @@ static inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
 
 static inline std::string PixelFormatToFourCC(PixelFormat f)
 {
-	char buf[5] = { (char)(((int)f >> 0) & 0xff),
-			(char)(((int)f >> 8) & 0xff),
-			(char)(((int)f >> 16) & 0xff),
-			(char)(((int)f >> 24) & 0xff),
+	char buf[5] = { (char)(((uint32_t)f >> 0) & 0xff),
+			(char)(((uint32_t)f >> 8) & 0xff),
+			(char)(((uint32_t)f >> 16) & 0xff),
+			(char)(((uint32_t)f >> 24) & 0xff),
 			0 };
 	return std::string(buf);
 }

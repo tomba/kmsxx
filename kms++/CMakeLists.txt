@@ -22,7 +22,7 @@ target_include_directories(kms++ PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src)
 
-target_link_libraries(kms++ ${LIBDRM_LIBRARIES} ${LIBDRM_OMAP_LIBRARIES} fmt::fmt)
+target_link_libraries(kms++ ${LIBDRM_LIBRARIES} ${LIBDRM_OMAP_LIBRARIES} fmt::fmt-header-only)
 
 # Set a dummy SOVERSION just to avoid having a naked .so file in the filesystem.
 # This version number doesn't make any promise about API/ABI stability.

@@ -5,8 +5,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "kms++gl/kms-egl.h"
+
 #include "cube.h"
-#include "cube-egl.h"
 #include "cube-gles2.h"
 
 static struct wl_compositor *s_compositor = NULL;

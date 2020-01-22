@@ -1,9 +1,9 @@
 #include <poll.h>
 
-#include "cube-egl.h"
 #include "cube-gles2.h"
 #include "cube.h"
 
+#include "kms++gl/kms-egl.h"
 #include <kms++util/kms++util.h>
 
 using namespace std;

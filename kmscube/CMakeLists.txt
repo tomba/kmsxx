@@ -29,10 +29,10 @@ link_directories(
     ${X11XCB_LIBRARY_DIRS}
 )
 
-add_executable (kmscube cube.cpp cube.h cube-egl.cpp cube-egl.h cube-gles2.cpp cube-gles2.h
+add_executable (kmscube cube.cpp cube.h cube-gles2.cpp cube-gles2.h
     cube-null.cpp cube-gbm.cpp cube-x11.cpp cube-wl.cpp
     esTransform.c esTransform.h)
-target_link_libraries(kmscube kms++ kms++util
+target_link_libraries(kmscube kms++ kms++util kms++gl
     ${LIBDRM_LIBRARIES}
     ${GLESv2_LIBRARIES}
     ${EGL_LIBRARIES}

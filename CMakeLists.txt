@@ -83,6 +83,7 @@ enable_testing()
 
 add_subdirectory(kms++)
 add_subdirectory(kms++util)
+add_subdirectory(kms++gl)
 add_subdirectory(utils)
 
 add_subdirectory(ext/fmt)

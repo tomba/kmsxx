@@ -1,9 +1,10 @@
-#include "cube-egl.h"
-#include "cube.h"
+#include "kms++gl/kms-egl.h"
 
 #include <kms++util/kms++util.h>
 
 using namespace std;
+
+static bool s_verbose = false;
 
 static void print_egl_config(EGLDisplay dpy, EGLConfig cfg)
 {

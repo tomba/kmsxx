@@ -1,8 +1,9 @@
 
 #include <kms++util/kms++util.h>
 
+#include "kms++gl/kms-egl.h"
+
 #include "cube.h"
-#include "cube-egl.h"
 #include "cube-gles2.h"
 
 #include <X11/Xlib-xcb.h>

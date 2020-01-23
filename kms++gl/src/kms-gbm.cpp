@@ -88,6 +88,29 @@ void GbmEglSurface::drm_fb_destroy_callback(gbm_bo* bo, void* data)
 	delete fb;
 }
 
+class GbmFramebuffer : public ExtFramebuffer
+{
+public:
+
+	GbmFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
+		       std::vector<uint32_t> handles, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets, std::vector<uint64_t> modifiers = {},
+		       gbm_bo* bo = nullptr)
+		: ExtFramebuffer(card, width, height, format, handles, pitches, offsets, modifiers),
+		  m_bo(bo)
+	{
+
+	}
+
+	// IFramebuffer interface
+public:
+	int prime_fd(unsigned plane) override
+	{
+		return gbm_bo_get_fd(m_bo);
+	}
+
+	gbm_bo* m_bo;
+};
+
 Framebuffer* GbmEglSurface::drm_fb_get_from_bo(gbm_bo* bo, Card& card)
 {
 	auto fb = reinterpret_cast<Framebuffer*>(gbm_bo_get_user_data(bo));
@@ -104,7 +127,7 @@ Framebuffer* GbmEglSurface::drm_fb_get_from_bo(gbm_bo* bo, Card& card)
 	vector<uint32_t> strides { stride };
 	vector<uint32_t> offsets { 0 };
 
-	fb = new ExtFramebuffer(card, width, height, format, handles, strides, offsets);
+	fb = new GbmFramebuffer(card, width, height, format, handles, strides, offsets, {}, bo);
 
 	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
 
@@ -125,6 +148,14 @@ void GbmEglSurface::free_prev()
 		gsurface->release_buffer(bo_prev);
 		bo_prev = 0;
 	}
+}
+
+uint8_t* GbmEglSurface::mmap()
+{
+	void* p;
+	uint32_t stride = 0;
+	gbm_bo_map(bo_next, 0, 0, m_width, m_height, GBM_BO_TRANSFER_READ_WRITE, &stride, &p);
+	return (uint8_t*)p;
 }
 
 uint32_t GbmEglSurface::width() const { return m_width; }

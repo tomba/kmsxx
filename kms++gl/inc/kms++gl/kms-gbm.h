@@ -4,6 +4,7 @@
 #include "kms++gl/kms-egl.h"
 
 struct gbm_device;
+struct gbm_surface;
 struct gbm_bo;
 
 namespace kms
@@ -69,6 +70,7 @@ public:
 	uint32_t width() const;
 	uint32_t height() const;
 
+	uint8_t* mmap();
 private:
 	Card& card;
 	const EglState& egl;

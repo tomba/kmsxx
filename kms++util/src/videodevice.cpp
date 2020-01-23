@@ -186,7 +186,7 @@ static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type)
 	ASSERT(v4lreqbuf.count == queue_size);
 }
 
-static void v4l2_queue_dmabuf(int fd, uint32_t index, DumbFramebuffer* fb, uint32_t buf_type)
+static void v4l2_queue_dmabuf(int fd, uint32_t index, Framebuffer* fb, uint32_t buf_type)
 {
 	v4l2_buffer buf { };
 	buf.type = buf_type;
@@ -509,7 +509,7 @@ void VideoStreamer::set_queue_size(uint32_t queue_size)
 	m_fbs.resize(queue_size);
 }
 
-void VideoStreamer::queue(DumbFramebuffer* fb)
+void VideoStreamer::queue(Framebuffer* fb)
 {
 	uint32_t idx;
 
@@ -525,7 +525,7 @@ void VideoStreamer::queue(DumbFramebuffer* fb)
 	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
 }
 
-DumbFramebuffer* VideoStreamer::dequeue()
+Framebuffer* VideoStreamer::dequeue()
 {
 	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
 

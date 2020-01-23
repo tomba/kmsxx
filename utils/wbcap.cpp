@@ -59,7 +59,7 @@ public:
 
 	DumbFramebuffer* Dequeue()
 	{
-		auto fb = m_capdev.dequeue();
+		auto fb = (DumbFramebuffer*)m_capdev.dequeue();
 
 		auto iter = find(s_wb_fbs.begin(), s_wb_fbs.end(), fb);
 		s_wb_fbs.erase(iter);

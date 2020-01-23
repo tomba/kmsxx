@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 
 
 			try {
-				DumbFramebuffer *dst_fb = in->dequeue();
+				DumbFramebuffer *dst_fb = (DumbFramebuffer*)in->dequeue();
 				printf("Writing frame %u\n", dst_frame_num);
 				for (unsigned i = 0; i < dst_fb->num_planes(); ++i)
 					os.write((char*)dst_fb->map(i), dst_fb->size(i));
@@ -189,7 +189,7 @@ int main(int argc, char** argv)
 				break;
 			}
 
-			DumbFramebuffer *src_fb = out->dequeue();
+			DumbFramebuffer *src_fb = (DumbFramebuffer*)out->dequeue();
 
 			if (src_frame_num < num_src_frames) {
 				read_frame(src_fb, src_frame_num++);

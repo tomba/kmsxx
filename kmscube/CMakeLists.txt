@@ -43,3 +43,11 @@ target_link_libraries(kmscube kms++ kms++util kms++gl
     ${WL_LIBRARIES}
     ${WL_EGL_LIBRARIES}
 )
+
+add_executable (chaintest chain.cpp chain.h)
+target_link_libraries(chaintest kms++ kms++util kms++gl
+    ${LIBDRM_LIBRARIES}
+    ${GLESv2_LIBRARIES}
+    ${EGL_LIBRARIES}
+    ${GBM_LIBRARIES}
+)

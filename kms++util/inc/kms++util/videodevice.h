@@ -47,8 +47,8 @@ private:
 	bool m_has_m2m;
 	bool m_has_mplane_m2m;
 
-	std::vector<kms::DumbFramebuffer*> m_capture_fbs;
-	std::vector<kms::DumbFramebuffer*> m_output_fbs;
+	std::vector<kms::Framebuffer*> m_capture_fbs;
+	std::vector<kms::Framebuffer*> m_output_fbs;
 
 	VideoStreamer* m_capture_streamer;
 	VideoStreamer* m_output_streamer;
@@ -74,8 +74,8 @@ public:
 	void get_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_queue_size(uint32_t queue_size);
-	void queue(kms::DumbFramebuffer* fb);
-	kms::DumbFramebuffer* dequeue();
+	void queue(kms::Framebuffer* fb);
+	kms::Framebuffer* dequeue();
 	void stream_on();
 	void stream_off();
 
@@ -84,5 +84,5 @@ public:
 private:
 	int m_fd;
 	StreamerType m_type;
-	std::vector<kms::DumbFramebuffer*> m_fbs;
+	std::vector<kms::Framebuffer*> m_fbs;
 };

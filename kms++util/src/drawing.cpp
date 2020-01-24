@@ -210,6 +210,8 @@ void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 
 void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, RGB color)
 {
+	fb.begin_cpu_access(CpuAccess::Write);
+
 	unsigned i, j;
 	YUV yuvcolor = color.yuv();
 
@@ -254,6 +256,8 @@ void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 	default:
 		throw std::invalid_argument("draw_rect: unknown pixelformat");
 	}
+
+	fb.end_cpu_access();
 }
 
 void draw_horiz_line(IFramebuffer& fb, uint32_t x1, uint32_t x2, uint32_t y, RGB color)

@@ -194,8 +194,9 @@ void draw_test_pattern(IFramebuffer &fb, YUVType yuvt)
 	Stopwatch sw;
 	sw.start();
 #endif
-
+	fb.begin_cpu_access(CpuAccess::Write);
 	draw_test_pattern_impl(fb, yuvt);
+	fb.end_cpu_access();
 
 #ifdef DRAW_PERF_PRINT
 	double us = sw.elapsed_us();

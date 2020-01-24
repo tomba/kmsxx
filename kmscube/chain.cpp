@@ -1,19 +1,25 @@
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
-#include <kms++gl/kms-egl.h>
-#include <kms++gl/kms-gbm.h>
+#include <kms++util/videodevice.h>
+#include <kms++util/kms++util.h>
+
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES2/gl2ext.h>
 #include "esTransform.h"
-#include <kms++util/videodevice.h>
 #include <EGL/eglext.h>
-#include <kms++util/kms++util.h>
 
 #include <cstring>
 #include <cassert>
 #include <unistd.h>
 #include <poll.h>
+#include <cstdio>
+#include <cstdlib>
+
+#include <kms++gl/kms-egl.h>
+#include <kms++gl/kms-gbm.h>
+#include <kms++gl/ion.h>
+#include <kms++gl/ti-pat.h>
 
 using namespace std;
 using namespace kms;
@@ -147,9 +153,13 @@ void draw_gl(EglState& egl, Framebuffer* src_fb, Framebuffer* dst_fb)
 	glerr("blit");
 }
 
+
 int main()
 {
 	Card card;
+
+	Ion s_ion;
+	Pat s_pat;
 
 	GbmDevice gdev(card);
 	EglState egl(gdev.handle());
@@ -172,9 +182,30 @@ int main()
 	uint32_t w = mode.hdisplay / 2 - 8;
 	uint32_t h = mode.vdisplay / 2 - 8;
 
-	DumbFramebuffer* fbs[num_planes];
-	for (int i = 0; i < num_planes; ++i)
-		fbs[i] = new DumbFramebuffer(card, w, h, PixelFormat::XRGB8888);
+	Framebuffer* fbs[num_planes];
+	for (int i = 0; i < num_planes; ++i) {
+		const auto format = PixelFormat::XRGB8888;
+
+		const PixelFormatInfo& format_info = get_pixel_format_info(format);
+
+		if (0) {
+			printf("Using DumbBuffer\n");
+			fbs[i] = new DumbFramebuffer(card, w, h, format);
+		} else {
+			bool cached = false;
+
+			printf("Using ION, cached %d\n", cached);
+
+			int ion_buf_fd = s_ion.alloc(w * h *  format_info.planes[0].bitspp / 8, Ion::IonHeapType::SYSTEM_CONTIG, cached);
+
+			vector<int> fds = { ion_buf_fd };
+			vector<uint32_t> pitches = { w * format_info.planes[0].bitspp / 8 };
+			vector<uint32_t> offsets = { 0 };
+
+			auto fb = new DmabufFramebuffer(card, w, h, format, fds, pitches, offsets);
+			fbs[i] = fb;
+		}
+	}
 
 	AtomicReq req(card);
 
@@ -208,55 +239,113 @@ int main()
 	if (r)
 		EXIT("Atomic commit failed: %d\n", r);
 
+	const bool wait_enter = false;
+
+	printf("blank fbs\n");
+
+	if (wait_enter)
+		getchar();
+
+	printf("green fbs\n");
 
 	for (int i = 0; i < num_planes; ++i)
 		draw_rect(*fbs[i], 0, 0, fbs[i]->width(), fbs[i]->height(), RGB(0, 0xff, 0));
 
+	if (wait_enter)
+		getchar();
+
+	printf("read fbs\n");
+
 	{
+		fbs[0]->begin_cpu_access(CpuAccess::Read);
+		fbs[1]->begin_cpu_access(CpuAccess::Read);
+
 		uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
 		uint32_t* p2 = (uint32_t*)fbs[1]->map(0);
 		for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
 			if (p1[i] != p2[i])
 				printf("FB0/1: %u: %x != %x\n", i, p1[i], p2[i]);
 		}
+
+		fbs[0]->end_cpu_access();
+		fbs[1]->end_cpu_access();
 	}
 
 	{
+		fbs[0]->begin_cpu_access(CpuAccess::Read);
+		fbs[2]->begin_cpu_access(CpuAccess::Read);
+
 		uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
 		uint32_t* p2 = (uint32_t*)fbs[2]->map(0);
 		for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
-			// note: ignore alpha as WB does not copy it
 			if (p1[i] != p2[i])
 				printf("FB0/2: %u: %x != %x\n", i, p1[i], p2[i]);
 		}
+
+		fbs[0]->end_cpu_access();
+		fbs[2]->end_cpu_access();
 	}
+
+	if (wait_enter)
+		getchar();
+
+	printf("blue fbs\n");
 
 	for (int i = 0; i < num_planes; ++i)
 		draw_rect(*fbs[i], 0, 0, fbs[i]->width(), fbs[i]->height(), RGB(0, 0, 0xff));
 
+	if (wait_enter)
+		getchar();
+
+	printf("test pattern on fb0\n");
 
 	draw_test_pattern(*fbs[0]);
 
+	if (wait_enter)
+		getchar();
+
+	printf("copy fb0 -> fb1 with GPU\n");
+
 	draw_gl(egl, fbs[0], fbs[1]);
+
+	if (wait_enter)
+		getchar();
+
+	printf("copy fb1 -> fb2 with WB\n");
 
 	copy_wb(fbs[1], fbs[2]);
 
-	{
-		uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
-		uint32_t* p2 = (uint32_t*)fbs[1]->map(0);
-		for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
-			if (p1[i] != p2[i])
-				printf("FB0/1: %u: %x != %x\n", i, p1[i], p2[i]);
-		}
-	}
+	if (1) {
+		printf("check FBs\n");
+		{
+			fbs[0]->begin_cpu_access(CpuAccess::Read);
+			fbs[1]->begin_cpu_access(CpuAccess::Read);
 
-	{
-		uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
-		uint32_t* p2 = (uint32_t*)fbs[2]->map(0);
-		for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
-			// note: ignore alpha as WB does not copy it
-			if ((p1[i] & 0xffffff) != p2[i])
-				printf("FB0/2: %u: %x != %x\n", i, p1[i], p2[i]);
+			uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
+			uint32_t* p2 = (uint32_t*)fbs[1]->map(0);
+			for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
+				if (p1[i] != p2[i])
+					printf("FB0/1: %u: %x != %x\n", i, p1[i], p2[i]);
+			}
+
+			fbs[0]->end_cpu_access();
+			fbs[1]->end_cpu_access();
+		}
+
+		{
+			fbs[0]->begin_cpu_access(CpuAccess::Read);
+			fbs[2]->begin_cpu_access(CpuAccess::Read);
+
+			uint32_t* p1 = (uint32_t*)fbs[0]->map(0);
+			uint32_t* p2 = (uint32_t*)fbs[2]->map(0);
+			for (uint32_t i = 0; i < fbs[0]->size(0) / 4; ++i) {
+				// note: ignore alpha as WB does not copy it
+				if ((p1[i] & 0xffffff) != p2[i])
+					printf("FB0/2: %u: %x != %x\n", i, p1[i], p2[i]);
+			}
+
+			fbs[0]->end_cpu_access();
+			fbs[2]->end_cpu_access();
 		}
 	}
 

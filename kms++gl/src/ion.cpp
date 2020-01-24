@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <array>
 
-#include <ion.h>
+#include <linux/ion.h>
 
 #include <kms++gl/ion.h>
 

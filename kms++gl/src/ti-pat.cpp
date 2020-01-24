@@ -8,7 +8,7 @@
 #include <cassert>
 #include <linux/dma-buf.h>
 
-#include <ti-pat.h>
+#include <linux/ti-pat.h>
 
 #include <kms++gl/ti-pat.h>
 

@@ -17,8 +17,8 @@
 
 #include <kms++util/kms++util.h>
 
-#include "ion.h"
-#include "ti-pat.h"
+#include <linux/ion.h>
+#include <linux/ti-pat.h>
 #include <linux/dma-buf.h>
 
 #include <stdio.h>

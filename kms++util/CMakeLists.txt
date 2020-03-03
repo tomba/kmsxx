@@ -14,6 +14,8 @@ if (KMSXX_ENABLE_THREADING)
     add_definitions(-DHAS_PTHREAD)
 endif()
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/kms++util.pc.in ${CMAKE_CURRENT_BINARY_DIR}/kms++util.pc @ONLY)
+
 # Set a dummy SOVERSION just to avoid havig a naked .so file in the filesystem.
 # This version number doesn't make any promise about API/ABI stability.
 set_target_properties(kms++util PROPERTIES
@@ -24,3 +26,6 @@ install(TARGETS kms++util
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     PUBLIC_HEADER DESTINATION include/kms++util)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/kms++util.pc
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)

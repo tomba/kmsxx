@@ -248,7 +248,8 @@ VideoDevice::VideoDevice(const string& dev)
 VideoDevice::VideoDevice(int fd)
 	: m_fd(fd), m_has_capture(false), m_has_output(false), m_has_m2m(false), m_capture_streamer(0), m_output_streamer(0)
 {
-	FAIL_IF(fd < 0, "Bad fd");
+	if (fd < 0)
+		throw runtime_error("bad fd");
 
 	struct v4l2_capability cap = { };
 	int r = ioctl(fd, VIDIOC_QUERYCAP, &cap);
@@ -370,10 +371,13 @@ vector<string> VideoDevice::get_capture_devices()
 		if (stat(name.c_str(), &buffer) != 0)
 			continue;
 
-		VideoDevice vid(name);
+		try {
+			VideoDevice vid(name);
 
-		if (vid.has_capture() && !vid.has_m2m())
-			v.push_back(name);
+			if (vid.has_capture() && !vid.has_m2m())
+				v.push_back(name);
+		} catch (...) {
+		}
 	}
 
 	return v;
@@ -390,10 +394,13 @@ vector<string> VideoDevice::get_m2m_devices()
 		if (stat(name.c_str(), &buffer) != 0)
 			continue;
 
-		VideoDevice vid(name);
+		try {
+			VideoDevice vid(name);
 
-		if (vid.has_m2m())
-			v.push_back(name);
+			if (vid.has_m2m())
+				v.push_back(name);
+		} catch (...) {
+		}
 	}
 
 	return v;

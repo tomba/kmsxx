@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
+#include <vector>
+
 #include "framebuffer.h"
 #include "pixelformats.h"
-#include <vector>
 
 namespace kms
 {

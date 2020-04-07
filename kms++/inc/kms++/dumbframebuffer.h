@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include "framebuffer.h"
 #include "pixelformats.h"
 

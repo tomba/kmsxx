@@ -43,14 +43,7 @@ static string format_mode(const Videomode& m, unsigned idx)
 
 static string format_mode_short(const Videomode& m)
 {
-	string h = fmt::format("{}/{}/{}/{}", m.hdisplay, m.hfp(), m.hsw(), m.hbp());
-	string v = fmt::format("{}/{}/{}/{}", m.vdisplay, m.vfp(), m.vsw(), m.vbp());
-
-	return fmt::format("{} {:.3f} {} {} {} ({:.2f})",
-		       m.name,
-		       m.clock / 1000.0,
-		       h, v,
-		       m.vrefresh, m.calculated_vrefresh());
+	return m.to_string_long();
 }
 
 static string format_connector(Connector& c)

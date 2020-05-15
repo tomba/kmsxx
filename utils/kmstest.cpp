@@ -88,9 +88,6 @@ static void get_connector(ResourceManager& resman, OutputInfo& output, const str
 	if (!conn)
 		EXIT("No connector '%s'", str.c_str());
 
-	if (!conn->connected())
-		EXIT("Connector '%s' not connected", conn->fullname().c_str());
-
 	output.connector = conn;
 	output.mode = output.connector->get_default_mode();
 }
@@ -646,7 +643,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	if (outputs.empty()) {
 		// no outputs defined, show a pattern on all connected screens
 		for (Connector* conn : card.get_connectors()) {
-			if (conn->connector_status() != ConnectorStatus::Connected)
+			if (!conn->connected())
 				continue;
 
 			OutputInfo output = { };
@@ -667,6 +664,9 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 			get_default_crtc(resman, o);
 
 		get_props(card, o.crtc_props, o.crtc);
+
+		if (!o.mode.valid())
+			EXIT("Mode not valid for %s", o.connector->fullname().c_str());
 
 		if (card.has_atomic()) {
 			if (o.planes.empty())

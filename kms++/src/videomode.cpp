@@ -12,6 +12,11 @@ using namespace std;
 namespace kms
 {
 
+bool Videomode::valid() const
+{
+	return !!clock;
+}
+
 unique_ptr<Blob> Videomode::to_blob(Card& card) const
 {
 	drmModeModeInfo drm_mode = video_mode_to_drm_mode(*this);

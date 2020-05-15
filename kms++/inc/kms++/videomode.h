@@ -52,6 +52,8 @@ struct Videomode
 	std::string to_string_short() const;
 	std::string to_string_long() const;
 	std::string to_string_long_padded() const;
+
+	bool valid() const;
 };
 
 struct Videomode videomode_from_timings(uint32_t clock_khz,

@@ -104,6 +104,11 @@ Connector* ResourceManager::reserve_connector(Connector* conn)
 	return conn;
 }
 
+void ResourceManager::release_connector(Connector* conn)
+{
+	m_reserved_connectors.erase(conn);
+}
+
 Crtc* ResourceManager::reserve_crtc(Connector* conn)
 {
 	if (!conn)
@@ -136,6 +141,11 @@ Crtc* ResourceManager::reserve_crtc(Crtc* crtc)
 	m_reserved_crtcs.insert(crtc);
 
 	return crtc;
+}
+
+void ResourceManager::release_crtc(Crtc* crtc)
+{
+	m_reserved_crtcs.erase(crtc);
 }
 
 Plane* ResourceManager::reserve_plane(Crtc* crtc, PlaneType type, PixelFormat format)
@@ -203,4 +213,9 @@ Plane* ResourceManager::reserve_primary_plane(Crtc* crtc, PixelFormat format)
 Plane* ResourceManager::reserve_overlay_plane(Crtc* crtc, PixelFormat format)
 {
 	return reserve_plane(crtc, PlaneType::Overlay, format);
+}
+
+void ResourceManager::release_plane(Plane* plane)
+{
+	m_reserved_planes.erase(plane);
 }

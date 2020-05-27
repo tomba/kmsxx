@@ -148,6 +148,20 @@ Card::Card(const std::string& driver, uint32_t idx)
 	setup();
 }
 
+Card::Card(int fd, bool take_ownership)
+{
+	if (take_ownership) {
+		m_fd = fd;
+	} else {
+		m_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
+
+		if (m_fd < 0)
+			throw invalid_argument(string(strerror(errno)) + " duplicating fd");
+	}
+
+	setup();
+}
+
 void Card::setup()
 {
 	drmVersionPtr ver = drmGetVersion(m_fd);

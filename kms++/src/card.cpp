@@ -104,6 +104,16 @@ static int open_device_by_driver(string name, uint32_t idx)
 	throw invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
 }
 
+std::unique_ptr<Card> Card::open_named_card(const std::string& name)
+{
+	int fd = drmOpen(name.c_str(), 0);
+
+	if (fd < 0)
+		throw invalid_argument(string(strerror(errno)) + " opening card \"" + name + "\"");
+
+	return std::unique_ptr<Card>(new Card(fd, true));
+}
+
 Card::Card(const std::string& dev_path)
 {
 	const char* drv_p = getenv("KMSXX_DRIVER");

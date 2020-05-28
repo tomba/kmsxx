@@ -104,6 +104,16 @@ static int open_device_by_driver(string name, uint32_t idx)
 	throw invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
 }
 
+std::unique_ptr<Card> Card::open_named_card(const std::string& name)
+{
+	int fd = drmOpen(name.c_str(), 0);
+
+	if (fd < 0)
+		throw invalid_argument(string(strerror(errno)) + " opening card \"" + name + "\"");
+
+	return std::unique_ptr<Card>(new Card(fd, true));
+}
+
 Card::Card(const std::string& dev_path)
 {
 	const char* drv_p = getenv("KMSXX_DRIVER");
@@ -144,6 +154,20 @@ Card::Card(const std::string& dev_path)
 Card::Card(const std::string& driver, uint32_t idx)
 {
 	m_fd = open_device_by_driver(driver, idx);
+
+	setup();
+}
+
+Card::Card(int fd, bool take_ownership)
+{
+	if (take_ownership) {
+		m_fd = fd;
+	} else {
+		m_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
+
+		if (m_fd < 0)
+			throw invalid_argument(string(strerror(errno)) + " duplicating fd");
+	}
 
 	setup();
 }

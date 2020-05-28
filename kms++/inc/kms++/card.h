@@ -24,8 +24,11 @@ class Card
 {
 	friend class Framebuffer;
 public:
+	static std::unique_ptr<Card> open_named_card(const std::string& name);
+
 	Card(const std::string& dev_path = "");
 	Card(const std::string& driver, uint32_t idx);
+	Card(int fd, bool take_ownership);
 	virtual ~Card();
 
 	Card(const Card& other) = delete;

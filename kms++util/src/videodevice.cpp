@@ -246,7 +246,7 @@ VideoDevice::VideoDevice(const string& dev)
 }
 
 VideoDevice::VideoDevice(int fd)
-	: m_fd(fd), m_has_capture(false), m_has_output(false), m_has_m2m(false), m_capture_streamer(0), m_output_streamer(0)
+	: m_fd(fd), m_has_capture(false), m_has_output(false), m_has_m2m(false)
 {
 	if (fd < 0)
 		throw runtime_error("bad fd");
@@ -299,10 +299,10 @@ VideoStreamer* VideoDevice::get_capture_streamer()
 
 	if (!m_capture_streamer) {
 		auto type = m_has_mplane_capture ? VideoStreamer::StreamerType::CaptureMulti : VideoStreamer::StreamerType::CaptureSingle;
-		m_capture_streamer = new VideoStreamer(m_fd, type);
+		m_capture_streamer = std::unique_ptr<VideoStreamer>(new VideoStreamer(m_fd, type));
 	}
 
-	return m_capture_streamer;
+	return m_capture_streamer.get();
 }
 
 VideoStreamer* VideoDevice::get_output_streamer()
@@ -311,10 +311,10 @@ VideoStreamer* VideoDevice::get_output_streamer()
 
 	if (!m_output_streamer) {
 		auto type = m_has_mplane_output ? VideoStreamer::StreamerType::OutputMulti : VideoStreamer::StreamerType::OutputSingle;
-		m_output_streamer = new VideoStreamer(m_fd, type);
+		m_output_streamer = std::unique_ptr<VideoStreamer>(new VideoStreamer(m_fd, type));
 	}
 
-	return m_output_streamer;
+	return m_output_streamer.get();
 }
 
 vector<tuple<uint32_t, uint32_t>> VideoDevice::get_discrete_frame_sizes(PixelFormat fmt)

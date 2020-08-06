@@ -35,6 +35,7 @@ public:
 	Card& operator=(const Card& other) = delete;
 
 	int fd() const { return m_fd; }
+	unsigned int dev_minor() const { return m_minor; }
 
 	void drop_master();
 
@@ -84,6 +85,7 @@ private:
 	std::vector<Framebuffer*> m_framebuffers;
 
 	int m_fd;
+	unsigned int m_minor;
 	bool m_is_master;
 
 	bool m_has_atomic;

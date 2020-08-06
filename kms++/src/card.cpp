@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <glob.h>
 
+#include <sys/stat.h>
+#include <sys/sysmacros.h>
+#include <sys/types.h>
+
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
@@ -183,7 +187,14 @@ void Card::setup()
 	m_version.desc = string(ver->desc, ver->desc_len);
 	drmFreeVersion(ver);
 
+	struct stat stats;
 	int r;
+
+	r = fstat(m_fd, &stats);
+	if (r < 0)
+		throw invalid_argument("Can't stat device (" + string(strerror(errno)) + ")");
+
+	m_minor = minor(stats.st_dev);
 
 	r = drmSetMaster(m_fd);
 	m_is_master = r == 0;

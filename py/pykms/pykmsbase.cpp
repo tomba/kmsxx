@@ -24,6 +24,7 @@ void init_pykmsbase(py::module &m)
 			.def(py::init<const string&>())
 			.def(py::init<const string&, uint32_t>())
 			.def_property_readonly("fd", &Card::fd)
+			.def_property_readonly("minor", &Card::dev_minor)
 			.def_property_readonly("get_first_connected_connector", &Card::get_first_connected_connector)
 
 			// XXX pybind11 can't handle vector<T*> where T is non-copyable, and complains:

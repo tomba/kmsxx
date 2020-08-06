@@ -56,9 +56,18 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 	}
 
 	/* create framebuffer object for the dumb-buffer */
-	uint32_t bo_handles[4] = { m_planes[0].handle, m_planes[1].handle };
-	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
-	uint32_t offsets[4] = {  m_planes[0].offset, m_planes[1].offset };
+	uint32_t bo_handles[4] = {
+		m_planes[0].handle, m_planes[1].handle,
+		m_planes[2].handle, m_planes[3].handle,
+	};
+	uint32_t pitches[4] = {
+		m_planes[0].stride, m_planes[1].stride,
+		m_planes[2].stride, m_planes[3].stride,
+	};
+	uint32_t offsets[4] = {
+		m_planes[0].offset, m_planes[1].offset,
+		m_planes[2].offset, m_planes[3].offset,
+	};
 	uint32_t id;
 	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
 			  bo_handles, pitches, offsets, &id, 0);

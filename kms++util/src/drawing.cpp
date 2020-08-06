@@ -115,13 +115,9 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	}
 }
 
-void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
+static void draw_yuv422_packed_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
+					  YUV yuv1, YUV yuv2)
 {
-	if ((x + 1) >= buf.width() || y >= buf.height())
-		throw runtime_error("attempt to draw outside the buffer");
-
-	ASSERT((x & 1) == 0);
-
 	uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
 
 	uint8_t y0 = yuv1.y;
@@ -156,6 +152,62 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 		p[1] = y0;
 		p[2] = u;
 		p[3] = y1;
+		break;
+
+	default:
+		throw std::invalid_argument("invalid pixelformat");
+	}
+}
+
+static void draw_yuv422_semiplanar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
+					      YUV yuv1, YUV yuv2)
+{
+	uint8_t *py = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
+	uint8_t *puv = (uint8_t*)(buf.map(1) + buf.stride(1) * y + x);
+
+	uint8_t y0 = yuv1.y;
+	uint8_t y1 = yuv2.y;
+	uint8_t u = (yuv1.u + yuv2.u) / 2;
+	uint8_t v = (yuv1.v + yuv2.v) / 2;
+
+	switch (buf.format()) {
+	case PixelFormat::NV16:
+		py[0] = y0;
+		py[1] = y1;
+		puv[0] = u;
+		puv[1] = v;
+		break;
+
+	case PixelFormat::NV61:
+		py[0] = y0;
+		py[1] = y1;
+		puv[0] = v;
+		puv[1] = u;
+		break;
+
+	default:
+		throw std::invalid_argument("invalid pixelformat");
+	}
+}
+
+void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
+{
+	if ((x + 1) >= buf.width() || y >= buf.height())
+		throw runtime_error("attempt to draw outside the buffer");
+
+	ASSERT((x & 1) == 0);
+
+	switch (buf.format()) {
+	case PixelFormat::UYVY:
+	case PixelFormat::YUYV:
+	case PixelFormat::YVYU:
+	case PixelFormat::VYUY:
+		draw_yuv422_packed_macropixel(buf, x, y, yuv1, yuv2);
+		break;
+
+	case PixelFormat::NV16:
+	case PixelFormat::NV61:
+		draw_yuv422_semiplanar_macropixel(buf, x, y, yuv1, yuv2);
 		break;
 
 	default:
@@ -235,6 +287,8 @@ void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 	case PixelFormat::YUYV:
 	case PixelFormat::YVYU:
 	case PixelFormat::VYUY:
+	case PixelFormat::NV16:
+	case PixelFormat::NV61:
 		for (j = 0; j < h; j++) {
 			for (i = 0; i < w; i += 2) {
 				draw_yuv422_macropixel(fb, x + i, y + j, yuvcolor, yuvcolor);
@@ -311,6 +365,8 @@ static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, R
 	case PixelFormat::YUYV:
 	case PixelFormat::YVYU:
 	case PixelFormat::VYUY:
+	case PixelFormat::NV16:
+	case PixelFormat::NV61:
 		for (y = 0; y < 8; y++) {
 			for (x = 0; x < 8; x += 2) {
 				bool b0 = get_char_pixel(c, x, y);

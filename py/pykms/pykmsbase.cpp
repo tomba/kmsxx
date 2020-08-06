@@ -178,6 +178,8 @@ void init_pykmsbase(py::module &m)
 
 			.value("NV12", PixelFormat::NV12)
 			.value("NV21", PixelFormat::NV21)
+			.value("NV16", PixelFormat::NV16)
+			.value("NV61", PixelFormat::NV61)
 
 			.value("UYVY", PixelFormat::UYVY)
 			.value("YUYV", PixelFormat::YUYV)

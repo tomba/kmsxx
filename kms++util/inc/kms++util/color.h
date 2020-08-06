@@ -34,6 +34,7 @@ struct RGB
 	uint32_t rgba1010102() const;
 	uint32_t bgra1010102() const;
 
+	uint8_t rgb332() const;
 	uint16_t rgb565() const;
 	uint16_t bgr565() const;
 	uint16_t argb4444() const;

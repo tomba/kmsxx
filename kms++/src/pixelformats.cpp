@@ -24,9 +24,15 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 	{ PixelFormat::YVU422, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 2, 1 }, { 8, 2, 1 } }, } },
 	{ PixelFormat::YUV444, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 1, 1 }, { 8, 1, 1 } }, } },
 	{ PixelFormat::YVU444, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 1, 1 }, { 8, 1, 1 } }, } },
+	/* RGB8 */
+	{ PixelFormat::RGB332, { PixelColorType::RGB, 1, { { 8, 1, 1 } }, } },
 	/* RGB16 */
 	{ PixelFormat::RGB565, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
 	{ PixelFormat::BGR565, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::XRGB4444, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::XRGB1555, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::ARGB4444, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
+	{ PixelFormat::ARGB1555, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
 	/* RGB24 */
 	{ PixelFormat::RGB888, { PixelColorType::RGB, 1, { { 24, 1, 1 } }, } },
 	{ PixelFormat::BGR888, { PixelColorType::RGB, 1, { { 24, 1, 1 } }, } },
@@ -50,9 +56,6 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 	{ PixelFormat::ABGR2101010, { PixelColorType::RGB, 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::RGBA1010102, { PixelColorType::RGB, 1, { { 32, 1, 1 } }, } },
 	{ PixelFormat::BGRA1010102, { PixelColorType::RGB, 1, { { 32, 1, 1 } }, } },
-
-	{ PixelFormat::ARGB4444, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
-	{ PixelFormat::ARGB1555, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
 };
 
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format)

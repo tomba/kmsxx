@@ -86,6 +86,12 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		p[2] = color.b;
 		break;
 	}
+	case PixelFormat::RGB332:
+	{
+		uint8_t *p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
+		*p = color.rgb332();
+		break;
+	}
 	case PixelFormat::RGB565:
 	{
 		uint16_t *p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
@@ -98,12 +104,14 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		*p = color.bgr565();
 		break;
 	}
+	case PixelFormat::XRGB4444:
 	case PixelFormat::ARGB4444:
 	{
 		uint16_t *p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.argb4444();
 		break;
 	}
+	case PixelFormat::XRGB1555:
 	case PixelFormat::ARGB1555:
 	{
 		uint16_t *p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
@@ -397,8 +405,11 @@ void draw_rect(IFramebuffer &fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 	case PixelFormat::BGR888:
 	case PixelFormat::RGB565:
 	case PixelFormat::BGR565:
+	case PixelFormat::XRGB4444:
+	case PixelFormat::XRGB1555:
 	case PixelFormat::ARGB4444:
 	case PixelFormat::ARGB1555:
+	case PixelFormat::RGB332:
 		for (j = 0; j < h; j++) {
 			for (i = 0; i < w; i++) {
 				draw_rgb_pixel(fb, x + i, y + j, color);
@@ -486,8 +497,11 @@ static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, R
 	case PixelFormat::BGR888:
 	case PixelFormat::RGB565:
 	case PixelFormat::BGR565:
+	case PixelFormat::XRGB4444:
+	case PixelFormat::XRGB1555:
 	case PixelFormat::ARGB4444:
 	case PixelFormat::ARGB1555:
+	case PixelFormat::RGB332:
 		for (y = 0; y < 8; y++) {
 			for (x = 0; x < 8; x++) {
 				bool b = get_char_pixel(c, x, y);

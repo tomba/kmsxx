@@ -79,6 +79,11 @@ uint32_t RGB::bgra1010102() const
 	return (b << 24) | (g << 14) | (r << 4) | (a >> 6);
 }
 
+uint8_t RGB::rgb332() const
+{
+	return ((r >> 5) << 5) | ((g >> 5) << 2) | ((b >> 6) << 0);
+}
+
 uint16_t RGB::rgb565() const
 {
 	return ((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3) << 0);

@@ -42,6 +42,14 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
 		creq.width = width;
 		creq.height = height / pi.ysub;
+		/*
+		 * For fully planar YUV buffers, the chroma planes don't combine
+		 * U and V components, their width must thus be divided by the
+		 * horizontal subsampling factor.
+		 */
+		if (format_info.type == PixelColorType::YUV &&
+		    format_info.num_planes == 3)
+			creq.width /= pi.xsub;
 		creq.bpp = pi.bitspp;
 		r = drmIoctl(card.fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)

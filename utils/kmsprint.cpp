@@ -372,7 +372,7 @@ static void print_as_list(Card& card)
 
 	for (Crtc* crtc : card.get_crtcs()) {
 		obs.push_back(crtc);
-		if (crtc->buffer_id() && !card.has_has_universal_planes()) {
+		if (crtc->buffer_id() && !card.has_universal_planes()) {
 			Framebuffer* fb = new Framebuffer(card, crtc->buffer_id());
 			fbs.push_back(fb);
 		}
@@ -423,7 +423,7 @@ static void print_as_tree(Card& card)
 				if (s_opts.print_props)
 					e3.lines = format_props(crtc);
 
-				if (crtc->buffer_id() && !card.has_has_universal_planes()) {
+				if (crtc->buffer_id() && !card.has_universal_planes()) {
 					Framebuffer fb(card, crtc->buffer_id());
 					Entry& e5 = add_entry(e3.children);
 

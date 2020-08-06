@@ -51,7 +51,7 @@ bool Plane::supports_format(PixelFormat fmt) const
 
 PlaneType Plane::plane_type() const
 {
-	if (card().has_has_universal_planes()) {
+	if (card().has_universal_planes()) {
 		switch (get_prop_value("type")) {
 		case DRM_PLANE_TYPE_OVERLAY:
 			return PlaneType::Overlay;

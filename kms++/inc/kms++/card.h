@@ -50,7 +50,7 @@ public:
 
 	bool is_master() const { return m_is_master; }
 	bool has_atomic() const { return m_has_atomic; }
-	bool has_has_universal_planes() const { return m_has_universal_planes; }
+	bool has_universal_planes() const { return m_has_universal_planes; }
 	bool has_dumb_buffers() const { return m_has_dumb; }
 	bool has_kms() const;
 

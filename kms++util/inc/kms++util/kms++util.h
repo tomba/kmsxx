@@ -18,6 +18,7 @@ namespace kms
 class IFramebuffer;
 
 void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color);
+void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv);
 void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2);
 void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 				   YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4);

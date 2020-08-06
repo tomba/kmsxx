@@ -17,6 +17,13 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 	{ PixelFormat::NV21, { PixelColorType::YUV, 2, { { 8, 1, 1, }, { 8, 2, 2 } }, } },
 	{ PixelFormat::NV16, { PixelColorType::YUV, 2, { { 8, 1, 1, }, { 8, 2, 1 } }, } },
 	{ PixelFormat::NV61, { PixelColorType::YUV, 2, { { 8, 1, 1, }, { 8, 2, 1 } }, } },
+	/* YUV planar */
+	{ PixelFormat::YUV420, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 2, 2 }, { 8, 2, 2 } }, } },
+	{ PixelFormat::YVU420, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 2, 2 }, { 8, 2, 2 } }, } },
+	{ PixelFormat::YUV422, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 2, 1 }, { 8, 2, 1 } }, } },
+	{ PixelFormat::YVU422, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 2, 1 }, { 8, 2, 1 } }, } },
+	{ PixelFormat::YUV444, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 1, 1 }, { 8, 1, 1 } }, } },
+	{ PixelFormat::YVU444, { PixelColorType::YUV, 3, { { 8, 1, 1, }, { 8, 1, 1 }, { 8, 1, 1 } }, } },
 	/* RGB16 */
 	{ PixelFormat::RGB565, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },
 	{ PixelFormat::BGR565, { PixelColorType::RGB, 1, { { 16, 1, 1 } }, } },

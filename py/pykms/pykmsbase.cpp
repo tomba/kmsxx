@@ -186,14 +186,32 @@ void init_pykmsbase(py::module &m)
 
 			.value("XRGB8888", PixelFormat::XRGB8888)
 			.value("XBGR8888", PixelFormat::XBGR8888)
+			.value("RGBX8888", PixelFormat::RGBX8888)
+			.value("BGRX8888", PixelFormat::BGRX8888)
+
 			.value("ARGB8888", PixelFormat::ARGB8888)
 			.value("ABGR8888", PixelFormat::ABGR8888)
+			.value("RGBA8888", PixelFormat::RGBA8888)
+			.value("BGRA8888", PixelFormat::BGRA8888)
 
 			.value("RGB888", PixelFormat::RGB888)
 			.value("BGR888", PixelFormat::BGR888)
 
 			.value("RGB565", PixelFormat::RGB565)
 			.value("BGR565", PixelFormat::BGR565)
+
+			.value("ARGB4444", PixelFormat::ARGB4444)
+			.value("ARGB1555", PixelFormat::ARGB1555)
+
+			.value("XRGB2101010", PixelFormat::XRGB2101010)
+			.value("XBGR2101010", PixelFormat::XBGR2101010)
+			.value("RGBX1010102", PixelFormat::RGBX1010102)
+			.value("BGRX1010102", PixelFormat::BGRX1010102)
+
+			.value("ARGB2101010", PixelFormat::ARGB2101010)
+			.value("ABGR2101010", PixelFormat::ABGR2101010)
+			.value("RGBA1010102", PixelFormat::RGBA1010102)
+			.value("BGRA1010102", PixelFormat::BGRA1010102)
 			;
 
 	py::enum_<SyncPolarity>(m, "SyncPolarity")

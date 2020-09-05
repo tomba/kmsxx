@@ -1,6 +1,6 @@
-# Ubuntu 18.04 Trusty support
-sudo: required
-dist: bionic
+# Ubuntu 20.04
+dist: focal
+os: linux
 
 # Only build test master & travis
 branches:
@@ -14,35 +14,19 @@ language: cpp
 addons:
   apt:
     packages: &packages
+      - libdrm-dev
       - libegl1-mesa-dev
       - libgles2-mesa-dev
       - libwayland-dev
       - libx11-xcb-dev
       - libx11-dev
       - libgbm-dev
+      - libevdev-dev
 
 # Need MYCC and MYCXX as travis overwrites CC and CXX
 
-matrix:
+jobs:
   include:
-    - compiler: gcc
-      addons:
-        apt:
-          packages: [*packages, 'g++-4.8']
-      env: MYCC=gcc-4.8 MYCXX=g++-4.8
-
-    - compiler: gcc
-      addons:
-        apt:
-          packages: [*packages, 'g++-5']
-      env: MYCC=gcc-5 MYCXX=g++-5
-
-    - compiler: gcc
-      addons:
-        apt:
-          packages: [*packages, 'g++-6']
-      env: MYCC=gcc-6 MYCXX=g++-6
-
     - compiler: gcc
       addons:
         apt:
@@ -55,23 +39,17 @@ matrix:
           packages: [*packages, 'g++-8']
       env: MYCC=gcc-8 MYCXX=g++-8
 
-    - compiler: clang
+    - compiler: gcc
       addons:
         apt:
-          packages: [*packages, 'clang-3.9']
-      env: MYCC=clang-3.9 MYCXX=clang++-3.9
+          packages: [*packages, 'g++-9']
+      env: MYCC=gcc-9 MYCXX=g++-9
 
-    - compiler: clang
+    - compiler: gcc
       addons:
         apt:
-          packages: [*packages, 'clang-4.0']
-      env: MYCC=clang-4.0 MYCXX=clang++-4.0
-
-    - compiler: clang
-      addons:
-        apt:
-          packages: [*packages, 'clang-5.0']
-      env: MYCC=clang-5.0 MYCXX=clang++-5.0
+          packages: [*packages, 'g++-10']
+      env: MYCC=gcc-10 MYCXX=g++-10
 
     - compiler: clang
       addons:
@@ -91,6 +69,17 @@ matrix:
           packages: [*packages, 'clang-8']
       env: MYCC=clang-8 MYCXX=clang++-8
 
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-9']
+      env: MYCC=clang-9 MYCXX=clang++-9
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-10']
+      env: MYCC=clang-10 MYCXX=clang++-10
 
 # Build steps
 script:

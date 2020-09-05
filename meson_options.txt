@@ -1,0 +1,3 @@
+option('kmscube', type : 'boolean', value : false)
+option('pykms', type : 'feature', value : 'auto')
+option('omap', type : 'feature', value : 'auto')

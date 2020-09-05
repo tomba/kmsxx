@@ -2,7 +2,7 @@
 
 # kms++ - C++ library for kernel mode setting
 
-kms++ is a C++11 library for kernel mode setting.
+kms++ is a C++17 library for kernel mode setting.
 
 Also included are some simple utilities for KMS and python bindings for kms++.
 

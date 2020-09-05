@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <fstream>
 #include <sys/ioctl.h>
-#include <xf86drm.h>
 #include <glob.h>
 
 #include <kms++/kms++.h>

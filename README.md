@@ -79,7 +79,7 @@ BUILD_SHARED_LIBS        | ON/OFF          | OFF             |
 KMSXX_ENABLE_PYTHON      | ON/OFF          | ON              |
 KMSXX_ENABLE_KMSCUBE     | ON/OFF          | OFF             |
 KMSXX_ENABLE_LIBDRMOMAP  | ON/OFF          | OFF             |
-KMSXX_PYTHON_VERSION     | python3/python2 | python3;python2 | Name of the python pkgconfig file
+KMSXX_PYTHON_VERSION     | python3         | python3         | Name of the python pkgconfig file
 
 ## Env variables
 

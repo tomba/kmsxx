@@ -22,6 +22,8 @@ addons:
       - libx11-dev
       - libgbm-dev
       - libevdev-dev
+      - meson
+      - ninja-build
 
 # Need MYCC and MYCXX as travis overwrites CC and CXX
 
@@ -83,9 +85,8 @@ jobs:
 
 # Build steps
 script:
-  - mkdir build
-  - cd build
-  - CC=$MYCC CXX=$MYCXX cmake -DTREAT_WARNINGS_AS_ERRORS=1 -DKMSXX_ENABLE_KMSCUBE=1 -DKMSXX_ENABLE_PYTHON=1 .. && make VERBOSE=1
+  - CC=$MYCC CXX=$MYCXX meson -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+  - ninja -v -C build
 
 notifications:
   email:

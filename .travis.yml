@@ -54,31 +54,31 @@ jobs:
     - compiler: clang
       addons:
         apt:
-          packages: [*packages, 'clang-6.0']
+          packages: [*packages, 'clang-6.0', 'llvm-6.0-dev']
       env: MYCC=clang-6.0 MYCXX=clang++-6.0
 
     - compiler: clang
       addons:
         apt:
-          packages: [*packages, 'clang-7']
+          packages: [*packages, 'clang-7', 'llvm-7-dev']
       env: MYCC=clang-7 MYCXX=clang++-7
 
     - compiler: clang
       addons:
         apt:
-          packages: [*packages, 'clang-8']
+          packages: [*packages, 'clang-8', 'llvm-8-dev']
       env: MYCC=clang-8 MYCXX=clang++-8
 
     - compiler: clang
       addons:
         apt:
-          packages: [*packages, 'clang-9']
+          packages: [*packages, 'clang-9', 'llvm-9-dev']
       env: MYCC=clang-9 MYCXX=clang++-9
 
     - compiler: clang
       addons:
         apt:
-          packages: [*packages, 'clang-10']
+          packages: [*packages, 'clang-10', 'llvm-10-dev']
       env: MYCC=clang-10 MYCXX=clang++-10
 
 # Build steps

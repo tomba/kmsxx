@@ -30,56 +30,51 @@ git submodule update --init
 And to compile:
 
 ```
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make -j4
+meson build
+ninja -C build
 ```
 
 ## Cross compiling instructions:
 
-Directions for cross compiling depend on your environment.
-
-These are for mine with buildroot:
-
 ```
-$ mkdir build
-$ cd build
-$ cmake -DCMAKE_TOOLCHAIN_FILE=<buildrootpath>/output/host/usr/share/buildroot/toolchainfile.cmake ..
-$ make -j4
+meson build --cross-file=<path-to-meson-cross-file>
+ninja -C build
 ```
 
-Your environment may provide similar toolchainfile. If not, you can create a toolchainfile of your own, something along these lines:
+Here is my cross file for arm32 (where ${BROOT} is path to my buildroot output dir):
 
 ```
-SET(CMAKE_SYSTEM_NAME Linux)
+[binaries]
+c = ['ccache', '${BROOT}/host/bin/arm-buildroot-linux-gnueabihf-gcc']
+cpp = ['ccache', '${BROOT}/host/bin/arm-buildroot-linux-gnueabihf-g++']
+ar = '${BROOT}/host/bin/arm-buildroot-linux-gnueabihf-ar'
+strip = '${BROOT}/host/bin/arm-buildroot-linux-gnueabihf-strip'
+pkgconfig = '${BROOT}/host/bin/pkg-config'
 
-SET(BROOT "<buildroot>/output/")
-
-# specify the cross compiler
-SET(CMAKE_C_COMPILER   ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-gcc)
-SET(CMAKE_CXX_COMPILER ${BROOT}/host/usr/bin/arm-buildroot-linux-gnueabihf-g++)
-
-# where is the target environment
-SET(CMAKE_FIND_ROOT_PATH ${BROOT}/target ${BROOT}/host)
-
-SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+[host_machine]
+system = 'linux'
+cpu_family = 'arm'
+cpu = 'arm'
+endian = 'little'
 ```
 
 ## Build options
 
-You can use the following cmake flags to control the build. Use `-DFLAG=VALUE` to set them.
+You can use meson options to configure the build. E.g.
 
-Option name              | Values          | Default         | Notes
------------------------- | -------------   | --------------- | --------
-CMAKE_BUILD_TYPE         | Release/Debug   | Release         |
-BUILD_SHARED_LIBS        | ON/OFF          | OFF             |
-KMSXX_ENABLE_PYTHON      | ON/OFF          | ON              |
-KMSXX_ENABLE_KMSCUBE     | ON/OFF          | OFF             |
-KMSXX_ENABLE_LIBDRMOMAP  | ON/OFF          | OFF             |
-KMSXX_PYTHON_VERSION     | python3         | python3         | Name of the python pkgconfig file
+```
+meson build -Dbuildtype=debug -Dkmscube=true
+```
+
+Use `meson configure build` to see all the configuration options and their current values.
+
+kms++ specific build options are:
+
+Option name      | Values                  | Default         | Notes
+---------------- | -------------           | --------------- | --------
+pykms            | true, false             | true            | Python bindings
+kmscube          | true, false             | false           | GLES kmscube
+omap             | enabled, disabled, auto | auto            | libdrm-omap support
 
 ## Env variables
 
@@ -98,5 +93,4 @@ You can run the python code directly from the build dir by defining PYTHONPATH e
 
 ```
 PYTHONPATH=build/py py/tests/hpd.py
-
 ```

@@ -31,7 +31,7 @@ link_directories(
 
 add_executable (kmscube cube.cpp cube.h cube-egl.cpp cube-egl.h cube-gles2.cpp cube-gles2.h
     cube-null.cpp cube-gbm.cpp cube-x11.cpp cube-wl.cpp
-    esTransform.c esTransform.h)
+    esTransform.cpp esTransform.h)
 target_link_libraries(kmscube kms++ kms++util
     ${LIBDRM_LIBRARIES}
     ${GLESv2_LIBRARIES}

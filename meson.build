@@ -23,6 +23,14 @@ endif
 
 add_project_arguments(cpp_arguments, language : 'cpp')
 
+link_arguments = []
+
+if get_option('static-libc')
+    link_arguments += ['-static-libgcc', '-static-libstdc++']
+endif
+
+add_global_link_arguments(link_arguments, language : 'cpp')
+
 libfmt_includes = include_directories('ext/fmt/include')
 libfmt_dep = declare_dependency(include_directories : libfmt_includes,
                                 compile_args : '-DFMT_HEADER_ONLY')

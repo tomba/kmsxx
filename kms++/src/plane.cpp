@@ -83,7 +83,7 @@ vector<Crtc*> Plane::get_possible_crtcs() const
 		auto iter = find_if(crtcs.begin(), crtcs.end(), [idx](Crtc* crtc) { return crtc->idx() == idx; });
 
 		if (iter == crtcs.end())
-			throw runtime_error("get_possible_crtcs: crtc missing");
+			continue;
 
 		v.push_back(*iter);
 	}

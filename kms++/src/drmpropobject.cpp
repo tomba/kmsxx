@@ -54,7 +54,7 @@ Property* DrmPropObject::get_prop(const string& name) const
 			return prop;
 	}
 
-	throw invalid_argument(string("property ") + name + " not found");
+	return nullptr;
 }
 
 uint64_t DrmPropObject::get_prop_value(uint32_t id) const

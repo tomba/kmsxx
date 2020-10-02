@@ -15,6 +15,8 @@ class DrmPropObject : public DrmObject
 public:
 	void refresh_props();
 
+	bool has_prop(const std::string& name) const { return !!get_prop(name); }
+
 	Property* get_prop(const std::string& name) const;
 
 	uint64_t get_prop_value(uint32_t id) const;

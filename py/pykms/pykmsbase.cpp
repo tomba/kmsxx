@@ -65,6 +65,7 @@ void init_pykmsbase(py::module &m)
 			.def("set_prop_value",(int (DrmPropObject::*)(const string&, uint64_t)) &DrmPropObject::set_prop_value)
 			.def("get_prop_value_as_blob", &DrmPropObject::get_prop_value_as_blob)
 			.def("get_prop", &DrmPropObject::get_prop)
+			.def("has_prop", &DrmPropObject::has_prop)
 			;
 
 	py::class_<Connector, DrmPropObject, unique_ptr<Connector, py::nodelete>>(m, "Connector")
@@ -274,6 +275,7 @@ void init_pykmsbase(py::module &m)
 			.def(py::init<Card&>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def("add", (void (AtomicReq::*)(DrmPropObject*, const string&, uint64_t)) &AtomicReq::add)
+			.def("add", (void (AtomicReq::*)(DrmPropObject*, Property*, uint64_t)) &AtomicReq::add)
 			.def("add", (void (AtomicReq::*)(DrmPropObject*, const map<string, uint64_t>&)) &AtomicReq::add)
 			.def("test", &AtomicReq::test, py::arg("allow_modeset") = false)
 			.def("commit",

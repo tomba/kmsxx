@@ -147,6 +147,12 @@ void init_pykmsbase(py::module &m)
 	py::class_<Framebuffer>(m, "Framebuffer")
 			.def_property_readonly("width", &Framebuffer::width)
 			.def_property_readonly("height", &Framebuffer::height)
+			.def_property_readonly("format", &Framebuffer::format)
+			.def_property_readonly("num_planes", &Framebuffer::num_planes)
+			.def("stride", &Framebuffer::stride)
+			.def("size", &Framebuffer::size)
+			.def("offset", &Framebuffer::offset)
+			.def("fd", &Framebuffer::prime_fd)
 
 			// XXX pybind11 doesn't support a base object (DrmObject) with custom holder-type,
 			// and a subclass with standard holder-type.
@@ -162,11 +168,6 @@ void init_pykmsbase(py::module &m)
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
 			.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
 			     py::keep_alive<1, 2>())	// Keep Card alive until this is destructed
-			.def_property_readonly("format", &DumbFramebuffer::format)
-			.def_property_readonly("num_planes", &DumbFramebuffer::num_planes)
-			.def("fd", &DumbFramebuffer::prime_fd)
-			.def("stride", &DumbFramebuffer::stride)
-			.def("offset", &DumbFramebuffer::offset)
 			;
 
 	py::class_<DmabufFramebuffer, Framebuffer>(m, "DmabufFramebuffer")

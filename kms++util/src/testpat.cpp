@@ -15,7 +15,6 @@ using namespace std;
 
 namespace kms
 {
-
 static RGB get_test_pattern_pixel(IFramebuffer& fb, unsigned x, unsigned y)
 {
 	const unsigned w = fb.width();
@@ -198,7 +197,7 @@ static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 #endif
 }
 
-void draw_test_pattern(IFramebuffer &fb, YUVType yuvt)
+void draw_test_pattern(IFramebuffer& fb, YUVType yuvt)
 {
 #ifdef DRAW_PERF_PRINT
 	Stopwatch sw;
@@ -213,4 +212,4 @@ void draw_test_pattern(IFramebuffer &fb, YUVType yuvt)
 #endif
 }
 
-}
+} // namespace kms

@@ -6,13 +6,12 @@
 
 namespace kms
 {
-constexpr uint32_t MakeFourCC(const char *fourcc)
+constexpr uint32_t MakeFourCC(const char* fourcc)
 {
 	return fourcc[0] | (fourcc[1] << 8) | (fourcc[2] << 16) | (fourcc[3] << 24);
 }
 
-enum class PixelFormat : uint32_t
-{
+enum class PixelFormat : uint32_t {
 	Undefined = 0,
 
 	NV12 = MakeFourCC("NV12"),
@@ -82,21 +81,18 @@ static inline std::string PixelFormatToFourCC(PixelFormat f)
 	return std::string(buf);
 }
 
-enum class PixelColorType
-{
+enum class PixelColorType {
 	RGB,
 	YUV,
 };
 
-struct PixelFormatPlaneInfo
-{
+struct PixelFormatPlaneInfo {
 	uint8_t bitspp;
 	uint8_t xsub;
 	uint8_t ysub;
 };
 
-struct PixelFormatInfo
-{
+struct PixelFormatInfo {
 	PixelColorType type;
 	uint8_t num_planes;
 	struct PixelFormatPlaneInfo planes[4];
@@ -104,4 +100,4 @@ struct PixelFormatInfo
 
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format);
 
-}
+} // namespace kms

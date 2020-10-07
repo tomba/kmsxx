@@ -5,7 +5,6 @@ using namespace std;
 
 namespace kms
 {
-
 ExtCPUFramebuffer::ExtCPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format,
 				     uint8_t* buffer, uint32_t size, uint32_t pitch, uint32_t offset)
 	: m_width(width), m_height(height), m_format(format)
@@ -46,4 +45,4 @@ ExtCPUFramebuffer::~ExtCPUFramebuffer()
 {
 }
 
-}
+} // namespace kms

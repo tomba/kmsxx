@@ -8,4 +8,4 @@ struct Pipeline {
 	Crtc* crtc;
 	Connector* connector;
 };
-}
+} // namespace kms

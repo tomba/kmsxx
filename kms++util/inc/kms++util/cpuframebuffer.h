@@ -4,8 +4,8 @@
 
 namespace kms
 {
-
-class CPUFramebuffer : public IFramebuffer {
+class CPUFramebuffer : public IFramebuffer
+{
 public:
 	CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format);
 
@@ -30,7 +30,7 @@ private:
 		uint32_t size;
 		uint32_t stride;
 		uint32_t offset;
-		uint8_t *map;
+		uint8_t* map;
 	};
 
 	uint32_t m_width;
@@ -41,4 +41,4 @@ private:
 	struct FramebufferPlane m_planes[4];
 };
 
-}
+} // namespace kms

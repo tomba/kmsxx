@@ -18,9 +18,9 @@ void main_null()
 
 	int framenum = 0;
 
-	struct pollfd fds[1] = { };
+	struct pollfd fds[1] = {};
 	fds[0].fd = 0;
-	fds[0].events =  POLLIN;
+	fds[0].events = POLLIN;
 
 	while (true) {
 		int r = poll(fds, ARRAY_SIZE(fds), 0);

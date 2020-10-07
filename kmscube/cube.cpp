@@ -34,24 +34,21 @@ bool s_verbose;
 bool s_fullscreen;
 unsigned s_num_frames;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	OptionSet optionset = {
 		Option("v|verbose",
-		[&]()
-		{
-			s_verbose = true;
-		}),
+		       [&]() {
+			       s_verbose = true;
+		       }),
 		Option("f|fullscreen",
-		[&]()
-		{
-			s_fullscreen = true;
-		}),
+		       [&]() {
+			       s_fullscreen = true;
+		       }),
 		Option("n|numframes=",
-		[&](string s)
-		{
-			s_num_frames = stoi(s);
-		}),
+		       [&](string s) {
+			       s_num_frames = stoi(s);
+		       }),
 	};
 
 	optionset.parse(argc, argv);

@@ -5,7 +5,6 @@
 
 namespace kms
 {
-
 class Blob : public DrmObject
 {
 public:
@@ -19,4 +18,4 @@ private:
 	bool m_created;
 };
 
-}
+} // namespace kms

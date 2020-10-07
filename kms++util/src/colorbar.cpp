@@ -39,7 +39,7 @@ static void drm_draw_color_bar_rgb888(IFramebuffer& buf, int old_xpos, int xpos,
 {
 	for (unsigned y = 0; y < buf.height(); ++y) {
 		RGB bcol = colors32[y * ARRAY_SIZE(colors32) / buf.height()];
-		uint32_t *line = (uint32_t*)(buf.map(0) + buf.stride(0) * y);
+		uint32_t* line = (uint32_t*)(buf.map(0) + buf.stride(0) * y);
 
 		if (old_xpos >= 0) {
 			for (int x = old_xpos; x < old_xpos + width; ++x)
@@ -57,7 +57,7 @@ static void drm_draw_color_bar_rgb565(IFramebuffer& buf, int old_xpos, int xpos,
 
 	for (unsigned y = 0; y < buf.height(); ++y) {
 		uint16_t bcol = colors16[y * ARRAY_SIZE(colors16) / buf.height()];
-		uint16_t *line = (uint16_t*)(buf.map(0) + buf.stride(0) * y);
+		uint16_t* line = (uint16_t*)(buf.map(0) + buf.stride(0) * y);
 
 		if (old_xpos >= 0) {
 			for (int x = old_xpos; x < old_xpos + width; ++x)
@@ -85,7 +85,7 @@ static void drm_draw_color_bar_semiplanar_yuv(IFramebuffer& buf, int old_xpos, i
 
 	for (unsigned y = 0; y < buf.height(); ++y) {
 		unsigned int bcol = colors[y * ARRAY_SIZE(colors) / buf.height()];
-		uint8_t *line = (uint8_t*)(buf.map(0) + buf.stride(0) * y);
+		uint8_t* line = (uint8_t*)(buf.map(0) + buf.stride(0) * y);
 
 		if (old_xpos >= 0) {
 			for (int x = old_xpos; x < old_xpos + width; ++x)
@@ -129,4 +129,4 @@ void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width)
 		ASSERT(false);
 	}
 }
-}
+} // namespace kms

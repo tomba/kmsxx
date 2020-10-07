@@ -52,7 +52,7 @@ extern "C" {
 
 typedef struct
 {
-	GLfloat   m[4][4];
+	GLfloat m[4][4];
 } ESMatrix;
 
 //
@@ -60,14 +60,14 @@ typedef struct
 /// \param result Specifies the input matrix.  Scaled matrix is returned in result.
 /// \param sx, sy, sz Scale factors along the x, y and z axes respectively
 //
-void esScale(ESMatrix *result, GLfloat sx, GLfloat sy, GLfloat sz);
+void esScale(ESMatrix* result, GLfloat sx, GLfloat sy, GLfloat sz);
 
 //
 /// \brief multiply matrix specified by result with a translation matrix and return new matrix in result
 /// \param result Specifies the input matrix.  Translated matrix is returned in result.
 /// \param tx, ty, tz Scale factors along the x, y and z axes respectively
 //
-void esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz);
+void esTranslate(ESMatrix* result, GLfloat tx, GLfloat ty, GLfloat tz);
 
 //
 /// \brief multiply matrix specified by result with a rotation matrix and return new matrix in result
@@ -75,7 +75,7 @@ void esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz);
 /// \param angle Specifies the angle of rotation, in degrees.
 /// \param x, y, z Specify the x, y and z coordinates of a vector, respectively
 //
-void esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
+void esRotate(ESMatrix* result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 
 //
 // \brief multiply matrix specified by result with a perspective matrix and return new matrix in result
@@ -84,7 +84,7 @@ void esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z);
 /// \param bottom, top Coordinates for the bottom and top horizontal clipping planes
 /// \param nearZ, farZ Distances to the near and far depth clipping planes.  Both distances must be positive.
 //
-void esFrustum(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ);
+void esFrustum(ESMatrix* result, float left, float right, float bottom, float top, float nearZ, float farZ);
 
 //
 /// \brief multiply matrix specified by result with a perspective matrix and return new matrix in result
@@ -94,7 +94,7 @@ void esFrustum(ESMatrix *result, float left, float right, float bottom, float to
 /// \param nearZ Near plane distance
 /// \param farZ Far plane distance
 //
-void esPerspective(ESMatrix *result, float fovy, float aspect, float nearZ, float farZ);
+void esPerspective(ESMatrix* result, float fovy, float aspect, float nearZ, float farZ);
 
 //
 /// \brief multiply matrix specified by result with a perspective matrix and return new matrix in result
@@ -103,20 +103,20 @@ void esPerspective(ESMatrix *result, float fovy, float aspect, float nearZ, floa
 /// \param bottom, top Coordinates for the bottom and top horizontal clipping planes
 /// \param nearZ, farZ Distances to the near and far depth clipping planes.  These values are negative if plane is behind the viewer
 //
-void esOrtho(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ);
+void esOrtho(ESMatrix* result, float left, float right, float bottom, float top, float nearZ, float farZ);
 
 //
 /// \brief perform the following operation - result matrix = srcA matrix * srcB matrix
 /// \param result Returns multiplied matrix
 /// \param srcA, srcB Input matrices to be multiplied
 //
-void esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB);
+void esMatrixMultiply(ESMatrix* result, ESMatrix* srcA, ESMatrix* srcB);
 
 //
 //// \brief return an indentity matrix
 //// \param result returns identity matrix
 //
-void esMatrixLoadIdentity(ESMatrix *result);
+void esMatrixLoadIdentity(ESMatrix* result);
 
 #ifdef __cplusplus
 }

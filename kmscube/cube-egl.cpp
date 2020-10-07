@@ -22,7 +22,7 @@ static void print_egl_config(EGLDisplay dpy, EGLConfig cfg)
 	       getconf(EGL_NATIVE_VISUAL_TYPE));
 }
 
-EglState::EglState(void *native_display)
+EglState::EglState(void* native_display)
 {
 	EGLBoolean b;
 	EGLint major, minor, n;
@@ -60,7 +60,6 @@ EglState::EglState(void *native_display)
 	b = eglBindAPI(EGL_OPENGL_ES_API);
 	FAIL_IF(!b, "failed to bind api EGL_OPENGL_ES_API");
 
-
 	if (s_verbose) {
 		EGLint numConfigs;
 		b = eglGetConfigs(m_display, nullptr, 0, &numConfigs);
@@ -96,7 +95,7 @@ EglState::~EglState()
 	eglTerminate(m_display);
 }
 
-EglSurface::EglSurface(const EglState &egl, void *native_window)
+EglSurface::EglSurface(const EglState& egl, void* native_window)
 	: egl(egl)
 {
 	esurface = eglCreateWindowSurface(egl.display(), egl.config(), (EGLNativeWindowType)native_window, NULL);

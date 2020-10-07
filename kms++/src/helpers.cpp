@@ -9,7 +9,7 @@ namespace kms
 {
 Videomode drm_mode_to_video_mode(const drmModeModeInfo& drmmode)
 {
-	Videomode mode = { };
+	Videomode mode = {};
 
 	auto& src = drmmode;
 	auto& dst = mode;
@@ -40,7 +40,7 @@ Videomode drm_mode_to_video_mode(const drmModeModeInfo& drmmode)
 
 drmModeModeInfo video_mode_to_drm_mode(const Videomode& mode)
 {
-	drmModeModeInfo drmmode = { };
+	drmModeModeInfo drmmode = {};
 
 	auto& src = mode;
 	auto& dst = drmmode;
@@ -69,4 +69,4 @@ drmModeModeInfo video_mode_to_drm_mode(const Videomode& mode)
 
 	return drmmode;
 }
-}
+} // namespace kms

@@ -46,8 +46,7 @@
 
 #define PI 3.1415926535897932384626433832795f
 
-void
-esScale(ESMatrix *result, GLfloat sx, GLfloat sy, GLfloat sz)
+void esScale(ESMatrix* result, GLfloat sx, GLfloat sy, GLfloat sz)
 {
 	result->m[0][0] *= sx;
 	result->m[0][1] *= sx;
@@ -65,8 +64,7 @@ esScale(ESMatrix *result, GLfloat sx, GLfloat sy, GLfloat sz)
 	result->m[2][3] *= sz;
 }
 
-void
-esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz)
+void esTranslate(ESMatrix* result, GLfloat tx, GLfloat ty, GLfloat tz)
 {
 	result->m[3][0] += (result->m[0][0] * tx + result->m[1][0] * ty + result->m[2][0] * tz);
 	result->m[3][1] += (result->m[0][1] * tx + result->m[1][1] * ty + result->m[2][1] * tz);
@@ -74,16 +72,14 @@ esTranslate(ESMatrix *result, GLfloat tx, GLfloat ty, GLfloat tz)
 	result->m[3][3] += (result->m[0][3] * tx + result->m[1][3] * ty + result->m[2][3] * tz);
 }
 
-void
-esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
+void esRotate(ESMatrix* result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 {
 	GLfloat sinAngle, cosAngle;
 	GLfloat mag = sqrtf(x * x + y * y + z * z);
 
-	sinAngle = sinf ( angle * PI / 180.0f );
-	cosAngle = cosf ( angle * PI / 180.0f );
-	if ( mag > 0.0f )
-	{
+	sinAngle = sinf(angle * PI / 180.0f);
+	cosAngle = cosf(angle * PI / 180.0f);
+	if (mag > 0.0f) {
 		GLfloat xx, yy, zz, xy, yz, zx, xs, ys, zs;
 		GLfloat oneMinusCos;
 		ESMatrix rotMat;
@@ -123,20 +119,19 @@ esRotate(ESMatrix *result, GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
 		rotMat.m[3][2] = 0.0F;
 		rotMat.m[3][3] = 1.0F;
 
-		esMatrixMultiply( result, &rotMat, result );
+		esMatrixMultiply(result, &rotMat, result);
 	}
 }
 
-void
-esFrustum(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ)
+void esFrustum(ESMatrix* result, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
-	float       deltaX = right - left;
-	float       deltaY = top - bottom;
-	float       deltaZ = farZ - nearZ;
-	ESMatrix    frust;
+	float deltaX = right - left;
+	float deltaY = top - bottom;
+	float deltaZ = farZ - nearZ;
+	ESMatrix frust;
 
-	if ( (nearZ <= 0.0f) || (farZ <= 0.0f) ||
-			(deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f) )
+	if ((nearZ <= 0.0f) || (farZ <= 0.0f) ||
+	    (deltaX <= 0.0f) || (deltaY <= 0.0f) || (deltaZ <= 0.0f))
 		return;
 
 	frust.m[0][0] = 2.0f * nearZ / deltaX;
@@ -156,27 +151,24 @@ esFrustum(ESMatrix *result, float left, float right, float bottom, float top, fl
 	esMatrixMultiply(result, &frust, result);
 }
 
-
-void
-esPerspective(ESMatrix *result, float fovy, float aspect, float nearZ, float farZ)
+void esPerspective(ESMatrix* result, float fovy, float aspect, float nearZ, float farZ)
 {
 	GLfloat frustumW, frustumH;
 
-	frustumH = tanf( fovy / 360.0f * PI ) * nearZ;
+	frustumH = tanf(fovy / 360.0f * PI) * nearZ;
 	frustumW = frustumH * aspect;
 
-	esFrustum( result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ );
+	esFrustum(result, -frustumW, frustumW, -frustumH, frustumH, nearZ, farZ);
 }
 
-void
-esOrtho(ESMatrix *result, float left, float right, float bottom, float top, float nearZ, float farZ)
+void esOrtho(ESMatrix* result, float left, float right, float bottom, float top, float nearZ, float farZ)
 {
-	float       deltaX = right - left;
-	float       deltaY = top - bottom;
-	float       deltaZ = farZ - nearZ;
-	ESMatrix    ortho;
+	float deltaX = right - left;
+	float deltaY = top - bottom;
+	float deltaZ = farZ - nearZ;
+	ESMatrix ortho;
 
-	if ( (deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f) )
+	if ((deltaX == 0.0f) || (deltaY == 0.0f) || (deltaZ == 0.0f))
 		return;
 
 	esMatrixLoadIdentity(&ortho);
@@ -190,41 +182,36 @@ esOrtho(ESMatrix *result, float left, float right, float bottom, float top, floa
 	esMatrixMultiply(result, &ortho, result);
 }
 
-
-void
-esMatrixMultiply(ESMatrix *result, ESMatrix *srcA, ESMatrix *srcB)
+void esMatrixMultiply(ESMatrix* result, ESMatrix* srcA, ESMatrix* srcB)
 {
-	ESMatrix    tmp;
-	int         i;
+	ESMatrix tmp;
+	int i;
 
-	for (i=0; i<4; i++)
-	{
-		tmp.m[i][0] =	(srcA->m[i][0] * srcB->m[0][0]) +
-				(srcA->m[i][1] * srcB->m[1][0]) +
-				(srcA->m[i][2] * srcB->m[2][0]) +
-				(srcA->m[i][3] * srcB->m[3][0]) ;
+	for (i = 0; i < 4; i++) {
+		tmp.m[i][0] = (srcA->m[i][0] * srcB->m[0][0]) +
+			      (srcA->m[i][1] * srcB->m[1][0]) +
+			      (srcA->m[i][2] * srcB->m[2][0]) +
+			      (srcA->m[i][3] * srcB->m[3][0]);
 
-		tmp.m[i][1] =	(srcA->m[i][0] * srcB->m[0][1]) +
-				(srcA->m[i][1] * srcB->m[1][1]) +
-				(srcA->m[i][2] * srcB->m[2][1]) +
-				(srcA->m[i][3] * srcB->m[3][1]) ;
+		tmp.m[i][1] = (srcA->m[i][0] * srcB->m[0][1]) +
+			      (srcA->m[i][1] * srcB->m[1][1]) +
+			      (srcA->m[i][2] * srcB->m[2][1]) +
+			      (srcA->m[i][3] * srcB->m[3][1]);
 
-		tmp.m[i][2] =	(srcA->m[i][0] * srcB->m[0][2]) +
-				(srcA->m[i][1] * srcB->m[1][2]) +
-				(srcA->m[i][2] * srcB->m[2][2]) +
-				(srcA->m[i][3] * srcB->m[3][2]) ;
+		tmp.m[i][2] = (srcA->m[i][0] * srcB->m[0][2]) +
+			      (srcA->m[i][1] * srcB->m[1][2]) +
+			      (srcA->m[i][2] * srcB->m[2][2]) +
+			      (srcA->m[i][3] * srcB->m[3][2]);
 
-		tmp.m[i][3] =	(srcA->m[i][0] * srcB->m[0][3]) +
-				(srcA->m[i][1] * srcB->m[1][3]) +
-				(srcA->m[i][2] * srcB->m[2][3]) +
-				(srcA->m[i][3] * srcB->m[3][3]) ;
+		tmp.m[i][3] = (srcA->m[i][0] * srcB->m[0][3]) +
+			      (srcA->m[i][1] * srcB->m[1][3]) +
+			      (srcA->m[i][2] * srcB->m[2][3]) +
+			      (srcA->m[i][3] * srcB->m[3][3]);
 	}
 	memcpy(result, &tmp, sizeof(ESMatrix));
 }
 
-
-void
-esMatrixLoadIdentity(ESMatrix *result)
+void esMatrixLoadIdentity(ESMatrix* result)
 {
 	memset(result, 0x0, sizeof(ESMatrix));
 	result->m[0][0] = 1.0f;
@@ -232,4 +219,3 @@ esMatrixLoadIdentity(ESMatrix *result)
 	result->m[2][2] = 1.0f;
 	result->m[3][3] = 1.0f;
 }
-

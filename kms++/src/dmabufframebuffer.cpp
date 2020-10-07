@@ -62,8 +62,7 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 				  bo_handles, pitches.data(), offsets.data(), &id, 0);
 		if (r)
 			throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
-	}
-	else {
+	} else {
 		modifiers.resize(4);
 		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format,
 					       bo_handles, pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
@@ -86,8 +85,8 @@ uint8_t* DmabufFramebuffer::map(unsigned plane)
 	if (p.map)
 		return p.map;
 
-	p.map = (uint8_t *)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
-				p.prime_fd, 0);
+	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+			       p.prime_fd, 0);
 	if (p.map == MAP_FAILED)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 
@@ -118,7 +117,7 @@ void DmabufFramebuffer::begin_cpu_access(CpuAccess access)
 		break;
 	}
 
-	dma_buf_sync dbs {
+	dma_buf_sync dbs{
 		.flags = DMA_BUF_SYNC_START | m_sync_flags
 	};
 
@@ -134,7 +133,7 @@ void DmabufFramebuffer::end_cpu_access()
 	if (m_sync_flags == 0)
 		throw runtime_error("begin_cpu sync not started");
 
-	dma_buf_sync dbs {
+	dma_buf_sync dbs{
 		.flags = DMA_BUF_SYNC_END | m_sync_flags
 	};
 
@@ -147,4 +146,4 @@ void DmabufFramebuffer::end_cpu_access()
 	m_sync_flags = 0;
 }
 
-}
+} // namespace kms

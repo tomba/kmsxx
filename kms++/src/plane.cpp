@@ -13,14 +13,12 @@ using namespace std;
 
 namespace kms
 {
-
-struct PlanePriv
-{
+struct PlanePriv {
 	drmModePlanePtr drm_plane;
 };
 
-Plane::Plane(Card &card, uint32_t id, uint32_t idx)
-	:DrmPropObject(card, id, DRM_MODE_OBJECT_PLANE, idx)
+Plane::Plane(Card& card, uint32_t id, uint32_t idx)
+	: DrmPropObject(card, id, DRM_MODE_OBJECT_PLANE, idx)
 {
 	m_priv = new PlanePriv();
 	m_priv->drm_plane = drmModeGetPlane(this->card().fd(), this->id());
@@ -76,7 +74,6 @@ vector<Crtc*> Plane::get_possible_crtcs() const
 	for (uint32_t crtc_mask = m_priv->drm_plane->possible_crtcs;
 	     crtc_mask;
 	     idx++, crtc_mask >>= 1) {
-
 		if ((crtc_mask & 1) == 0)
 			continue;
 
@@ -97,7 +94,7 @@ vector<PixelFormat> Plane::get_formats() const
 	vector<PixelFormat> r;
 
 	for (unsigned i = 0; i < p->count_formats; ++i)
-		r.push_back((PixelFormat) p->formats[i]);
+		r.push_back((PixelFormat)p->formats[i]);
 
 	return r;
 }
@@ -137,4 +134,4 @@ uint32_t Plane::gamma_size() const
 	return m_priv->drm_plane->gamma_size;
 }
 
-}
+} // namespace kms

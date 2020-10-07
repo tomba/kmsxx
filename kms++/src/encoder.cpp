@@ -12,14 +12,15 @@ using namespace std;
 
 namespace kms
 {
-
-struct EncoderPriv
-{
+struct EncoderPriv {
 	drmModeEncoderPtr drm_encoder;
 };
 
 static const map<int, string> encoder_types = {
-#define DEF_ENC(c) { DRM_MODE_ENCODER_##c, #c }
+#define DEF_ENC(c)                       \
+	{                                \
+		DRM_MODE_ENCODER_##c, #c \
+	}
 	DEF_ENC(NONE),
 	DEF_ENC(DAC),
 	DEF_ENC(TMDS),
@@ -32,8 +33,8 @@ static const map<int, string> encoder_types = {
 #undef DEF_ENC
 };
 
-Encoder::Encoder(Card &card, uint32_t id, uint32_t idx)
-	:DrmPropObject(card, id, DRM_MODE_OBJECT_ENCODER, idx)
+Encoder::Encoder(Card& card, uint32_t id, uint32_t idx)
+	: DrmPropObject(card, id, DRM_MODE_OBJECT_ENCODER, idx)
 {
 	m_priv = new EncoderPriv();
 	m_priv->drm_encoder = drmModeGetEncoder(this->card().fd(), this->id());
@@ -83,4 +84,4 @@ const string& Encoder::get_encoder_type() const
 	return encoder_types.at(m_priv->drm_encoder->encoder_type);
 }
 
-}
+} // namespace kms

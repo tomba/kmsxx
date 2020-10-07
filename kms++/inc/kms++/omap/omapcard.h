@@ -17,4 +17,4 @@ public:
 private:
 	struct omap_device* m_omap_dev;
 };
-}
+} // namespace kms

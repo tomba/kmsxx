@@ -12,7 +12,6 @@ using namespace std;
 
 namespace kms
 {
-
 #ifndef DRM_MODE_CONNECTOR_DPI
 #define DRM_MODE_CONNECTOR_DPI 17
 #endif
@@ -46,7 +45,10 @@ static const map<int, string> connection_str = {
 };
 
 static const map<int, string> subpix_str = {
-#define DEF_SUBPIX(c) { DRM_MODE_SUBPIXEL_##c, #c }
+#define DEF_SUBPIX(c)                     \
+	{                                 \
+		DRM_MODE_SUBPIXEL_##c, #c \
+	}
 	DEF_SUBPIX(UNKNOWN),
 	DEF_SUBPIX(HORIZONTAL_RGB),
 	DEF_SUBPIX(HORIZONTAL_BGR),
@@ -56,13 +58,12 @@ static const map<int, string> subpix_str = {
 #undef DEF_SUBPIX
 };
 
-struct ConnectorPriv
-{
+struct ConnectorPriv {
 	drmModeConnectorPtr drm_connector;
 };
 
-Connector::Connector(Card &card, uint32_t id, uint32_t idx)
-	:DrmPropObject(card, id, DRM_MODE_OBJECT_CONNECTOR, idx)
+Connector::Connector(Card& card, uint32_t id, uint32_t idx)
+	: DrmPropObject(card, id, DRM_MODE_OBJECT_CONNECTOR, idx)
 {
 	m_priv = new ConnectorPriv();
 
@@ -193,7 +194,7 @@ Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool
 bool Connector::connected() const
 {
 	return m_priv->drm_connector->connection == DRM_MODE_CONNECTED ||
-			m_priv->drm_connector->connection == DRM_MODE_UNKNOWNCONNECTION;
+	       m_priv->drm_connector->connection == DRM_MODE_UNKNOWNCONNECTION;
 }
 
 ConnectorStatus Connector::connector_status() const
@@ -267,7 +268,7 @@ std::vector<Videomode> Connector::get_modes() const
 
 	for (int i = 0; i < m_priv->drm_connector->count_modes; i++)
 		modes.push_back(drm_mode_to_video_mode(
-					m_priv->drm_connector->modes[i]));
+			m_priv->drm_connector->modes[i]));
 
 	return modes;
 }
@@ -283,4 +284,4 @@ std::vector<Encoder*> Connector::get_encoders() const
 	return encoders;
 }
 
-}
+} // namespace kms

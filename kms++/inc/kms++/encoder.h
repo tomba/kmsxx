@@ -5,12 +5,12 @@
 
 namespace kms
 {
-
 struct EncoderPriv;
 
 class Encoder : public DrmPropObject
 {
 	friend class Card;
+
 public:
 	void refresh();
 
@@ -18,10 +18,11 @@ public:
 	std::vector<Crtc*> get_possible_crtcs() const;
 
 	const std::string& get_encoder_type() const;
+
 private:
 	Encoder(Card& card, uint32_t id, uint32_t idx);
 	~Encoder() override;
 
 	EncoderPriv* m_priv;
 };
-}
+} // namespace kms

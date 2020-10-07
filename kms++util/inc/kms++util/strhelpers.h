@@ -5,7 +5,7 @@
 
 std::string to_lower(const std::string& str);
 
-template <typename T>
+template<typename T>
 std::string join(const T& values, const std::string& delim)
 {
 	std::ostringstream ss;
@@ -17,7 +17,7 @@ std::string join(const T& values, const std::string& delim)
 	return ss.str();
 }
 
-template <typename T>
+template<typename T>
 std::string join(const std::vector<T>& values, const std::string& delim, std::function<std::string(T)> func)
 {
 	std::ostringstream ss;

@@ -19,14 +19,13 @@ using namespace std;
 
 namespace kms
 {
-
-DumbFramebuffer::DumbFramebuffer(Card &card, uint32_t width, uint32_t height, const string& fourcc)
-	:DumbFramebuffer(card, width, height, FourCCToPixelFormat(fourcc))
+DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const string& fourcc)
+	: DumbFramebuffer(card, width, height, FourCCToPixelFormat(fourcc))
 {
 }
 
 DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format)
-	:Framebuffer(card, width, height), m_format(format)
+	: Framebuffer(card, width, height), m_format(format)
 {
 	int r;
 
@@ -65,16 +64,22 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 
 	/* create framebuffer object for the dumb-buffer */
 	uint32_t bo_handles[4] = {
-		m_planes[0].handle, m_planes[1].handle,
-		m_planes[2].handle, m_planes[3].handle,
+		m_planes[0].handle,
+		m_planes[1].handle,
+		m_planes[2].handle,
+		m_planes[3].handle,
 	};
 	uint32_t pitches[4] = {
-		m_planes[0].stride, m_planes[1].stride,
-		m_planes[2].stride, m_planes[3].stride,
+		m_planes[0].stride,
+		m_planes[1].stride,
+		m_planes[2].stride,
+		m_planes[3].stride,
 	};
 	uint32_t offsets[4] = {
-		m_planes[0].offset, m_planes[1].offset,
-		m_planes[2].offset, m_planes[3].offset,
+		m_planes[0].offset,
+		m_planes[1].offset,
+		m_planes[2].offset,
+		m_planes[3].offset,
 	};
 	uint32_t id;
 	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
@@ -121,8 +126,8 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed: ") + strerror(errno));
 
 	/* perform actual memory mapping */
-	p.map = (uint8_t *)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
-					  card().fd(), mreq.offset);
+	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+			       card().fd(), mreq.offset);
 	if (p.map == MAP_FAILED)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 
@@ -142,4 +147,4 @@ int DumbFramebuffer::prime_fd(unsigned int plane)
 	return m_planes.at(plane).prime_fd;
 }
 
-}
+} // namespace kms

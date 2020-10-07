@@ -6,10 +6,10 @@
 
 namespace kms
 {
-
 class DrmObject
 {
 	friend class Card;
+
 public:
 	DrmObject(const DrmObject& other) = delete;
 	DrmObject& operator=(const DrmObject& other) = delete;
@@ -26,7 +26,7 @@ protected:
 
 	virtual ~DrmObject();
 
-	virtual void setup() { }
+	virtual void setup() {}
 
 	virtual void set_id(uint32_t id);
 
@@ -37,4 +37,4 @@ private:
 	uint32_t m_object_type;
 	uint32_t m_idx;
 };
-}
+} // namespace kms

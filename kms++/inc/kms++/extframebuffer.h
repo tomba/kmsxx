@@ -8,7 +8,6 @@
 
 namespace kms
 {
-
 class ExtFramebuffer : public Framebuffer
 {
 public:
@@ -34,7 +33,7 @@ private:
 		uint32_t stride;
 		uint32_t offset;
 		uint64_t modifier;
-		uint8_t *map;
+		uint8_t* map;
 	};
 
 	unsigned m_num_planes;
@@ -43,4 +42,4 @@ private:
 	PixelFormat m_format;
 };
 
-}
+} // namespace kms

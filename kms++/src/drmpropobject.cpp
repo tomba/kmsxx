@@ -11,7 +11,6 @@ using namespace std;
 
 namespace kms
 {
-
 DrmPropObject::DrmPropObject(Card& card, uint32_t object_type)
 	: DrmObject(card, object_type)
 {
@@ -25,7 +24,6 @@ DrmPropObject::DrmPropObject(Card& card, uint32_t id, uint32_t object_type, uint
 
 DrmPropObject::~DrmPropObject()
 {
-
 }
 
 void DrmPropObject::refresh_props()
@@ -90,7 +88,7 @@ int DrmPropObject::set_prop_value(uint32_t id, uint64_t value)
 	return drmModeObjectSetProperty(card().fd(), this->id(), this->object_type(), id, value);
 }
 
-int DrmPropObject::set_prop_value(const string &name, uint64_t value)
+int DrmPropObject::set_prop_value(const string& name, uint64_t value)
 {
 	Property* prop = get_prop(name);
 
@@ -100,4 +98,4 @@ int DrmPropObject::set_prop_value(const string &name, uint64_t value)
 	return set_prop_value(prop->id(), value);
 }
 
-}
+} // namespace kms

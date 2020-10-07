@@ -11,7 +11,6 @@ using namespace std;
 
 namespace kms
 {
-
 bool Videomode::valid() const
 {
 	return !!clock;
@@ -147,7 +146,7 @@ Videomode videomode_from_timings(uint32_t clock_khz,
 				 uint16_t hact, uint16_t hfp, uint16_t hsw, uint16_t hbp,
 				 uint16_t vact, uint16_t vfp, uint16_t vsw, uint16_t vbp)
 {
-	Videomode m { };
+	Videomode m{};
 	m.clock = clock_khz;
 
 	m.hdisplay = hact;
@@ -163,4 +162,4 @@ Videomode videomode_from_timings(uint32_t clock_khz,
 	return m;
 }
 
-}
+} // namespace kms

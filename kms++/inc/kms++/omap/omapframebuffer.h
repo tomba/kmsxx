@@ -12,8 +12,7 @@ class OmapCard;
 class OmapFramebuffer : public Framebuffer
 {
 public:
-	enum Flags
-	{
+	enum Flags {
 		None = 0,
 		Tiled = 1 << 0,
 		MemContig = 1 << 1,
@@ -59,4 +58,4 @@ private:
 
 	PixelFormat m_format;
 };
-}
+} // namespace kms

@@ -41,40 +41,40 @@ GlScene::GlScene()
 		-1.0f, -1.0f, -1.0f, // point black
 		+1.0f, -1.0f, -1.0f, // point red
 		-1.0f, -1.0f, +1.0f, // point blue
-		+1.0f, -1.0f, +1.0f  // point magenta
+		+1.0f, -1.0f, +1.0f // point magenta
 	};
 
 	static const GLfloat vColors[] = {
 		// front
-		0.0f,  0.0f,  1.0f, // blue
-		1.0f,  0.0f,  1.0f, // magenta
-		0.0f,  1.0f,  1.0f, // cyan
-		1.0f,  1.0f,  1.0f, // white
+		0.0f, 0.0f, 1.0f, // blue
+		1.0f, 0.0f, 1.0f, // magenta
+		0.0f, 1.0f, 1.0f, // cyan
+		1.0f, 1.0f, 1.0f, // white
 		// back
-		1.0f,  0.0f,  0.0f, // red
-		0.0f,  0.0f,  0.0f, // black
-		1.0f,  1.0f,  0.0f, // yellow
-		0.0f,  1.0f,  0.0f, // green
+		1.0f, 0.0f, 0.0f, // red
+		0.0f, 0.0f, 0.0f, // black
+		1.0f, 1.0f, 0.0f, // yellow
+		0.0f, 1.0f, 0.0f, // green
 		// right
-		1.0f,  0.0f,  1.0f, // magenta
-		1.0f,  0.0f,  0.0f, // red
-		1.0f,  1.0f,  1.0f, // white
-		1.0f,  1.0f,  0.0f, // yellow
+		1.0f, 0.0f, 1.0f, // magenta
+		1.0f, 0.0f, 0.0f, // red
+		1.0f, 1.0f, 1.0f, // white
+		1.0f, 1.0f, 0.0f, // yellow
 		// left
-		0.0f,  0.0f,  0.0f, // black
-		0.0f,  0.0f,  1.0f, // blue
-		0.0f,  1.0f,  0.0f, // green
-		0.0f,  1.0f,  1.0f, // cyan
+		0.0f, 0.0f, 0.0f, // black
+		0.0f, 0.0f, 1.0f, // blue
+		0.0f, 1.0f, 0.0f, // green
+		0.0f, 1.0f, 1.0f, // cyan
 		// top
-		0.0f,  1.0f,  1.0f, // cyan
-		1.0f,  1.0f,  1.0f, // white
-		0.0f,  1.0f,  0.0f, // green
-		1.0f,  1.0f,  0.0f, // yellow
+		0.0f, 1.0f, 1.0f, // cyan
+		1.0f, 1.0f, 1.0f, // white
+		0.0f, 1.0f, 0.0f, // green
+		1.0f, 1.0f, 0.0f, // yellow
 		// bottom
-		0.0f,  0.0f,  0.0f, // black
-		1.0f,  0.0f,  0.0f, // red
-		0.0f,  0.0f,  1.0f, // blue
-		1.0f,  0.0f,  1.0f  // magenta
+		0.0f, 0.0f, 0.0f, // black
+		1.0f, 0.0f, 0.0f, // red
+		0.0f, 0.0f, 1.0f, // blue
+		1.0f, 0.0f, 1.0f // magenta
 	};
 
 	static const GLfloat vNormals[] = {
@@ -107,43 +107,42 @@ GlScene::GlScene()
 		+0.0f, -1.0f, +0.0f, // down
 		+0.0f, -1.0f, +0.0f, // down
 		+0.0f, -1.0f, +0.0f, // down
-		+0.0f, -1.0f, +0.0f  // down
+		+0.0f, -1.0f, +0.0f // down
 	};
 
-	static const char *vertex_shader_source =
-			"uniform mat4 modelviewMatrix;      \n"
-			"uniform mat4 modelviewprojectionMatrix;\n"
-			"uniform mat3 normalMatrix;         \n"
-			"                                   \n"
-			"attribute vec4 in_position;        \n"
-			"attribute vec3 in_normal;          \n"
-			"attribute vec4 in_color;           \n"
-			"\n"
-			"vec4 lightSource = vec4(2.0, 2.0, 20.0, 0.0);\n"
-			"                                   \n"
-			"varying vec4 vVaryingColor;        \n"
-			"                                   \n"
-			"void main()                        \n"
-			"{                                  \n"
-			"    gl_Position = modelviewprojectionMatrix * in_position;\n"
-			"    vec3 vEyeNormal = normalMatrix * in_normal;\n"
-			"    vec4 vPosition4 = modelviewMatrix * in_position;\n"
-			"    vec3 vPosition3 = vPosition4.xyz / vPosition4.w;\n"
-			"    vec3 vLightDir = normalize(lightSource.xyz - vPosition3);\n"
-			"    float diff = max(0.0, dot(vEyeNormal, vLightDir));\n"
-			"    vVaryingColor = vec4(diff * in_color.rgb, 1.0);\n"
-			"}                                  \n";
+	static const char* vertex_shader_source =
+		"uniform mat4 modelviewMatrix;      \n"
+		"uniform mat4 modelviewprojectionMatrix;\n"
+		"uniform mat3 normalMatrix;         \n"
+		"                                   \n"
+		"attribute vec4 in_position;        \n"
+		"attribute vec3 in_normal;          \n"
+		"attribute vec4 in_color;           \n"
+		"\n"
+		"vec4 lightSource = vec4(2.0, 2.0, 20.0, 0.0);\n"
+		"                                   \n"
+		"varying vec4 vVaryingColor;        \n"
+		"                                   \n"
+		"void main()                        \n"
+		"{                                  \n"
+		"    gl_Position = modelviewprojectionMatrix * in_position;\n"
+		"    vec3 vEyeNormal = normalMatrix * in_normal;\n"
+		"    vec4 vPosition4 = modelviewMatrix * in_position;\n"
+		"    vec3 vPosition3 = vPosition4.xyz / vPosition4.w;\n"
+		"    vec3 vLightDir = normalize(lightSource.xyz - vPosition3);\n"
+		"    float diff = max(0.0, dot(vEyeNormal, vLightDir));\n"
+		"    vVaryingColor = vec4(diff * in_color.rgb, 1.0);\n"
+		"}                                  \n";
 
-	static const char *fragment_shader_source =
-			"precision mediump float;           \n"
-			"                                   \n"
-			"varying vec4 vVaryingColor;        \n"
-			"                                   \n"
-			"void main()                        \n"
-			"{                                  \n"
-			"    gl_FragColor = vVaryingColor;  \n"
-			"}                                  \n";
-
+	static const char* fragment_shader_source =
+		"precision mediump float;           \n"
+		"                                   \n"
+		"varying vec4 vVaryingColor;        \n"
+		"                                   \n"
+		"void main()                        \n"
+		"{                                  \n"
+		"    gl_FragColor = vVaryingColor;  \n"
+		"}                                  \n";
 
 	if (s_verbose) {
 		printf("GL_VENDOR:       %s\n", glGetString(GL_VENDOR));

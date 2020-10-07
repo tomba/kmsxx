@@ -16,14 +16,13 @@ using namespace std;
 using namespace kms;
 
 static const char* usage_str =
-		"Usage: kmstouch [OPTION]...\n\n"
-		"Simple touchscreen tester\n\n"
-		"Options:\n"
-		"      --input=DEVICE        DEVICE is the path to input device to open\n"
-		"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
-		"  -c, --connector=CONN      CONN is <connector>\n"
-		"\n"
-		;
+	"Usage: kmstouch [OPTION]...\n\n"
+	"Simple touchscreen tester\n\n"
+	"Options:\n"
+	"      --input=DEVICE        DEVICE is the path to input device to open\n"
+	"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
+	"  -c, --connector=CONN      CONN is <connector>\n"
+	"\n";
 
 static void usage()
 {
@@ -39,9 +38,9 @@ static map<int, pair<int32_t, int32_t>> s_abs_map;
 // axis -> value
 static map<int, int32_t> s_abs_vals;
 
-static void print_abs_bits(struct libevdev *dev, int axis)
+static void print_abs_bits(struct libevdev* dev, int axis)
 {
-	const struct input_absinfo *abs;
+	const struct input_absinfo* abs;
 
 	if (!libevdev_has_event_code(dev, EV_ABS, axis))
 		return;
@@ -59,7 +58,7 @@ static void print_abs_bits(struct libevdev *dev, int axis)
 		printf("	Resolution	%6d\n", abs->resolution);
 }
 
-static void print_code_bits(struct libevdev *dev, unsigned int type, unsigned int max)
+static void print_code_bits(struct libevdev* dev, unsigned int type, unsigned int max)
 {
 	for (uint32_t i = 0; i <= max; i++) {
 		if (!libevdev_has_event_code(dev, type, i))
@@ -71,7 +70,7 @@ static void print_code_bits(struct libevdev *dev, unsigned int type, unsigned in
 	}
 }
 
-static void print_bits(struct libevdev *dev)
+static void print_bits(struct libevdev* dev)
 {
 	printf("Supported events:\n");
 
@@ -81,7 +80,7 @@ static void print_bits(struct libevdev *dev)
 
 		printf("  Event type %d (%s)\n", i, libevdev_event_type_get_name(i));
 
-		switch(i) {
+		switch (i) {
 		case EV_KEY:
 			print_code_bits(dev, EV_KEY, KEY_MAX);
 			break;
@@ -104,7 +103,7 @@ static void collect_current(struct libevdev* dev)
 		if (!libevdev_has_event_code(dev, EV_ABS, i))
 			continue;
 
-		const struct input_absinfo *abs;
+		const struct input_absinfo* abs;
 
 		abs = libevdev_get_abs_info(dev, i);
 
@@ -113,7 +112,7 @@ static void collect_current(struct libevdev* dev)
 	}
 }
 
-static void print_props(struct libevdev *dev)
+static void print_props(struct libevdev* dev)
 {
 	printf("Properties:\n");
 
@@ -194,27 +193,23 @@ static void handle_event(struct input_event& ev, DumbFramebuffer* fb)
 	}
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	string drm_dev_path = "/dev/dri/card0";
 	string input_dev_path = "/dev/input/event0";
 	string conn_name;
 
 	OptionSet optionset = {
-		Option("i|input=", [&input_dev_path](string s)
-		{
+		Option("i|input=", [&input_dev_path](string s) {
 			input_dev_path = s;
 		}),
-		Option("|device=", [&drm_dev_path](string s)
-		{
+		Option("|device=", [&drm_dev_path](string s) {
 			drm_dev_path = s;
 		}),
-		Option("c|connector=", [&conn_name](string s)
-		{
+		Option("c|connector=", [&conn_name](string s) {
 			conn_name = s;
 		}),
-		Option("h|help", []()
-		{
+		Option("h|help", []() {
 			usage();
 			exit(-1);
 		}),
@@ -227,8 +222,7 @@ int main(int argc, char **argv)
 		exit(-1);
 	}
 
-
-	struct libevdev *dev = nullptr;
+	struct libevdev* dev = nullptr;
 
 	int fd = open(input_dev_path.c_str(), O_RDONLY | O_NONBLOCK);
 	FAIL_IF(fd < 0, "Failed to open input device %s: %s\n", input_dev_path.c_str(), strerror(errno));
@@ -251,7 +245,6 @@ int main(int argc, char **argv)
 	print_props(dev);
 
 	collect_current(dev);
-
 
 	Card card(drm_dev_path);
 	ResourceManager resman(card);
@@ -288,7 +281,8 @@ int main(int argc, char **argv)
 	FAIL_IF(r, "initial plane setup failed");
 
 	do {
-		struct input_event ev {};
+		struct input_event ev {
+		};
 		rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
 		if (rc == 0)
 			handle_event(ev, fb);

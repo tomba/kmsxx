@@ -9,23 +9,22 @@ using namespace std;
 using namespace kms;
 
 static const char* usage_str =
-		"Usage: kmsblank [OPTION]...\n\n"
-		"Blank screen(s)\n\n"
-		"Options:\n"
-		"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
-		"  -c, --connector=CONN      CONN is <connector>\n"
-		"  -t, --time=TIME           blank/unblank in TIME intervals\n"
-		"\n"
-		"<connector> can be given by index (<idx>) or id (@<id>).\n"
-		"<connector> can also be given by name.\n"
-		;
+	"Usage: kmsblank [OPTION]...\n\n"
+	"Blank screen(s)\n\n"
+	"Options:\n"
+	"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
+	"  -c, --connector=CONN      CONN is <connector>\n"
+	"  -t, --time=TIME           blank/unblank in TIME intervals\n"
+	"\n"
+	"<connector> can be given by index (<idx>) or id (@<id>).\n"
+	"<connector> can also be given by name.\n";
 
 static void usage()
 {
 	puts(usage_str);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	string dev_path;
 
@@ -33,20 +32,16 @@ int main(int argc, char **argv)
 	uint32_t time = 0;
 
 	OptionSet optionset = {
-		Option("|device=", [&dev_path](string s)
-		{
+		Option("|device=", [&dev_path](string s) {
 			dev_path = s;
 		}),
-		Option("c|connector=", [&conn_strs](string str)
-		{
+		Option("c|connector=", [&conn_strs](string str) {
 			conn_strs.push_back(str);
 		}),
-		Option("t|time=", [&time](string str)
-		{
+		Option("t|time=", [&time](string str) {
 			time = stoul(str);
 		}),
-		Option("h|help", []()
-		{
+		Option("h|help", []() {
 			usage();
 			exit(-1);
 		}),

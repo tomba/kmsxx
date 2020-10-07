@@ -6,18 +6,17 @@
 
 namespace kms
 {
-
 #define DIV_ROUND(n, d) (((n) + (d) / 2) / (d))
 
 // hd, hss, hse, ht, vd, vss, vse, vt
 
-#define DRM_MODE(nm, c, hact, hfp, hsw, hbp, vact, vfp, vsw, vbp, f) \
-	{ \
-	.name = nm, .clock = c, \
-	.hdisplay = (hact), .hsync_start = (hact) + (hfp), .hsync_end = (hact) + (hfp) + (hsw), .htotal = (hact) + (hfp) + (hsw) + (hbp), .hskew = 0, \
-	.vdisplay = (vact), .vsync_start = (vact) + (vfp), .vsync_end = (vact) + (vfp) + (vsw), .vtotal = (vact) + (vfp) + (vsw) + (vbp), .vscan = 0, \
-	.vrefresh = DIV_ROUND(c * 1000, ((hact) + (hfp) + (hsw) + (hbp)) * ((vact) + (vfp) + (vsw) + (vbp))) * (((f) & DRM_MODE_FLAG_INTERLACE) ? 2 : 1), \
-	.flags = (f), .type = 0 \
+#define DRM_MODE(nm, c, hact, hfp, hsw, hbp, vact, vfp, vsw, vbp, f)                                                                                            \
+	{                                                                                                                                                       \
+		.name = nm, .clock = c,                                                                                                                         \
+		.hdisplay = (hact), .hsync_start = (hact) + (hfp), .hsync_end = (hact) + (hfp) + (hsw), .htotal = (hact) + (hfp) + (hsw) + (hbp), .hskew = 0,   \
+		.vdisplay = (vact), .vsync_start = (vact) + (vfp), .vsync_end = (vact) + (vfp) + (vsw), .vtotal = (vact) + (vfp) + (vsw) + (vbp), .vscan = 0,   \
+		.vrefresh = DIV_ROUND(c * 1000, ((hact) + (hfp) + (hsw) + (hbp)) * ((vact) + (vfp) + (vsw) + (vbp))) * (((f)&DRM_MODE_FLAG_INTERLACE) ? 2 : 1), \
+		.flags = (f), .type = 0                                                                                                                         \
 	}
 
 const Videomode dmt_modes[] = {
@@ -198,7 +197,7 @@ const Videomode dmt_modes[] = {
 	// 0x58 - 4096 x 2160 @ 59.94 Hz CVT (Reduced Blanking v2)
 	DRM_MODE("4096 x 2160 @ 59.94 Hz CVT (Reduced Blanking v2)", 556188, 4096, 8, 32, 40, 2160, 48, 8, 6, DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_NVSYNC),
 	/* TERMINATOR */
-	{ },
+	{},
 };
 
-}
+} // namespace kms

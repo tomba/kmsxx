@@ -2,8 +2,8 @@
 #include <set>
 #include <string>
 
-namespace kms {
-
+namespace kms
+{
 class ResourceManager
 {
 public:
@@ -32,4 +32,4 @@ private:
 	std::set<Plane*> m_reserved_planes;
 };
 
-}
+} // namespace kms

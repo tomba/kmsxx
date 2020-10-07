@@ -13,7 +13,6 @@ using namespace std;
 
 namespace kms
 {
-
 ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
 			       vector<uint32_t> handles, vector<uint32_t> pitches, vector<uint32_t> offsets, vector<uint64_t> modifiers)
 	: Framebuffer(card, width, height)
@@ -46,8 +45,7 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 
 	if (modifiers.empty()) {
 		r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
-	}
-	else {
+	} else {
 		modifiers.resize(4);
 		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
 	}
@@ -63,4 +61,4 @@ ExtFramebuffer::~ExtFramebuffer()
 	drmModeRmFB(card().fd(), id());
 }
 
-}
+} // namespace kms

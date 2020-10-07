@@ -22,20 +22,19 @@ using namespace std;
 
 namespace kms
 {
-
 static vector<string> glob(const string& pattern)
 {
 	glob_t glob_result;
 	memset(&glob_result, 0, sizeof(glob_result));
 
 	int r = glob(pattern.c_str(), 0, NULL, &glob_result);
-	if(r != 0) {
+	if (r != 0) {
 		globfree(&glob_result);
 		throw runtime_error("failed to find DRM cards");
 	}
 
 	vector<string> filenames;
-	for(size_t i = 0; i < glob_result.gl_pathc; ++i)
+	for (size_t i = 0; i < glob_result.gl_pathc; ++i)
 		filenames.push_back(string(glob_result.gl_pathv[i]));
 
 	globfree(&glob_result);
@@ -315,7 +314,7 @@ void Card::restore_modes()
 
 Connector* Card::get_first_connected_connector() const
 {
-	for(auto c : m_connectors) {
+	for (auto c : m_connectors) {
 		if (c->connected())
 			return c;
 	}
@@ -334,23 +333,37 @@ DrmObject* Card::get_object(uint32_t id) const
 std::vector<kms::DrmObject*> Card::get_objects() const
 {
 	vector<DrmObject*> v;
-	for(auto pair : m_obmap)
+	for (auto pair : m_obmap)
 		v.push_back(pair.second);
 	return v;
 }
 
-Connector* Card::get_connector(uint32_t id) const { return dynamic_cast<Connector*>(get_object(id)); }
-Crtc* Card::get_crtc(uint32_t id) const { return dynamic_cast<Crtc*>(get_object(id)); }
-Encoder* Card::get_encoder(uint32_t id) const { return dynamic_cast<Encoder*>(get_object(id)); }
-Property* Card::get_prop(uint32_t id) const { return dynamic_cast<Property*>(get_object(id)); }
-Plane* Card::get_plane(uint32_t id) const { return dynamic_cast<Plane*>(get_object(id)); }
+Connector* Card::get_connector(uint32_t id) const
+{
+	return dynamic_cast<Connector*>(get_object(id));
+}
+Crtc* Card::get_crtc(uint32_t id) const
+{
+	return dynamic_cast<Crtc*>(get_object(id));
+}
+Encoder* Card::get_encoder(uint32_t id) const
+{
+	return dynamic_cast<Encoder*>(get_object(id));
+}
+Property* Card::get_prop(uint32_t id) const
+{
+	return dynamic_cast<Property*>(get_object(id));
+}
+Plane* Card::get_plane(uint32_t id) const
+{
+	return dynamic_cast<Plane*>(get_object(id));
+}
 
 std::vector<kms::Pipeline> Card::get_connected_pipelines()
 {
 	vector<Pipeline> outputs;
 
-	for (auto conn : get_connectors())
-	{
+	for (auto conn : get_connectors()) {
 		if (conn->connected() == false)
 			continue;
 
@@ -370,7 +383,7 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 					       to_string(conn->idx()) +
 					       " has no possible crtcs");
 
-		outputs.push_back(Pipeline { crtc, conn });
+		outputs.push_back(Pipeline{ crtc, conn });
 	}
 
 	return outputs;
@@ -378,7 +391,7 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 
 static void page_flip_handler(int fd, unsigned int frame,
 			      unsigned int sec, unsigned int usec,
-			      void *data)
+			      void* data)
 {
 	auto handler = (PageFlipHandlerBase*)data;
 	double time = sec + usec / 1000000.0;
@@ -387,7 +400,7 @@ static void page_flip_handler(int fd, unsigned int frame,
 
 void Card::call_page_flip_handlers()
 {
-	drmEventContext ev { };
+	drmEventContext ev{};
 	ev.version = DRM_EVENT_CONTEXT_VERSION;
 	ev.page_flip_handler = page_flip_handler;
 
@@ -400,18 +413,18 @@ int Card::disable_all()
 
 	for (Crtc* c : m_crtcs) {
 		req.add(c, {
-				{ "ACTIVE", 0 },
-			});
+				   { "ACTIVE", 0 },
+			   });
 	}
 
 	for (Plane* p : m_planes) {
 		req.add(p, {
-				{ "FB_ID", 0 },
-				{ "CRTC_ID", 0 },
-			});
+				   { "FB_ID", 0 },
+				   { "CRTC_ID", 0 },
+			   });
 	}
 
 	return req.commit_sync(true);
 }
 
-}
+} // namespace kms

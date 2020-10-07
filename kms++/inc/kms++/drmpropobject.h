@@ -8,10 +8,10 @@
 
 namespace kms
 {
-
 class DrmPropObject : public DrmObject
 {
 	friend class Card;
+
 public:
 	void refresh_props();
 
@@ -38,4 +38,4 @@ protected:
 private:
 	std::map<uint32_t, uint64_t> m_prop_values;
 };
-}
+} // namespace kms

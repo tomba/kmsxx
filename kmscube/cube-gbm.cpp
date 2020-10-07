@@ -74,7 +74,7 @@ public:
 		return gbm_surface_lock_front_buffer(m_surface);
 	}
 
-	void release_buffer(gbm_bo *bo)
+	void release_buffer(gbm_bo* bo)
 	{
 		gbm_surface_release_buffer(m_surface, bo);
 	}
@@ -116,13 +116,13 @@ public:
 		eglSwapBuffers(egl.display(), esurface);
 	}
 
-	static void drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
+	static void drm_fb_destroy_callback(struct gbm_bo* bo, void* data)
 	{
 		auto fb = reinterpret_cast<Framebuffer*>(data);
 		delete fb;
 	}
 
-	static Framebuffer* drm_fb_get_from_bo(struct gbm_bo *bo, Card& card)
+	static Framebuffer* drm_fb_get_from_bo(struct gbm_bo* bo, Card& card)
 	{
 		auto fb = reinterpret_cast<Framebuffer*>(gbm_bo_get_user_data(bo));
 		if (fb)
@@ -134,9 +134,9 @@ public:
 		uint32_t handle = gbm_bo_get_handle(bo).u32;
 		PixelFormat format = (PixelFormat)gbm_bo_get_format(bo);
 
-		vector<uint32_t> handles { handle };
-		vector<uint32_t> strides { stride };
-		vector<uint32_t> offsets { 0 };
+		vector<uint32_t> handles{ handle };
+		vector<uint32_t> strides{ stride };
+		vector<uint32_t> offsets{ 0 };
 
 		fb = new ExtFramebuffer(card, width, height, format, handles, strides, offsets);
 
@@ -237,7 +237,7 @@ private:
 	{
 		++m_frame_num;
 
-		if (m_frame_num  % 100 == 0) {
+		if (m_frame_num % 100 == 0) {
 			auto t2 = chrono::steady_clock::now();
 			chrono::duration<float> fsec = t2 - m_t1;
 			printf("fps: %f\n", 100.0 / fsec.count());
@@ -351,11 +351,11 @@ void main_gbm()
 	for (auto& out : outputs)
 		out->start_flipping();
 
-	struct pollfd fds[2] = { };
+	struct pollfd fds[2] = {};
 	fds[0].fd = 0;
-	fds[0].events =  POLLIN;
+	fds[0].events = POLLIN;
 	fds[1].fd = card.fd();
-	fds[1].events =  POLLIN;
+	fds[1].events = POLLIN;
 
 	while (!s_need_exit || s_flip_pending) {
 		int r = poll(fds, ARRAY_SIZE(fds), -1);

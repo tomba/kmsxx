@@ -8,16 +8,13 @@
 
 namespace kms
 {
-
-enum class SyncPolarity
-{
+enum class SyncPolarity {
 	Undefined,
 	Positive,
 	Negative,
 };
 
-struct Videomode
-{
+struct Videomode {
 	std::string name;
 
 	uint32_t clock;
@@ -26,8 +23,8 @@ struct Videomode
 
 	uint32_t vrefresh;
 
-	uint32_t flags;		// DRM_MODE_FLAG_*
-	uint32_t type;		// DRM_MODE_TYPE_*
+	uint32_t flags; // DRM_MODE_FLAG_*
+	uint32_t type; // DRM_MODE_TYPE_*
 
 	std::unique_ptr<Blob> to_blob(Card& card) const;
 
@@ -59,4 +56,4 @@ struct Videomode
 struct Videomode videomode_from_timings(uint32_t clock_khz,
 					uint16_t hact, uint16_t hfp, uint16_t hsw, uint16_t hbp,
 					uint16_t vact, uint16_t vfp, uint16_t vsw, uint16_t vbp);
-}
+} // namespace kms

@@ -7,7 +7,6 @@ using namespace std;
 
 namespace kms
 {
-
 Blob::Blob(Card& card, uint32_t blob_id)
 	: DrmObject(card, blob_id, DRM_MODE_OBJECT_BLOB), m_created(false)
 {
@@ -48,4 +47,4 @@ vector<uint8_t> Blob::data()
 	return v;
 }
 
-}
+} // namespace kms

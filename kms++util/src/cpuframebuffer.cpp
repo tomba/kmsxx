@@ -4,8 +4,8 @@
 
 using namespace std;
 
-namespace kms {
-
+namespace kms
+{
 CPUFramebuffer::CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat format)
 	: m_width(width), m_height(height), m_format(format)
 {
@@ -18,7 +18,7 @@ CPUFramebuffer::CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat form
 		FramebufferPlane& plane = m_planes[i];
 
 		plane.stride = width * pi.bitspp / 8;
-		plane.size = plane.stride * height/ pi.ysub;
+		plane.size = plane.stride * height / pi.ysub;
 		plane.offset = 0;
 		plane.map = new uint8_t[plane.size];
 	}
@@ -29,8 +29,8 @@ CPUFramebuffer::~CPUFramebuffer()
 	for (unsigned i = 0; i < m_num_planes; ++i) {
 		FramebufferPlane& plane = m_planes[i];
 
-		delete [] plane.map;
+		delete[] plane.map;
 	}
 }
 
-}
+} // namespace kms

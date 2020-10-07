@@ -8,7 +8,6 @@ using namespace std;
 
 namespace kms
 {
-
 static const Videomode& find_from_table(const Videomode* modes, uint32_t width, uint32_t height, float vrefresh, bool ilace)
 {
 	for (unsigned i = 0; modes[i].clock; ++i) {
@@ -56,4 +55,4 @@ const Videomode& find_cea(uint32_t width, uint32_t height, float vrefresh, bool 
 	return find_from_table(cea_modes, width, height, vrefresh, ilace);
 }
 
-}
+} // namespace kms

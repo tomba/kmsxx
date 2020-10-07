@@ -7,9 +7,7 @@ using namespace std;
 
 namespace kms
 {
-
-struct PropertyPriv
-{
+struct PropertyPriv {
 	drmModePropertyPtr drm_prop;
 };
 
@@ -84,4 +82,4 @@ vector<uint32_t> Property::get_blob_ids() const
 	drmModePropertyPtr p = m_priv->drm_prop;
 	return vector<uint32_t>(p->blob_ids, p->blob_ids + p->count_blobs);
 }
-}
+} // namespace kms

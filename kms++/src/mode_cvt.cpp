@@ -7,12 +7,10 @@ using namespace std;
 
 namespace kms
 {
-
 static float CELL_GRAN = 8;
 static float CELL_GRAN_RND = round(CELL_GRAN);
 
-struct CVTConsts
-{
+struct CVTConsts {
 	float CLOCK_STEP;
 	float MIN_V_BPORCH;
 	float RB_H_BLANK;
@@ -24,30 +22,28 @@ struct CVTConsts
 	float REFRESH_MULTIPLIER;
 };
 
-static const CVTConsts cvt_consts_v1 =
-{
-	.CLOCK_STEP = 0.25,	// Fixed
-	.MIN_V_BPORCH = 6,	// Min
-	.RB_H_BLANK = 160,	// Fixed
-	.RB_H_FPORCH = 48,	// Fixed
-	.RB_H_SYNC = 32,	// Fixed
-	.RB_H_BPORCH = 80,	// Fixed
-	.RB_MIN_V_BLANK = 460,	// Min
-	.RB_V_FPORCH = 3,	// Fixed
-	.REFRESH_MULTIPLIER = 1,// Fixed
+static const CVTConsts cvt_consts_v1 = {
+	.CLOCK_STEP = 0.25, // Fixed
+	.MIN_V_BPORCH = 6, // Min
+	.RB_H_BLANK = 160, // Fixed
+	.RB_H_FPORCH = 48, // Fixed
+	.RB_H_SYNC = 32, // Fixed
+	.RB_H_BPORCH = 80, // Fixed
+	.RB_MIN_V_BLANK = 460, // Min
+	.RB_V_FPORCH = 3, // Fixed
+	.REFRESH_MULTIPLIER = 1, // Fixed
 };
 
-static const CVTConsts cvt_consts_v2 =
-{
-	.CLOCK_STEP = 0.001,	// Fixed
-	.MIN_V_BPORCH = 6,	// Fixed
-	.RB_H_BLANK = 80,	// Fixed
-	.RB_H_FPORCH = 8,	// Fixed
-	.RB_H_SYNC = 32,	// Fixed
-	.RB_H_BPORCH = 40,	// Fixed
-	.RB_MIN_V_BLANK = 460,	// Min
-	.RB_V_FPORCH = 1,	// Min
-	.REFRESH_MULTIPLIER = 1,// or 1000/1001
+static const CVTConsts cvt_consts_v2 = {
+	.CLOCK_STEP = 0.001, // Fixed
+	.MIN_V_BPORCH = 6, // Fixed
+	.RB_H_BLANK = 80, // Fixed
+	.RB_H_FPORCH = 8, // Fixed
+	.RB_H_SYNC = 32, // Fixed
+	.RB_H_BPORCH = 40, // Fixed
+	.RB_MIN_V_BLANK = 460, // Min
+	.RB_V_FPORCH = 1, // Min
+	.REFRESH_MULTIPLIER = 1, // or 1000/1001
 };
 
 Videomode videomode_from_cvt(uint32_t hact, uint32_t vact, uint32_t refresh, bool ilace, bool reduced_v2, bool video_optimized)
@@ -55,7 +51,7 @@ Videomode videomode_from_cvt(uint32_t hact, uint32_t vact, uint32_t refresh, boo
 	CVTConsts c = reduced_v2 ? cvt_consts_v2 : cvt_consts_v1;
 
 	if (video_optimized)
-		c.REFRESH_MULTIPLIER = 1000.0/1001.0;
+		c.REFRESH_MULTIPLIER = 1000.0 / 1001.0;
 
 	bool INT_RQD = ilace;
 
@@ -151,4 +147,4 @@ Videomode videomode_from_cvt(uint32_t hact, uint32_t vact, uint32_t refresh, boo
 	return mode;
 }
 
-}
+} // namespace kms

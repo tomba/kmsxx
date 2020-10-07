@@ -12,19 +12,18 @@
 #include <kms++util/kms++util.h>
 #include <kms++util/videodevice.h>
 
-const uint32_t NUM_SRC_BUFS=2;
-const uint32_t NUM_DST_BUFS=2;
+const uint32_t NUM_SRC_BUFS = 2;
+const uint32_t NUM_DST_BUFS = 2;
 
 using namespace std;
 using namespace kms;
 
 static const char* usage_str =
-		"Usage: wbm2m [OPTIONS]\n\n"
-		"Options:\n"
-		"  -f, --format=4CC          Output format\n"
-		"  -c, --crop=CROP           CROP is <x>,<y>-<w>x<h>\n"
-		"  -h, --help                Print this help\n"
-		;
+	"Usage: wbm2m [OPTIONS]\n\n"
+	"Options:\n"
+	"  -f, --format=4CC          Output format\n"
+	"  -c, --crop=CROP           CROP is <x>,<y>-<w>x<h>\n"
+	"  -h, --help                Print this help\n";
 
 const int bar_speed = 4;
 const int bar_width = 10;
@@ -51,7 +50,7 @@ static void read_frame(DumbFramebuffer* fb, unsigned frame_num)
 static void parse_crop(const string& crop_str, uint32_t& c_left, uint32_t& c_top,
 		       uint32_t& c_width, uint32_t& c_height)
 {
-	const regex crop_re("(\\d+),(\\d+)-(\\d+)x(\\d+)");		// 400,400-400x400
+	const regex crop_re("(\\d+),(\\d+)-(\\d+)x(\\d+)"); // 400,400-400x400
 
 	smatch sm;
 	if (!regex_match(crop_str, sm, crop_re))
@@ -79,17 +78,14 @@ int main(int argc, char** argv)
 	bool use_selection = false;
 
 	OptionSet optionset = {
-		Option("f|format=", [&](string s)
-		{
+		Option("f|format=", [&](string s) {
 			dst_fmt = FourCCToPixelFormat(s);
 		}),
-		Option("c|crop=", [&](string s)
-		{
+		Option("c|crop=", [&](string s) {
 			parse_crop(s, c_left, c_top, c_width, c_height);
 			use_selection = true;
 		}),
-		Option("h|help", [&]()
-		{
+		Option("h|help", [&]() {
 			puts(usage_str);
 			exit(-1);
 		}),
@@ -106,7 +102,7 @@ int main(int argc, char** argv)
 	       dst_width, dst_height, PixelFormatToFourCC(dst_fmt).c_str());
 
 	const string filename = fmt::format("wb-out-{}x{}-{}.raw", dst_width, dst_height,
-					PixelFormatToFourCC(dst_fmt));
+					    PixelFormatToFourCC(dst_fmt));
 
 	printf("writing to %s\n", filename.c_str());
 
@@ -131,7 +127,6 @@ int main(int argc, char** argv)
 	out->set_queue_size(NUM_SRC_BUFS);
 	in->set_queue_size(NUM_DST_BUFS);
 
-
 	for (unsigned i = 0; i < min(NUM_SRC_BUFS, num_src_frames); ++i) {
 		auto fb = new DumbFramebuffer(card, src_width, src_height, src_fmt);
 
@@ -148,11 +143,11 @@ int main(int argc, char** argv)
 	vector<pollfd> fds(3);
 
 	fds[0].fd = 0;
-	fds[0].events =  POLLIN;
+	fds[0].events = POLLIN;
 	fds[1].fd = vid.fd();
-	fds[1].events =  POLLIN;
+	fds[1].events = POLLIN;
 	fds[2].fd = card.fd();
-	fds[2].events =  POLLIN;
+	fds[2].events = POLLIN;
 
 	ofstream os(filename, ofstream::binary);
 
@@ -169,9 +164,8 @@ int main(int argc, char** argv)
 		if (fds[1].revents) {
 			fds[1].revents = 0;
 
-
 			try {
-				DumbFramebuffer *dst_fb = in->dequeue();
+				DumbFramebuffer* dst_fb = in->dequeue();
 				printf("Writing frame %u\n", dst_frame_num);
 				for (unsigned i = 0; i < dst_fb->num_planes(); ++i)
 					os.write((char*)dst_fb->map(i), dst_fb->size(i));
@@ -189,7 +183,7 @@ int main(int argc, char** argv)
 				break;
 			}
 
-			DumbFramebuffer *src_fb = out->dequeue();
+			DumbFramebuffer* src_fb = out->dequeue();
 
 			if (src_frame_num < num_src_frames) {
 				read_frame(src_fb, src_frame_num++);

@@ -11,8 +11,7 @@
 
 namespace kms
 {
-struct CardVersion
-{
+struct CardVersion {
 	int major;
 	int minor;
 	int patchlevel;
@@ -24,6 +23,7 @@ struct CardVersion
 class Card
 {
 	friend class Framebuffer;
+
 public:
 	static std::unique_ptr<Card> open_named_card(const std::string& name);
 
@@ -95,4 +95,4 @@ private:
 
 	CardVersion m_version;
 };
-}
+} // namespace kms

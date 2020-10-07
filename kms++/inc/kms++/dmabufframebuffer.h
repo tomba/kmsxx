@@ -8,7 +8,6 @@
 
 namespace kms
 {
-
 class DmabufFramebuffer : public Framebuffer
 {
 public:
@@ -42,7 +41,7 @@ private:
 		uint32_t stride;
 		uint32_t offset;
 		uint64_t modifier;
-		uint8_t *map;
+		uint8_t* map;
 	};
 
 	unsigned m_num_planes;
@@ -53,4 +52,4 @@ private:
 	uint32_t m_sync_flags = 0;
 };
 
-}
+} // namespace kms

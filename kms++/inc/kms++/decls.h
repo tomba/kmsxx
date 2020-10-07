@@ -18,4 +18,4 @@ class PageFlipHandlerBase;
 class Plane;
 class Property;
 struct Videomode;
-}
+} // namespace kms

@@ -27,13 +27,13 @@ static string format_mode(const Videomode& m, unsigned idx)
 
 	if (s_opts.x_modeline) {
 		str += fmt::format("{:12} {:6} {:4} {:4} {:4} {:4} {:4} {:4} {:4} {:4} {:3} {:#x} {:#x}",
-			       m.name,
-			       m.clock,
-			       m.hdisplay, m.hsync_start, m.hsync_end, m.htotal,
-			       m.vdisplay, m.vsync_start, m.vsync_end, m.vtotal,
-			       m.vrefresh,
-			       m.flags,
-			       m.type);
+				   m.name,
+				   m.clock,
+				   m.hdisplay, m.hsync_start, m.hsync_end, m.htotal,
+				   m.vdisplay, m.vsync_start, m.vsync_end, m.vtotal,
+				   m.vrefresh,
+				   m.flags,
+				   m.type);
 	} else {
 		str += m.to_string_long_padded();
 	}
@@ -51,7 +51,7 @@ static string format_connector(Connector& c)
 	string str;
 
 	str = fmt::format("Connector {} ({}) {}",
-		      c.idx(), c.id(), c.fullname());
+			  c.idx(), c.id(), c.fullname());
 
 	switch (c.connector_status()) {
 	case ConnectorStatus::Connected:
@@ -71,7 +71,7 @@ static string format_connector(Connector& c)
 static string format_encoder(Encoder& e)
 {
 	return fmt::format("Encoder {} ({}) {}",
-		       e.idx(), e.id(), e.get_encoder_type());
+			   e.idx(), e.id(), e.get_encoder_type());
 }
 
 static string format_crtc(Crtc& c)
@@ -101,14 +101,14 @@ static string format_plane(Plane& p)
 
 	if (p.card().has_atomic()) {
 		str += fmt::format(" {},{} {}x{} -> {},{} {}x{}",
-			       (uint32_t)p.get_prop_value("SRC_X") >> 16,
-			       (uint32_t)p.get_prop_value("SRC_Y") >> 16,
-			       (uint32_t)p.get_prop_value("SRC_W") >> 16,
-			       (uint32_t)p.get_prop_value("SRC_H") >> 16,
-			       (uint32_t)p.get_prop_value("CRTC_X"),
-			       (uint32_t)p.get_prop_value("CRTC_Y"),
-			       (uint32_t)p.get_prop_value("CRTC_W"),
-			       (uint32_t)p.get_prop_value("CRTC_H"));
+				   (uint32_t)p.get_prop_value("SRC_X") >> 16,
+				   (uint32_t)p.get_prop_value("SRC_Y") >> 16,
+				   (uint32_t)p.get_prop_value("SRC_W") >> 16,
+				   (uint32_t)p.get_prop_value("SRC_H") >> 16,
+				   (uint32_t)p.get_prop_value("CRTC_X"),
+				   (uint32_t)p.get_prop_value("CRTC_Y"),
+				   (uint32_t)p.get_prop_value("CRTC_W"),
+				   (uint32_t)p.get_prop_value("CRTC_H"));
 	}
 
 	string fmts = join<PixelFormat>(p.get_formats(), " ", [](PixelFormat fmt) { return PixelFormatToFourCC(fmt); });
@@ -121,7 +121,7 @@ static string format_plane(Plane& p)
 static string format_fb(Framebuffer& fb)
 {
 	return fmt::format("FB {} {}x{}",
-		       fb.id(), fb.width(), fb.height());
+			   fb.id(), fb.width(), fb.height());
 }
 
 static string format_property(const Property* prop, uint64_t val)
@@ -129,8 +129,7 @@ static string format_property(const Property* prop, uint64_t val)
 	string ret = fmt::format("{} ({}) = ", prop->name(), prop->id());
 
 	switch (prop->type()) {
-	case PropertyType::Bitmask:
-	{
+	case PropertyType::Bitmask: {
 		vector<string> v, vall;
 
 		for (auto kvp : prop->get_enums()) {
@@ -145,8 +144,7 @@ static string format_property(const Property* prop, uint64_t val)
 		break;
 	}
 
-	case PropertyType::Blob:
-	{
+	case PropertyType::Blob: {
 		uint32_t blob_id = (uint32_t)val;
 
 		if (blob_id) {
@@ -161,8 +159,7 @@ static string format_property(const Property* prop, uint64_t val)
 		break;
 	}
 
-	case PropertyType::Enum:
-	{
+	case PropertyType::Enum: {
 		string cur;
 		vector<string> vall;
 
@@ -177,32 +174,28 @@ static string format_property(const Property* prop, uint64_t val)
 		break;
 	}
 
-	case PropertyType::Object:
-	{
+	case PropertyType::Object: {
 		ret += fmt::format("object id {}", val);
 		break;
 	}
 
-	case PropertyType::Range:
-	{
+	case PropertyType::Range: {
 		auto values = prop->get_values();
 
 		ret += fmt::format("{} [{} - {}]",
-			       val, values[0], values[1]);
+				   val, values[0], values[1]);
 
 		break;
 	}
 
-	case PropertyType::SignedRange:
-	{
+	case PropertyType::SignedRange: {
 		auto values = prop->get_values();
 
 		ret += fmt::format("{} [{} - {}]",
-			       (int64_t)val, (int64_t)values[0], (int64_t)values[1]);
+				   (int64_t)val, (int64_t)values[0], (int64_t)values[1]);
 
 		break;
 	}
-
 	}
 
 	if (prop->is_pending())
@@ -247,15 +240,14 @@ vector<T> filter(const vector<T>& sequence, function<bool(T)> predicate)
 {
 	vector<T> result;
 
-	for(auto it = sequence.begin(); it != sequence.end(); ++it)
-		if(predicate(*it))
+	for (auto it = sequence.begin(); it != sequence.end(); ++it)
+		if (predicate(*it))
 			result.push_back(*it);
 
 	return result;
 }
 
-struct Entry
-{
+struct Entry {
 	string title;
 	vector<string> lines;
 	vector<Entry> children;
@@ -345,7 +337,7 @@ static void print_entry(const Entry& e, const string& prefix, bool is_child, boo
 
 static void print_entries(const vector<Entry>& entries, const string& prefix)
 {
-	for (const Entry& e: entries) {
+	for (const Entry& e : entries) {
 		print_entry(e, "", false, false);
 	}
 }
@@ -355,7 +347,6 @@ static void append(vector<DrmObject*>& dst, const vector<T*>& src)
 {
 	dst.insert(dst.end(), src.begin(), src.end());
 }
-
 
 static void print_as_list(Card& card)
 {
@@ -386,7 +377,7 @@ static void print_as_list(Card& card)
 		}
 	}
 
-	for (DrmPropObject* ob: obs) {
+	for (DrmPropObject* ob : obs) {
 		fmt::print("{}\n", format_ob(ob));
 
 		if (s_opts.print_props) {
@@ -395,7 +386,7 @@ static void print_as_list(Card& card)
 		}
 	}
 
-	for (Framebuffer* fb: fbs) {
+	for (Framebuffer* fb : fbs) {
 		fmt::print("{}\n", format_ob(fb));
 	}
 }
@@ -411,7 +402,6 @@ static void print_as_tree(Card& card)
 			e1.lines = format_props(conn);
 
 		for (Encoder* enc : conn->get_encoders()) {
-
 			Entry& e2 = add_entry(e1.children);
 			e2.title = format_ob(enc);
 			if (s_opts.print_props)
@@ -470,46 +460,40 @@ static void print_modes(Card& card)
 }
 
 static const char* usage_str =
-		"Usage: kmsprint [OPTIONS]\n\n"
-		"Options:\n"
-		"      --device=DEVICE     DEVICE is the path to DRM card to open\n"
-		"  -l, --list              Print list instead of tree\n"
-		"  -m, --modes             Print modes\n"
-		"      --xmode             Print modes using X modeline\n"
-		"  -p, --props             Print properties\n"
-		;
+	"Usage: kmsprint [OPTIONS]\n\n"
+	"Options:\n"
+	"      --device=DEVICE     DEVICE is the path to DRM card to open\n"
+	"  -l, --list              Print list instead of tree\n"
+	"  -m, --modes             Print modes\n"
+	"      --xmode             Print modes using X modeline\n"
+	"  -p, --props             Print properties\n";
 
 static void usage()
 {
 	puts(usage_str);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 	string dev_path;
 
 	OptionSet optionset = {
-		Option("|device=", [&dev_path](string s)
-		{
+		Option("|device=", [&dev_path](string s) {
 			dev_path = s;
 		}),
-		Option("l|list", []()
-		{
+		Option("l|list", []() {
 			s_opts.print_list = true;
 		}),
-		Option("m|modes", []()
-		{
+		Option("m|modes", []() {
 			s_opts.print_modes = true;
 		}),
-		Option("p|props", []()
-		{
+		Option("p|props", []() {
 			s_opts.print_props = true;
 		}),
 		Option("|xmode", []() {
 			s_opts.x_modeline = true;
 		}),
-		Option("h|help", []()
-		{
+		Option("h|help", []() {
 			usage();
 			exit(-1);
 		}),

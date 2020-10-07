@@ -5,7 +5,7 @@
 class EglState
 {
 public:
-	EglState(void *native_display);
+	EglState(void* native_display);
 	~EglState();
 
 	EGLDisplay display() const { return m_display; }
@@ -21,7 +21,7 @@ private:
 class EglSurface
 {
 public:
-	EglSurface(const EglState& egl, void *native_window);
+	EglSurface(const EglState& egl, void* native_window);
 	~EglSurface();
 
 	void make_current();

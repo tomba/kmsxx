@@ -7,15 +7,16 @@ namespace py = pybind11;
 using namespace kms;
 using namespace std;
 
-void init_pykmstest(py::module &m);
-void init_pykmsbase(py::module &m);
-void init_pyvid(py::module &m);
+void init_pykmstest(py::module& m);
+void init_pykmsbase(py::module& m);
+void init_pyvid(py::module& m);
 
 #if HAS_LIBDRM_OMAP
-void init_pykmsomap(py::module &m);
+void init_pykmsomap(py::module& m);
 #endif
 
-PYBIND11_MODULE(pykms, m) {
+PYBIND11_MODULE(pykms, m)
+{
 	init_pykmsbase(m);
 
 	init_pykmstest(m);

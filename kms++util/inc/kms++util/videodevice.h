@@ -9,8 +9,7 @@ class VideoStreamer;
 class VideoDevice
 {
 public:
-	struct VideoFrameSize
-	{
+	struct VideoFrameSize {
 		uint32_t min_w, max_w, step_w;
 		uint32_t min_h, max_h, step_h;
 	};

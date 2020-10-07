@@ -27,11 +27,11 @@ if(LIBEVDEV_FOUND)
     target_link_libraries(kmstouch kms++ kms++util ${LIBDRM_LIBRARIES} ${LIBEVDEV_LIBRARIES})
 endif()
 
-add_executable (wbcap wbcap.cpp)
-target_link_libraries(wbcap kms++ kms++util ${LIBDRM_LIBRARIES})
+add_executable (omap-wbcap omap-wbcap.cpp)
+target_link_libraries(omap-wbcap kms++ kms++util ${LIBDRM_LIBRARIES})
 
-add_executable (wbm2m wbm2m.cpp)
-target_link_libraries(wbm2m kms++ kms++util ${LIBDRM_LIBRARIES})
+add_executable (omap-wbm2m omap-wbm2m.cpp)
+target_link_libraries(omap-wbm2m kms++ kms++util ${LIBDRM_LIBRARIES})
 
 install(TARGETS kmstest kmsprint fbtest
     DESTINATION bin)

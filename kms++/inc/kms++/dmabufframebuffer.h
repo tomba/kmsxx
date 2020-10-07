@@ -12,6 +12,8 @@ namespace kms
 class DmabufFramebuffer : public Framebuffer
 {
 public:
+	DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, const std::string& format,
+			  std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets, std::vector<uint64_t> modifiers = {});
 	DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, PixelFormat format,
 			  std::vector<int> fds, std::vector<uint32_t> pitches, std::vector<uint32_t> offsets, std::vector<uint64_t> modifiers = {});
 	~DmabufFramebuffer() override;

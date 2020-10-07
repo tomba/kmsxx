@@ -5,4 +5,5 @@ build
 *.txt.user
 *.patch
 py/__pycache__
+*.pyc
 meson.build.user

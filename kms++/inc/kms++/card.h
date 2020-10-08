@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "decls.h"
 #include "pipeline.h"

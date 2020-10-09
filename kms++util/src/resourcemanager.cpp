@@ -20,6 +20,9 @@ void ResourceManager::reset()
 static Connector* find_connector(Card& card, const set<Connector*> reserved)
 {
 	for (Connector* conn : card.get_connectors()) {
+		if (conn->is_wb())
+			continue;
+
 		if (!conn->connected())
 			continue;
 

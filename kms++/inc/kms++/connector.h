@@ -44,6 +44,8 @@ public:
 	std::vector<Videomode> get_modes() const;
 	std::vector<Encoder*> get_encoders() const;
 
+	bool is_wb() const;
+
 private:
 	Connector(Card& card, uint32_t id, uint32_t idx);
 	~Connector() override;

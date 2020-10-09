@@ -35,6 +35,7 @@ static const map<int, string> connector_names = {
 	{ DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
 	{ DRM_MODE_CONNECTOR_DSI, "DSI" },
 	{ DRM_MODE_CONNECTOR_DPI, "DPI" },
+	{ DRM_MODE_CONNECTOR_WRITEBACK, "Writeback" },
 };
 
 static const map<int, string> connection_str = {
@@ -282,6 +283,11 @@ std::vector<Encoder*> Connector::get_encoders() const
 		encoders.push_back(enc);
 	}
 	return encoders;
+}
+
+bool Connector::is_wb() const
+{
+	return connector_type() == DRM_MODE_CONNECTOR_WRITEBACK;
 }
 
 } // namespace kms

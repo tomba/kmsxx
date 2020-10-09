@@ -15,3 +15,5 @@ endif
 
 executable('omap-wbcap', 'omap-wbcap.cpp', dependencies : [ common_deps ], install : false)
 executable('omap-wbm2m', 'omap-wbm2m.cpp', dependencies : [ common_deps ], install : false)
+
+executable('wbcap', 'wbcap.cpp', dependencies : [ common_deps ], install : false)

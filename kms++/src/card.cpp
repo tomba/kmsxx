@@ -220,6 +220,9 @@ void Card::setup()
 	r = drmGetCap(m_fd, DRM_CAP_DUMB_BUFFER, &has_dumb);
 	m_has_dumb = r == 0 && has_dumb;
 
+	r = drmSetClientCap(m_fd, DRM_CLIENT_CAP_WRITEBACK_CONNECTORS, 1);
+	m_has_wb = r == 0;
+
 	auto res = drmModeGetResources(m_fd);
 	if (res) {
 		for (int i = 0; i < res->count_connectors; ++i) {
@@ -315,6 +318,8 @@ void Card::restore_modes()
 Connector* Card::get_first_connected_connector() const
 {
 	for (auto c : m_connectors) {
+		if (c->is_wb())
+			continue;
 		if (c->connected())
 			return c;
 	}

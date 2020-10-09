@@ -92,6 +92,7 @@ private:
 	bool m_has_atomic;
 	bool m_has_universal_planes;
 	bool m_has_dumb;
+	bool m_has_wb;
 
 	CardVersion m_version;
 };

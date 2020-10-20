@@ -26,13 +26,22 @@ public_headers = [
 private_includes = include_directories('src', 'inc')
 public_includes = include_directories('inc')
 
-libkmsxxutil_deps = [ libkmsxx_dep, libfmt_dep ]
+thread_dep = dependency('threads', required : false)
+
+libkmsxxutil_args = [ ]
+
+if thread_dep.found()
+    libkmsxxutil_args += [ '-DHAS_PTHREAD' ]
+endif
+
+libkmsxxutil_deps = [ libkmsxx_dep, libfmt_dep, thread_dep ]
 
 libkmsxxutil = library('kms++util',
                        libkmsxxutil_sources,
                        install : true,
                        include_directories : private_includes,
-                       dependencies : libkmsxxutil_deps)
+                       dependencies : libkmsxxutil_deps,
+                       cpp_args : libkmsxxutil_args)
 
 libkmsxxutil_dep = declare_dependency(include_directories : public_includes,
                                       link_with : libkmsxxutil)

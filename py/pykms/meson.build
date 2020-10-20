@@ -7,9 +7,14 @@ endif
 pykms_sources = files([
     'pykmsbase.cpp',
     'pykms.cpp',
-    'pykmsutil.cpp',
-    'pyvid.cpp',
 ])
+
+if get_option('utils')
+    pykms_sources += files([
+        'pykmsutil.cpp',
+        'pyvid.cpp',
+    ])
+endif
 
 if libdrmomap_dep.found()
     pykms_sources += files([
@@ -19,10 +24,13 @@ endif
 
 pykms_deps = [
     libkmsxx_dep,
-    libkmsxxutil_dep,
     py3_dep,
     pybind11_dep,
 ]
+
+if get_option('utils')
+    pykms_deps += [ libkmsxxutil_dep ]
+endif
 
 destdir = get_option('libdir') / 'python' + py3_dep.version() / 'site-packages/pykms'
 

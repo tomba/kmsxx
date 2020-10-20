@@ -41,8 +41,12 @@ pybind11_dep = declare_dependency(include_directories : pybind11_includes)
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 
 subdir('kms++')
-subdir('kms++util')
-subdir('utils')
+
+if get_option('utils')
+    subdir('kms++util')
+    subdir('utils')
+endif
+
 subdir('py')
 
 if get_option('kmscube')

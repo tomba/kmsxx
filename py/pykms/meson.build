@@ -32,6 +32,8 @@ if get_option('utils')
     pykms_deps += [ libkmsxxutil_dep ]
 endif
 
+pykms_args = [ '-fvisibility=hidden' ]
+
 destdir = get_option('libdir') / 'python' + py3_dep.version() / 'site-packages/pykms'
 
 pykms = shared_module('pykms',
@@ -39,7 +41,8 @@ pykms = shared_module('pykms',
                       install : true,
                       install_dir : destdir,
                       name_prefix : '',
-                      dependencies : pykms_deps)
+                      dependencies : pykms_deps,
+                      cpp_args : pykms_args)
 
 # Copy __init__.py to build dir so that we can run without installing
 configure_file(input: '__init__.py', output: '__init__.py', copy: true,

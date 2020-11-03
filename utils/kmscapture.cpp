@@ -355,9 +355,6 @@ int main(int argc, char** argv)
 
 	vector<Plane*> available_planes;
 	for (Plane* p : crtc->get_possible_planes()) {
-		if (p->plane_type() != PlaneType::Overlay)
-			continue;
-
 		if (!p->supports_format(pixfmt))
 			continue;
 

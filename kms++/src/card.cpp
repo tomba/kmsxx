@@ -394,20 +394,34 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 	return outputs;
 }
 
-static void page_flip_handler(int fd, unsigned int frame,
+static void vblank_handler(int fd,
+		       unsigned int sequence,
+			       unsigned int tv_sec,
+		       unsigned int tv_usec,
+		       void *user_data)
+{
+	auto handler = (PageFlipHandlerBase*)user_data;
+	//double time = sec + usec / 1000000.0;
+	//handler->handle_page_flip(frame, time);
+	handler->handle_vblank(sequence);
+}
+
+static void page_flip_handler2(int fd, unsigned int frame,
 			      unsigned int sec, unsigned int usec,
-			      void* data)
+			      unsigned int crtc_id, void* data)
 {
 	auto handler = (PageFlipHandlerBase*)data;
 	double time = sec + usec / 1000000.0;
 	handler->handle_page_flip(frame, time);
+	handler->handle_page_flip2(frame, time, crtc_id);
 }
 
 void Card::call_page_flip_handlers()
 {
 	drmEventContext ev{};
 	ev.version = DRM_EVENT_CONTEXT_VERSION;
-	ev.page_flip_handler = page_flip_handler;
+	ev.page_flip_handler2 = page_flip_handler2;
+	ev.vblank_handler = vblank_handler;
 
 	drmHandleEvent(fd(), &ev);
 }
@@ -430,6 +444,16 @@ int Card::disable_all()
 	}
 
 	return req.commit_sync(true);
+}
+
+int Card::vblank_setup(void* data)
+{
+	drmVBlank b {};
+	b.request.type = (drmVBlankSeqType)(DRM_VBLANK_EVENT | DRM_VBLANK_RELATIVE);
+	b.request.sequence = 1;
+	b.request.signal = (unsigned long)data;
+	int r = drmWaitVBlank(fd(), &b);
+	return r;
 }
 
 } // namespace kms

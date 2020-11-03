@@ -72,6 +72,7 @@ public:
 	const std::string& version_name() const { return m_version.name; }
 	const CardVersion& version() const { return m_version; }
 
+	int vblank_setup(void* data);
 private:
 	void setup();
 	void restore_modes();

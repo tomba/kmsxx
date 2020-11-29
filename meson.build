@@ -39,8 +39,12 @@ else
                                     compile_args : '-DFMT_HEADER_ONLY')
 endif
 
-pybind11_includes = include_directories('ext/pybind11/include')
-pybind11_dep = declare_dependency(include_directories : pybind11_includes)
+if get_option('system-pybind11')
+    pybind11_dep = dependency('pybind11', required : get_option('pykms'))
+else
+    pybind11_includes = include_directories('ext/pybind11/include')
+    pybind11_dep = declare_dependency(include_directories : pybind11_includes)
+endif
 
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 

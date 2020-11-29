@@ -4,6 +4,10 @@ if py3_dep.found() == false
     subdir_done()
 endif
 
+if pybind11_dep.found() == false
+    subdir_done()
+endif
+
 pykms_sources = files([
     'pykmsbase.cpp',
     'pykms.cpp',

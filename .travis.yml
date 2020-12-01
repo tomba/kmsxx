@@ -24,6 +24,7 @@ addons:
       - libevdev-dev
       - meson
       - ninja-build
+      - libfmt-dev
 
 # Need MYCC and MYCXX as travis overwrites CC and CXX
 

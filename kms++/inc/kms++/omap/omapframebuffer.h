@@ -50,7 +50,7 @@ private:
 		uint8_t* map;
 	};
 
-	void Create(Flags buffer_flags);
+	void Create(uint32_t width, uint32_t height, PixelFormat format, Flags buffer_flags);
 	void Destroy();
 
 	unsigned m_num_planes;

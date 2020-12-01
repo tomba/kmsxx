@@ -1055,6 +1055,8 @@ private:
 
 static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 {
+// clang-tidy does not seem to handle FD_xxx macros
+#ifndef __clang_analyzer__
 	fd_set fds;
 
 	FD_ZERO(&fds);
@@ -1101,6 +1103,7 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 			card.call_page_flip_handlers();
 		}
 	}
+#endif
 }
 
 int main(int argc, char** argv)

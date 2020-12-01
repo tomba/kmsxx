@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <fstream>
 #include <unistd.h>
+#include <cassert>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -91,6 +92,8 @@ int main(int argc, char** argv)
 	unsigned frame_size = 0;
 	for (unsigned i = 0; i < fb->num_planes(); ++i)
 		frame_size += fb->size(i);
+
+	assert(frame_size);
 
 	unsigned num_frames = fsize / frame_size;
 	printf("file size %u, frame size %u, frames %u\n", fsize, frame_size, num_frames);

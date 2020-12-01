@@ -288,4 +288,6 @@ int main(int argc, char** argv)
 			handle_event(ev, fb);
 
 	} while (rc == 1 || rc == 0 || rc == -EAGAIN);
+
+	delete fb;
 }

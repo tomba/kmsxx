@@ -33,7 +33,7 @@ OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height
 OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, PixelFormat format, Flags flags)
 	: Framebuffer(card, width, height), m_omap_card(card), m_format(format)
 {
-	Create(flags);
+	Create(width, height, format, flags);
 }
 
 OmapFramebuffer::~OmapFramebuffer()
@@ -41,9 +41,9 @@ OmapFramebuffer::~OmapFramebuffer()
 	Destroy();
 }
 
-void OmapFramebuffer::Create(Flags buffer_flags)
+void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format, Flags buffer_flags)
 {
-	const PixelFormatInfo& format_info = get_pixel_format_info(m_format);
+	const PixelFormatInfo& format_info = get_pixel_format_info(format);
 
 	m_num_planes = format_info.num_planes;
 
@@ -67,9 +67,9 @@ void OmapFramebuffer::Create(Flags buffer_flags)
 		uint32_t stride;
 
 		if (!(buffer_flags & Flags::Tiled)) {
-			stride = width() * pi.bitspp / 8;
+			stride = width * pi.bitspp / 8;
 
-			uint32_t size = stride * height() / pi.ysub;
+			uint32_t size = stride * height / pi.ysub;
 
 			bo = omap_bo_new(m_omap_card.dev(), size, flags);
 			if (!bo)
@@ -77,7 +77,7 @@ void OmapFramebuffer::Create(Flags buffer_flags)
 		} else {
 			unsigned bitspertiler;
 
-			switch (m_format) {
+			switch (format) {
 			case PixelFormat::NV12:
 				bitspertiler = i == 0 ? 8 : 16;
 				break;
@@ -110,13 +110,13 @@ void OmapFramebuffer::Create(Flags buffer_flags)
 				throw invalid_argument("bad bitspertiler");
 			}
 
-			uint32_t width_tiler = width() * pi.bitspp / bitspertiler;
+			uint32_t width_tiler = width * pi.bitspp / bitspertiler;
 
-			bo = omap_bo_new_tiled(m_omap_card.dev(), width_tiler, height(), flags);
+			bo = omap_bo_new_tiled(m_omap_card.dev(), width_tiler, height, flags);
 			if (!bo)
 				throw invalid_argument(string("omap_bo_new_tiled failed: ") + strerror(errno));
 
-			stride = round_up(width() * pi.bitspp / 8, PAGE_SIZE);
+			stride = round_up(width * pi.bitspp / 8, PAGE_SIZE);
 		}
 
 		plane.omap_bo = bo;
@@ -133,7 +133,7 @@ void OmapFramebuffer::Create(Flags buffer_flags)
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
 	uint32_t offsets[4] = { m_planes[0].offset, m_planes[1].offset };
 	uint32_t id;
-	int r = drmModeAddFB2(card().fd(), width(), height(), (uint32_t)format(),
+	int r = drmModeAddFB2(card().fd(), width, height, (uint32_t)format,
 			      bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));

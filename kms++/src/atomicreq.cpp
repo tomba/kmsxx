@@ -62,7 +62,12 @@ void AtomicReq::add(DrmPropObject* ob, Property* prop, uint64_t value)
 
 void AtomicReq::add(kms::DrmPropObject* ob, const string& prop, uint64_t value)
 {
-	add(ob, ob->get_prop(prop), value);
+	Property* p = ob->get_prop(prop);
+
+	if (!p)
+		throw runtime_error("Property not found");
+
+	add(ob, p, value);
 }
 
 void AtomicReq::add(kms::DrmPropObject* ob, const map<string, uint64_t>& values)

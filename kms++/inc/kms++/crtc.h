@@ -39,7 +39,8 @@ public:
 	uint32_t height() const;
 	int mode_valid() const;
 	Videomode mode() const;
-	int gamma_size() const;
+	int legacy_gamma_size() const;
+	void legacy_gamma_set(std::vector<std::tuple<uint16_t, uint16_t, uint16_t>> v);
 
 private:
 	Crtc(Card& card, uint32_t id, uint32_t idx);

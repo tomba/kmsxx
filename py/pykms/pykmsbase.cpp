@@ -96,7 +96,9 @@ void init_pykmsbase(py::module& m)
 		.def_property_readonly("mode", &Crtc::mode)
 		.def_property_readonly("mode_valid", &Crtc::mode_valid)
 		.def("__repr__", [](const Crtc& o) { return "<pykms.Crtc " + to_string(o.id()) + ">"; })
-		.def("refresh", &Crtc::refresh);
+		.def("refresh", &Crtc::refresh)
+		.def("legacy_gamma_size", &Crtc::legacy_gamma_size)
+		.def("legacy_gamma_set", &Crtc::legacy_gamma_set);
 
 	py::class_<Encoder, DrmPropObject, unique_ptr<Encoder, py::nodelete>>(m, "Encoder")
 		.def("refresh", &Encoder::refresh);

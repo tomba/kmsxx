@@ -173,9 +173,25 @@ Videomode Crtc::mode() const
 	return drm_mode_to_video_mode(m_priv->drm_crtc->mode);
 }
 
-int Crtc::gamma_size() const
+int Crtc::legacy_gamma_size() const
 {
 	return m_priv->drm_crtc->gamma_size;
+}
+
+void Crtc::legacy_gamma_set(vector<tuple<uint16_t, uint16_t, uint16_t>> v)
+{
+	uint32_t len = v.size();
+	uint16_t red[len];
+	uint16_t green[len];
+	uint16_t blue[len];
+
+	for (uint32_t i = 0; i < len; ++i) {
+		red[i] = get<0>(v[i]);
+		green[i] = get<1>(v[i]);
+		blue[i] = get<2>(v[i]);
+	}
+
+	drmModeCrtcSetGamma(card().fd(), id(), len, red, green, blue);
 }
 
 } // namespace kms

@@ -4,6 +4,15 @@ if py3_dep.found() == false
     subdir_done()
 endif
 
+if get_option('system-pybind11').enabled()
+    pybind11_dep = dependency('pybind11')
+elif get_option('system-pybind11').disabled()
+    pybind11_proj = subproject('pybind11')
+    pybind11_dep = pybind11_proj.get_variable('pybind11_dep')
+else
+    pybind11_dep = dependency('pybind11', fallback : ['pybind11', 'pybind11_dep'])
+endif
+
 pykms_sources = files([
     'pykmsbase.cpp',
     'pykms.cpp',

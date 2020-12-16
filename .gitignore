@@ -7,3 +7,5 @@ build
 py/__pycache__
 *.pyc
 meson.build.user
+subprojects/packagecache/
+subprojects/pybind11-*/

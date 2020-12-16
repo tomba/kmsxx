@@ -1,5 +1,14 @@
-option('kmscube', type : 'boolean', value : false)
-option('pykms', type : 'feature', value : 'auto')
-option('omap', type : 'feature', value : 'auto')
-option('static-libc', type : 'boolean', value : false)
-option('utils', type : 'boolean', value : true)
+option('omap', type : 'feature', value : 'auto',
+       description : 'Build omapdrm extensions')
+
+option('static-libc', type : 'boolean', value : false,
+       description : 'Build with -static-libgcc -static-libstdc++')
+
+option('utils', type : 'boolean', value : true,
+       description : 'Build kms++utils library and an assortment of utils and tests')
+
+option('pykms', type : 'feature', value : 'auto',
+       description : 'Build python bindings')
+
+option('kmscube', type : 'boolean', value : false,
+       description : 'Build kmscube test application')

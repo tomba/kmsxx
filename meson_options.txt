@@ -4,8 +4,11 @@ option('omap', type : 'feature', value : 'auto',
 option('static-libc', type : 'boolean', value : false,
        description : 'Build with -static-libgcc -static-libstdc++')
 
+option('libutils', type : 'boolean', value : true,
+       description : 'Build kms++utils library')
+
 option('utils', type : 'boolean', value : true,
-       description : 'Build kms++utils library and an assortment of utils and tests')
+       description : 'Build an assortment of kms++ utils and tests')
 
 option('pykms', type : 'feature', value : 'auto',
        description : 'Build python bindings')

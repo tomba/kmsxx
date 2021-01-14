@@ -9,11 +9,12 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("width", type=int)
 parser.add_argument("height", type=int)
+parser.add_argument("fourcc", type=str, nargs="?", default="YUVY")
 args = parser.parse_args()
 
 w = args.width
 h = args.height
-fmt = pykms.PixelFormat.YUYV
+fmt = pykms.fourcc_to_pixelformat(args.fourcc)
 
 print("Capturing in {}x{}".format(w, h))
 

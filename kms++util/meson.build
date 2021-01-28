@@ -39,7 +39,7 @@ libkmsxxutil_deps = [ libkmsxx_dep, libfmt_dep, thread_dep ]
 libkmsxxutil = library('kms++util',
                        libkmsxxutil_sources,
                        install : true,
-                       include_directories : private_includes,
+                       include_directories : [ private_includes, common_includes ],
                        dependencies : libkmsxxutil_deps,
                        cpp_args : libkmsxxutil_args)
 

@@ -32,6 +32,8 @@ endif
 
 add_global_link_arguments(link_arguments, language : 'cpp')
 
+common_includes = include_directories('include')
+
 libfmt_dep = dependency('fmt')
 
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))

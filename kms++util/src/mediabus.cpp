@@ -1,0 +1,128 @@
+#include <kms++util/mediabus.h>
+#include <linux/media-bus-format.h>
+
+#include <map>
+#include <string>
+#include <tuple>
+
+using namespace std;
+
+#define MAP_BUS_FMT(fmt)                                      \
+	{                                                     \
+		BusFormat::fmt, { MEDIA_BUS_FMT_##fmt, #fmt } \
+	}
+
+static const map<BusFormat, tuple<uint32_t, std::string>> s_bus_format_map = {
+	MAP_BUS_FMT(FIXED),
+
+	MAP_BUS_FMT(RGB444_2X8_PADHI_BE),
+	MAP_BUS_FMT(RGB444_2X8_PADHI_LE),
+	MAP_BUS_FMT(RGB555_2X8_PADHI_BE),
+	MAP_BUS_FMT(RGB555_2X8_PADHI_LE),
+	MAP_BUS_FMT(BGR565_2X8_BE),
+	MAP_BUS_FMT(BGR565_2X8_LE),
+	MAP_BUS_FMT(RGB565_2X8_BE),
+	MAP_BUS_FMT(RGB565_2X8_LE),
+	MAP_BUS_FMT(RGB666_1X18),
+	MAP_BUS_FMT(RGB888_1X24),
+	MAP_BUS_FMT(RGB888_2X12_BE),
+	MAP_BUS_FMT(RGB888_2X12_LE),
+	MAP_BUS_FMT(ARGB8888_1X32),
+
+	MAP_BUS_FMT(Y8_1X8),
+	MAP_BUS_FMT(UV8_1X8),
+	MAP_BUS_FMT(UYVY8_1_5X8),
+	MAP_BUS_FMT(VYUY8_1_5X8),
+	MAP_BUS_FMT(YUYV8_1_5X8),
+	MAP_BUS_FMT(YVYU8_1_5X8),
+	MAP_BUS_FMT(UYVY8_2X8),
+	MAP_BUS_FMT(VYUY8_2X8),
+	MAP_BUS_FMT(YUYV8_2X8),
+	MAP_BUS_FMT(YVYU8_2X8),
+	MAP_BUS_FMT(Y10_1X10),
+	MAP_BUS_FMT(UYVY10_2X10),
+	MAP_BUS_FMT(VYUY10_2X10),
+	MAP_BUS_FMT(YUYV10_2X10),
+	MAP_BUS_FMT(YVYU10_2X10),
+	MAP_BUS_FMT(Y12_1X12),
+	MAP_BUS_FMT(UYVY8_1X16),
+	MAP_BUS_FMT(VYUY8_1X16),
+	MAP_BUS_FMT(YUYV8_1X16),
+	MAP_BUS_FMT(YVYU8_1X16),
+	MAP_BUS_FMT(YDYUYDYV8_1X16),
+	MAP_BUS_FMT(UYVY10_1X20),
+	MAP_BUS_FMT(VYUY10_1X20),
+	MAP_BUS_FMT(YUYV10_1X20),
+	MAP_BUS_FMT(YVYU10_1X20),
+	MAP_BUS_FMT(YUV10_1X30),
+	MAP_BUS_FMT(AYUV8_1X32),
+	MAP_BUS_FMT(UYVY12_2X12),
+	MAP_BUS_FMT(VYUY12_2X12),
+	MAP_BUS_FMT(YUYV12_2X12),
+	MAP_BUS_FMT(YVYU12_2X12),
+	MAP_BUS_FMT(UYVY12_1X24),
+	MAP_BUS_FMT(VYUY12_1X24),
+	MAP_BUS_FMT(YUYV12_1X24),
+	MAP_BUS_FMT(YVYU12_1X24),
+
+	MAP_BUS_FMT(SBGGR8_1X8),
+	MAP_BUS_FMT(SGBRG8_1X8),
+	MAP_BUS_FMT(SGRBG8_1X8),
+	MAP_BUS_FMT(SRGGB8_1X8),
+	MAP_BUS_FMT(SBGGR10_ALAW8_1X8),
+	MAP_BUS_FMT(SGBRG10_ALAW8_1X8),
+	MAP_BUS_FMT(SGRBG10_ALAW8_1X8),
+	MAP_BUS_FMT(SRGGB10_ALAW8_1X8),
+	MAP_BUS_FMT(SBGGR10_DPCM8_1X8),
+	MAP_BUS_FMT(SGBRG10_DPCM8_1X8),
+	MAP_BUS_FMT(SGRBG10_DPCM8_1X8),
+	MAP_BUS_FMT(SRGGB10_DPCM8_1X8),
+	MAP_BUS_FMT(SBGGR10_2X8_PADHI_BE),
+	MAP_BUS_FMT(SBGGR10_2X8_PADHI_LE),
+	MAP_BUS_FMT(SBGGR10_2X8_PADLO_BE),
+	MAP_BUS_FMT(SBGGR10_2X8_PADLO_LE),
+	MAP_BUS_FMT(SBGGR10_1X10),
+	MAP_BUS_FMT(SGBRG10_1X10),
+	MAP_BUS_FMT(SGRBG10_1X10),
+	MAP_BUS_FMT(SRGGB10_1X10),
+	MAP_BUS_FMT(SBGGR12_1X12),
+	MAP_BUS_FMT(SGBRG12_1X12),
+	MAP_BUS_FMT(SGRBG12_1X12),
+	MAP_BUS_FMT(SRGGB12_1X12),
+
+	MAP_BUS_FMT(JPEG_1X8),
+
+	MAP_BUS_FMT(S5C_UYVY_JPEG_1X8),
+
+	MAP_BUS_FMT(AHSV8888_1X32),
+};
+
+uint32_t BusFormatToCode(BusFormat fmt)
+{
+	return get<0>(s_bus_format_map.at(fmt));
+}
+
+string BusFormatToString(BusFormat fmt)
+{
+	return get<1>(s_bus_format_map.at(fmt));
+}
+
+BusFormat StringToBusFormat(const string& fmt)
+{
+	for (const auto& [k, p] : s_bus_format_map) {
+		if (fmt == get<1>(p))
+			return k;
+	}
+
+	throw runtime_error("BusFormat not found");
+}
+
+BusFormat CodeToBusFormat(uint32_t code)
+{
+	for (const auto& [k, p] : s_bus_format_map) {
+		if (code == get<0>(p))
+			return k;
+	}
+
+	throw runtime_error("BusFormat not found");
+}

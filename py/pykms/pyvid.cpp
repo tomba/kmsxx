@@ -3,6 +3,9 @@
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
 #include <kms++util/videodevice.h>
+#include <kms++util/mediadevice.h>
+#include <kms++util/videosubdev.h>
+#include <fmt/format.h>
 
 namespace py = pybind11;
 
@@ -43,4 +46,125 @@ void init_pyvid(py::module& m)
 		.def("dequeue", &VideoStreamer::dequeue)
 		.def("stream_on", &VideoStreamer::stream_on)
 		.def("stream_off", &VideoStreamer::stream_off);
+
+#define BUS_FMT_ENUM(fmt) value(#fmt, BusFormat::fmt)
+
+	py::enum_<BusFormat>(m, "BusFormat")
+		.BUS_FMT_ENUM(FIXED)
+
+		.BUS_FMT_ENUM(RGB444_2X8_PADHI_BE)
+		.BUS_FMT_ENUM(RGB444_2X8_PADHI_LE)
+		.BUS_FMT_ENUM(RGB555_2X8_PADHI_BE)
+		.BUS_FMT_ENUM(RGB555_2X8_PADHI_LE)
+		.BUS_FMT_ENUM(BGR565_2X8_BE)
+		.BUS_FMT_ENUM(BGR565_2X8_LE)
+		.BUS_FMT_ENUM(RGB565_2X8_BE)
+		.BUS_FMT_ENUM(RGB565_2X8_LE)
+		.BUS_FMT_ENUM(RGB666_1X18)
+		.BUS_FMT_ENUM(RGB888_1X24)
+		.BUS_FMT_ENUM(RGB888_2X12_BE)
+		.BUS_FMT_ENUM(RGB888_2X12_LE)
+		.BUS_FMT_ENUM(ARGB8888_1X32)
+
+		.BUS_FMT_ENUM(Y8_1X8)
+		.BUS_FMT_ENUM(UV8_1X8)
+		.BUS_FMT_ENUM(UYVY8_1_5X8)
+		.BUS_FMT_ENUM(VYUY8_1_5X8)
+		.BUS_FMT_ENUM(YUYV8_1_5X8)
+		.BUS_FMT_ENUM(YVYU8_1_5X8)
+		.BUS_FMT_ENUM(UYVY8_2X8)
+		.BUS_FMT_ENUM(VYUY8_2X8)
+		.BUS_FMT_ENUM(YUYV8_2X8)
+		.BUS_FMT_ENUM(YVYU8_2X8)
+		.BUS_FMT_ENUM(Y10_1X10)
+		.BUS_FMT_ENUM(UYVY10_2X10)
+		.BUS_FMT_ENUM(VYUY10_2X10)
+		.BUS_FMT_ENUM(YUYV10_2X10)
+		.BUS_FMT_ENUM(YVYU10_2X10)
+		.BUS_FMT_ENUM(Y12_1X12)
+		.BUS_FMT_ENUM(UYVY8_1X16)
+		.BUS_FMT_ENUM(VYUY8_1X16)
+		.BUS_FMT_ENUM(YUYV8_1X16)
+		.BUS_FMT_ENUM(YVYU8_1X16)
+		.BUS_FMT_ENUM(YDYUYDYV8_1X16)
+		.BUS_FMT_ENUM(UYVY10_1X20)
+		.BUS_FMT_ENUM(VYUY10_1X20)
+		.BUS_FMT_ENUM(YUYV10_1X20)
+		.BUS_FMT_ENUM(YVYU10_1X20)
+		.BUS_FMT_ENUM(YUV10_1X30)
+		.BUS_FMT_ENUM(AYUV8_1X32)
+		.BUS_FMT_ENUM(UYVY12_2X12)
+		.BUS_FMT_ENUM(VYUY12_2X12)
+		.BUS_FMT_ENUM(YUYV12_2X12)
+		.BUS_FMT_ENUM(YVYU12_2X12)
+		.BUS_FMT_ENUM(UYVY12_1X24)
+		.BUS_FMT_ENUM(VYUY12_1X24)
+		.BUS_FMT_ENUM(YUYV12_1X24)
+		.BUS_FMT_ENUM(YVYU12_1X24)
+
+		.BUS_FMT_ENUM(SBGGR8_1X8)
+		.BUS_FMT_ENUM(SGBRG8_1X8)
+		.BUS_FMT_ENUM(SGRBG8_1X8)
+		.BUS_FMT_ENUM(SRGGB8_1X8)
+		.BUS_FMT_ENUM(SBGGR10_ALAW8_1X8)
+		.BUS_FMT_ENUM(SGBRG10_ALAW8_1X8)
+		.BUS_FMT_ENUM(SGRBG10_ALAW8_1X8)
+		.BUS_FMT_ENUM(SRGGB10_ALAW8_1X8)
+		.BUS_FMT_ENUM(SBGGR10_DPCM8_1X8)
+		.BUS_FMT_ENUM(SGBRG10_DPCM8_1X8)
+		.BUS_FMT_ENUM(SGRBG10_DPCM8_1X8)
+		.BUS_FMT_ENUM(SRGGB10_DPCM8_1X8)
+		.BUS_FMT_ENUM(SBGGR10_2X8_PADHI_BE)
+		.BUS_FMT_ENUM(SBGGR10_2X8_PADHI_LE)
+		.BUS_FMT_ENUM(SBGGR10_2X8_PADLO_BE)
+		.BUS_FMT_ENUM(SBGGR10_2X8_PADLO_LE)
+		.BUS_FMT_ENUM(SBGGR10_1X10)
+		.BUS_FMT_ENUM(SGBRG10_1X10)
+		.BUS_FMT_ENUM(SGRBG10_1X10)
+		.BUS_FMT_ENUM(SRGGB10_1X10)
+		.BUS_FMT_ENUM(SBGGR12_1X12)
+		.BUS_FMT_ENUM(SGBRG12_1X12)
+		.BUS_FMT_ENUM(SGRBG12_1X12)
+		.BUS_FMT_ENUM(SRGGB12_1X12)
+
+		.BUS_FMT_ENUM(JPEG_1X8)
+
+		.BUS_FMT_ENUM(S5C_UYVY_JPEG_1X8)
+
+		.BUS_FMT_ENUM(AHSV8888_1X32);
+
+	py::class_<VideoSubdev>(m, "ViodeSubdev")
+		.def("set_format", &VideoSubdev::set_format)
+		.def("get_format", [](VideoSubdev& self, uint32_t pad) {
+			uint32_t w, h;
+			BusFormat fmt;
+
+			self.get_format(pad, w, h, fmt);
+
+			return make_tuple(w, h, fmt);
+		})
+		.def("get_routing", &VideoSubdev::get_routing)
+	;
+
+	py::class_<SubdevRoute>(m, "SubdevRoute")
+		.def_readwrite("sink_pad", &SubdevRoute::sink_pad)
+		.def_readwrite("sink_stream", &SubdevRoute::sink_stream)
+		.def_readwrite("source_pad", &SubdevRoute::source_pad)
+		.def_readwrite("source_stream", &SubdevRoute::source_stream)
+		.def_readwrite("active", &SubdevRoute::active)
+		.def_readonly("immutable", &SubdevRoute::immutable)
+		.def("__repr__", [](const SubdevRoute& r) {
+			return fmt::format("<pykms.SubdevRoute {}/{} -> {}/{}{}{}>",
+					   r.sink_pad, r.sink_stream, r.source_pad, r.source_stream,
+					   r.active ? " active" : "", r.immutable ? " immutable" : "");
+		})
+		;
+
+	py::class_<MediaDevice>(m, "MediaDevice")
+		.def(py::init<const string&>())
+		.def("find_entity", &MediaDevice::find_entity, py::return_value_policy::reference_internal);
+
+	py::class_<MediaEntity>(m, "MediaEntity")
+		.def_property_readonly(
+			"subdev", [](MediaEntity& self) { return self.subdev.get(); }, py::return_value_policy::reference_internal);
 }

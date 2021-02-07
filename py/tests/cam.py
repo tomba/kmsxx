@@ -54,8 +54,12 @@ card = pykms.Card()
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
 crtc = res.reserve_crtc(conn)
-plane1 = res.reserve_overlay_plane(crtc, fmt)
-plane2 = res.reserve_overlay_plane(crtc, fmt)
+plane1 = res.reserve_generic_plane(crtc, fmt)
+plane2 = res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
+plane3 = res.reserve_generic_plane(crtc, fmt)
+plane4 = res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
+
+assert(plane4)
 
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
@@ -69,14 +73,16 @@ req.commit_sync(allow_modeset = True)
 NUM_BUFS = 5
 
 sensors = [
-    { "path": "/dev/video0", "plane": plane1, "x": 0 },
-#    { "path": "/dev/video1", "plane": plane2, "x": mode.hdisplay - w }
+    { "idx": 0, "path": "/dev/video0", "plane": plane1, "x": 0, "y": 0, "hack": False },
+    { "idx": 1, "path": "/dev/video1", "plane": plane2, "x": mode.hdisplay - w, "y": 0, "hack": True },
+#    { "idx": 2, "path": "/dev/video2", "plane": plane3, "x": 0, "y": mode.vdisplay - h, "hack": False },
+#    { "idx": 3, "path": "/dev/video3", "plane": plane4, "x": mode.hdisplay - w, "y": mode.vdisplay - h, "hack": True },
 ]
 
 for data in sensors:
     fbs = []
     for i in range(NUM_BUFS):
-        fb = pykms.DumbFramebuffer(card, w, h, fmt)
+        fb = pykms.DumbFramebuffer(card, w, h, pykms.PixelFormat.RGB565 if data["hack"] else fmt)
         fbs.append(fb)
     data["fbs"] = fbs
 
@@ -93,11 +99,7 @@ for data in sensors:
     data["cap"] = cap
 
 for data in sensors:
-    data["cap"].stream_on()
-
-def readvid(data):
-    cap = data["cap"]
-    fb = cap.dequeue()
+    fb = data["fbs"][0]
 
     plane = data["plane"]
 
@@ -107,16 +109,50 @@ def readvid(data):
         "SRC_W": fb.width << 16,
         "SRC_H": fb.height << 16,
         "CRTC_X": data["x"],
-        "CRTC_Y": 0,
+        "CRTC_Y": data["y"],
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
     })
+
+for data in sensors:
+    data["num_frames"] = 0
+    data["time"] = time.perf_counter()
+
+    print("ENABLE STREAM")
+    data["cap"].stream_on()
+    #time.sleep(0.5)
+    print("ENABLED STREAM")
+    #time.sleep(1)
+
+def readvid(data):
+    data["num_frames"] += 1
+
+    if data["num_frames"] == 100:
+        diff = time.perf_counter() - data["time"]
+
+        print("{}: 100 frames in {}".format(data["idx"], diff))
+
+        data["num_frames"] = 0
+        data["time"] = time.perf_counter()
+
+    cap = data["cap"]
+    fb = cap.dequeue()
+
+    plane = data["plane"]
+
+ #   req = pykms.AtomicReq(card)
+ #   req.add(plane, "FB_ID", fb.id)
+ #   req.commit(allow_modeset = False)
 
     cap.queue(fb)
 
 def readkey(conn, mask):
     for data in reversed(sensors):
+        print("DISABLE CAP")
         data["cap"].stream_off()
+        #time.sleep(0.5)
+        print("DISABLED CAP")
+        #time.sleep(1)
 
     print("Done")
     sys.stdin.readline()

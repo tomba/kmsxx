@@ -31,52 +31,95 @@ md = pykms.MediaDevice("/dev/media0")
 #md.print("")
 #exit(0)
 
-#  cal = md.find_entity("CAL output 0")
-
-rx0 = md.find_entity("CAMERARX0")
-print("RX0 ID {}".format(rx0.id))
-
-sources = rx0.get_linked_entities(0)
-assert(len(sources) == 1)
-
-ub960 = sources[0]
 
 num_cameras = 0
+dev_paths = []
 
-for port in range(4):
-    sources = ub960.get_linked_entities(port)
+def get_rx0():
+    global num_cameras
 
-    if len(sources) == 0:
-        continue
+    rx0 = md.find_entity("CAMERARX0")
+    print("RX0 ID {}".format(rx0.id))
 
+    sources = rx0.get_linked_entities(0)
     assert(len(sources) == 1)
 
-    ov10635 = sources[0]
+    ub960 = sources[0]
 
-    print("Camera {} at UB960 port {}".format(ov10635.name, port))
+    for port in range(4):
+        sources = ub960.get_linked_entities(port)
 
-    ov10635.subdev.set_format(0, w, h, busfmt)
+        if len(sources) == 0:
+            continue
 
-    ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
+        assert(len(sources) == 1)
 
-    num_cameras += 1
+        ov10635 = sources[0]
 
-print("num cams", num_cameras)
+        print("Camera {} at UB960 port {}".format(ov10635.name, port))
 
-dev_paths = []
-devs = rx0.get_linked_entities(1)
-for d in devs:
-    dev_paths.append(d.dev_path)
+        ov10635.subdev.set_format(0, w, h, busfmt)
+
+        ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
+
+        num_cameras += 1
+
+    print("num cams", num_cameras)
+
+    devs = rx0.get_linked_entities(1)
+    for d in devs:
+        dev_paths.append(d.dev_path)
+
+    rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
+    rx0.subdev.set_format(1, w, h, busfmt)
 
 
-#rx1 = md.find_entity("CAMERARX1")
+
+def get_rx1():
+    global num_cameras
+
+    rx0 = md.find_entity("CAMERARX1")
+    print("RX1 ID {}".format(rx0.id))
+
+    sources = rx0.get_linked_entities(0)
+    assert(len(sources) == 1)
+
+    ub960 = sources[0]
+
+    for port in range(4):
+        sources = ub960.get_linked_entities(port)
+
+        if len(sources) == 0:
+            continue
+
+        assert(len(sources) == 1)
+
+        ov10635 = sources[0]
+
+        print("Camera {} at UB960 port {}".format(ov10635.name, port))
+
+        ov10635.subdev.set_format(0, w, h, busfmt)
+
+        ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
+
+        num_cameras += 1
+
+    print("num cams", num_cameras)
+
+    devs = rx0.get_linked_entities(1)
+    for d in devs:
+        dev_paths.append(d.dev_path)
+
+    rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
+    rx0.subdev.set_format(1, w, h, busfmt)
+
+
+get_rx0()
+get_rx1()
 
 #routes = ub960.subdev.get_routing()
 #print(routes)
 #exit(0)
-
-rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
-rx0.subdev.set_format(1, w, h, busfmt)
 
 
 print("Capturing in {}x{} {}".format(w, h, fmt))

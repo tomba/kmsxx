@@ -68,7 +68,7 @@ void VideoSubdev::set_format(uint32_t pad, uint32_t width, uint32_t height, BusF
 	}
 }
 
-void VideoSubdev::get_format(uint32_t pad, uint32_t& width, uint32_t& height, BusFormat &busfmt)
+int VideoSubdev::get_format(uint32_t pad, uint32_t& width, uint32_t& height, BusFormat &busfmt)
 {
 	struct v4l2_subdev_format fmt {};
 	int r;
@@ -77,11 +77,14 @@ void VideoSubdev::get_format(uint32_t pad, uint32_t& width, uint32_t& height, Bu
 	fmt.which = V4L2_SUBDEV_FORMAT_ACTIVE;
 
 	r = ioctl(m_fd, VIDIOC_SUBDEV_G_FMT, &fmt);
-	FAIL_IF(r, "VIDIOC_SUBDEV_G_FMT failed: %d: %s", r, strerror(errno));
+	if (r)
+		return r;
 
 	width = fmt.format.width;
 	height = fmt.format.height;
 	busfmt = CodeToBusFormat(fmt.format.code);
+
+	return 0;
 }
 
 vector<SubdevRoute> VideoSubdev::get_routing()

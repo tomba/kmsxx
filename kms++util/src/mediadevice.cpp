@@ -108,19 +108,19 @@ static void v4l2_get_topology(int fd, MediaDevicePriv* priv)
 	FAIL_IF(r, "MEDIA_IOC_G_TOPOLOGY call 2 failed: %d", r);
 
 	for (const auto& info : entities) {
-		auto ob = make_shared<MediaEntity>();
+		auto ob = make_shared<MediaEntity>(priv->media_device);
 		ob->info = info;
 		priv->objects.push_back(ob);
 	}
 
 	for (const auto& info : interfaces) {
-		auto ob = make_shared<MediaInterface>();
+		auto ob = make_shared<MediaInterface>(priv->media_device);
 		ob->info = info;
 		priv->objects.push_back(ob);
 	}
 
 	for (const auto& info : pads) {
-		auto ob = make_shared<MediaPad>();
+		auto ob = make_shared<MediaPad>(priv->media_device);
 		ob->info = info;
 		priv->objects.push_back(ob);
 
@@ -132,7 +132,7 @@ static void v4l2_get_topology(int fd, MediaDevicePriv* priv)
 	}
 
 	for (const auto& info : links) {
-		auto link = make_shared<MediaLink>();
+		auto link = make_shared<MediaLink>(priv->media_device);
 		link->info = info;
 		priv->objects.push_back(link);
 
@@ -237,6 +237,7 @@ MediaDevice::MediaDevice(int fd)
 		throw runtime_error("bad fd");
 
 	m_priv = new MediaDevicePriv;
+	m_priv->media_device = this;
 
 	v4l2_get_device_info(fd, m_priv);
 	v4l2_get_topology(fd, m_priv);
@@ -293,14 +294,18 @@ static void print_entity(const MediaEntity* ent)
 		fmt::print("  Pad {}: {}/{}, {:#x}\n", i.id, i.entity_id, i.index, i.flags);
 		fmt::print("    Desc: {}: flags {:#x}, ent {}\n", d.index, d.flags, d.entity);
 
+		for (auto& link : pad->links) {
+			fmt::print("    Pad Link: id {}, {} -> {}\n", link->id(), link->source->id(), link->sink->id());
+		}
+
 		if (pad->entity && pad->entity->is_subdev()) {
 			uint32_t width;
 			uint32_t height;
 			BusFormat fmt;
 
-			pad->entity->subdev->get_format(i.index, width, height, fmt);
-
-			fmt::print("    {}x{}, {}\n", width, height, BusFormatToString(fmt));
+			int ret = pad->entity->subdev->get_format(i.index, width, height, fmt);
+			if (!ret)
+				fmt::print("    {}x{}, {}\n", width, height, BusFormatToString(fmt));
 		}
 	}
 
@@ -433,4 +438,31 @@ bool MediaEntity::is_subdev() const
 		return false;
 
 	return iface->info.intf_type == MEDIA_INTF_T_V4L_SUBDEV;
+}
+
+vector<MediaEntity*> MediaEntity::get_linked_entities(uint32_t pad_idx)
+{
+	FAIL_IF(pad_idx >= this->pads.size(), "Bad pad index");
+
+	vector<MediaEntity*> v;
+
+	auto& pad = this->pads[pad_idx];
+
+	for (auto& link : pad->links) {
+		shared_ptr<MediaObject> remote_ob;
+		if (pad->info.flags & MEDIA_PAD_FL_SINK)
+			remote_ob = link->source;
+		else if (pad->info.flags & MEDIA_PAD_FL_SOURCE)
+			remote_ob = link->sink;
+		else
+			FAIL("Bad pad flags");
+
+		shared_ptr<MediaPad> remote_pad = dynamic_pointer_cast<MediaPad>(remote_ob);
+		FAIL_IF(!remote_pad, "Failed to get remote pad");
+		FAIL_IF(!remote_pad->entity, "No entity for remote pad");
+
+		v.push_back(remote_pad->entity.get());
+	}
+
+	return v;
 }

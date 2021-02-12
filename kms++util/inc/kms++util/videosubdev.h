@@ -23,7 +23,7 @@ public:
 	~VideoSubdev();
 
 	void set_format(uint32_t pad, uint32_t width, uint32_t height, BusFormat fmt);
-	void get_format(uint32_t pad, uint32_t& width, uint32_t& height, BusFormat& fmt);
+	int get_format(uint32_t pad, uint32_t& width, uint32_t& height, BusFormat& fmt);
 
 	std::vector<SubdevRoute> get_routing();
 private:

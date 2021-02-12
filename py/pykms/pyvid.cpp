@@ -162,9 +162,25 @@ void init_pyvid(py::module& m)
 
 	py::class_<MediaDevice>(m, "MediaDevice")
 		.def(py::init<const string&>())
-		.def("find_entity", &MediaDevice::find_entity, py::return_value_policy::reference_internal);
+		.def("find_entity", &MediaDevice::find_entity, py::return_value_policy::reference_internal)
+		.def("print", &MediaDevice::print)
+		;
 
 	py::class_<MediaEntity>(m, "MediaEntity")
+		.def_property_readonly("id", &MediaEntity::id)
+		.def_property_readonly("name", &MediaEntity::name)
+		.def_readonly("dev_path", &MediaEntity::dev_path)
 		.def_property_readonly(
-			"subdev", [](MediaEntity& self) { return self.subdev.get(); }, py::return_value_policy::reference_internal);
+			"subdev", [](MediaEntity& self) { return self.subdev.get(); }, py::return_value_policy::reference_internal)
+		.def("get_linked_entities", [](MediaEntity& self, uint32_t pad_idx) {
+			py::list l;
+			for (auto e : self.get_linked_entities(pad_idx)) {
+				py::object py_owner = py::cast(self.m_media_device);
+				py::object py_cam = py::cast(e);
+				py::detail::keep_alive_impl(py_cam, py_owner);
+				l.append(py_cam);
+			}
+			return l;
+		})
+		;
 }

@@ -28,24 +28,54 @@ print("Configure media entities")
 
 md = pykms.MediaDevice("/dev/media0")
 
-ov10635_0 = md.find_entity("ov10635 5-0030")
-ov10635_1 = md.find_entity("ov10635 6-0030")
-ub960 = md.find_entity("ds90ub960")
-rx0 = md.find_entity("CAMERARX0")
+#md.print("")
+#exit(0)
+
 #  cal = md.find_entity("CAL output 0")
 
-ov10635_0.subdev.set_format(0, w, h, busfmt)
-ov10635_1.subdev.set_format(0, w, h, busfmt)
+rx0 = md.find_entity("CAMERARX0")
+print("RX0 ID {}".format(rx0.id))
 
-ub960.subdev.set_format(0, *ov10635_0.subdev.get_format(0))    # input 0
-ub960.subdev.set_format(1, *ov10635_1.subdev.get_format(0))    # input 1
-ub960.subdev.set_format(4, w, h, busfmt)    # output 0
+sources = rx0.get_linked_entities(0)
+assert(len(sources) == 1)
+
+ub960 = sources[0]
+
+num_cameras = 0
+
+for port in range(4):
+    sources = ub960.get_linked_entities(port)
+
+    if len(sources) == 0:
+        continue
+
+    assert(len(sources) == 1)
+
+    ov10635 = sources[0]
+
+    print("Camera {} at UB960 port {}".format(ov10635.name, port))
+
+    ov10635.subdev.set_format(0, w, h, busfmt)
+
+    ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
+
+    num_cameras += 1
+
+print("num cams", num_cameras)
+
+dev_paths = []
+devs = rx0.get_linked_entities(1)
+for d in devs:
+    dev_paths.append(d.dev_path)
+
+
+#rx1 = md.find_entity("CAMERARX1")
 
 #routes = ub960.subdev.get_routing()
 #print(routes)
 #exit(0)
 
-rx0.subdev.set_format(0, *ub960.subdev.get_format(4))
+rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
 rx0.subdev.set_format(1, w, h, busfmt)
 
 
@@ -73,12 +103,20 @@ req.commit_sync(allow_modeset = True)
 
 NUM_BUFS = 5
 
-sensors = [
-    { "idx": 0, "path": "/dev/video0", "plane": plane1, "x": 0, "y": 0, "hack": False },
-    { "idx": 1, "path": "/dev/video1", "plane": plane2, "x": mode.hdisplay - w, "y": 0, "hack": False },
-    { "idx": 2, "path": "/dev/video2", "plane": plane3, "x": 0, "y": mode.vdisplay - h, "hack": False },
-    { "idx": 3, "path": "/dev/video3", "plane": plane4, "x": mode.hdisplay - w, "y": mode.vdisplay - h, "hack": True },
-]
+sensors = []
+
+if num_cameras >= 1:
+    sensors += [
+        { "idx": 0, "path": dev_paths[0], "plane": plane1, "x": 0, "y": 0, "hack": False },
+        { "idx": 1, "path": dev_paths[1], "plane": plane2, "x": mode.hdisplay - w, "y": 0, "hack": False },
+    ]
+
+if num_cameras == 2:
+    sensors += [
+        { "idx": 2, "path": dev_paths[2], "plane": plane3, "x": 0, "y": mode.vdisplay - h, "hack": False },
+        { "idx": 3, "path": dev_paths[3], "plane": plane4, "x": mode.hdisplay - w, "y": mode.vdisplay - h, "hack": True },
+    ]
+
 
 for data in sensors:
     vd = pykms.VideoDevice(data["path"])

@@ -42,14 +42,25 @@ private:
 class MediaObject
 {
 public:
+	MediaObject(MediaDevice* media_device)
+		: m_media_device(media_device)
+	{ }
+
 	virtual ~MediaObject() { }
 
 	virtual uint32_t id() const = 0;
+	virtual std::string name() const = 0;
+
+	MediaDevice* m_media_device;
 };
 
 class MediaEntity : public MediaObject
 {
 public:
+	MediaEntity(MediaDevice* media_device)
+		: MediaObject(media_device)
+	{ }
+
 	bool is_subdev() const;
 
 	std::string dev_path;
@@ -61,14 +72,21 @@ public:
 	std::shared_ptr<MediaLink> link;
 
 	uint32_t id() const { return info.id; }
+	std::string name() const { return info.name; };
 
 	std::unique_ptr<VideoSubdev> subdev;
 	std::unique_ptr<VideoDevice> dev;
+
+	std::vector<MediaEntity*> get_linked_entities(uint32_t pad_idx);
 };
 
 class MediaPad : public MediaObject
 {
 public:
+	MediaPad(MediaDevice* media_device)
+		: MediaObject(media_device)
+	{ }
+
 	struct media_v2_pad info;
 	struct media_pad_desc desc;
 
@@ -76,11 +94,16 @@ public:
 	std::vector<std::shared_ptr<MediaLink>> links;
 
 	uint32_t id() const { return info.id; }
+	std::string name() const { return std::string("Pad") + std::to_string(info.id); };
 };
 
 class MediaLink : public MediaObject
 {
 public:
+	MediaLink(MediaDevice* media_device)
+		: MediaObject(media_device)
+	{ }
+
 	struct media_v2_link info;
 	struct media_link_desc desc;
 
@@ -88,22 +111,30 @@ public:
 	std::shared_ptr<MediaObject> sink;
 
 	uint32_t id() const { return info.id; }
+	std::string name() const { return std::string("Link") + std::to_string(info.id); };
 };
 
 class MediaInterface : public MediaObject
 {
 public:
+	MediaInterface(MediaDevice* media_device)
+		: MediaObject(media_device)
+	{ }
+
 	struct media_v2_interface info;
 
 	std::shared_ptr<MediaLink> link;
 
 	uint32_t id() const { return info.id; }
+	std::string name() const { return std::string("Iface") + std::to_string(info.id); };
 };
 
 struct MediaDevicePriv {
 	~MediaDevicePriv()
 	{
 	}
+
+	MediaDevice* media_device;
 
 	media_device_info info;
 

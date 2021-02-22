@@ -23,6 +23,8 @@ VideoSubdev::VideoSubdev(const string &dev_path)
 {
 	m_name = dev_path;
 	m_fd = ::open(dev_path.c_str(), O_RDWR);
+	if (m_fd < 0)
+		throw runtime_error(fmt::format("Failed to open subdev {}", dev_path));
 
 	//get_routing();
 }
@@ -95,7 +97,7 @@ vector<SubdevRoute> VideoSubdev::get_routing()
 	routing.num_routes = ARRAY_SIZE(routes);
 	routing.routes = (uint64_t)routes;
 
-	fmt::print("GET ROUTING for {}\n", m_name);
+	//fmt::print("GET ROUTING for {}\n", m_name);
 	int r;
 
 	r = ioctl(m_fd, VIDIOC_SUBDEV_G_ROUTING, &routing);

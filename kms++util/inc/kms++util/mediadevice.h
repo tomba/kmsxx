@@ -78,6 +78,7 @@ public:
 	std::unique_ptr<VideoDevice> dev;
 
 	std::vector<MediaEntity*> get_linked_entities(uint32_t pad_idx);
+	std::vector<MediaLink *> get_links(uint32_t pad_idx);
 };
 
 class MediaPad : public MediaObject

@@ -166,6 +166,28 @@ void init_pyvid(py::module& m)
 		.def("print", &MediaDevice::print)
 		;
 
+	py::class_<MediaLink>(m, "MediaLink")
+		.def_property_readonly("id", &MediaLink::id)
+		.def_property_readonly("name", &MediaLink::name)
+		.def_property_readonly("source", [](MediaLink& self) {
+				shared_ptr<MediaPad> pad = dynamic_pointer_cast<MediaPad>(self.source);
+				return pad->entity.get();
+			}, py::return_value_policy::reference_internal)
+		.def_property_readonly("source_pad", [](MediaLink& self) {
+				shared_ptr<MediaPad> pad = dynamic_pointer_cast<MediaPad>(self.source);
+				return pad->info.index;
+			}, py::return_value_policy::reference_internal)
+
+		.def_property_readonly("sink", [](MediaLink& self) {
+				shared_ptr<MediaPad> pad = dynamic_pointer_cast<MediaPad>(self.sink);
+				return pad->entity.get();
+			}, py::return_value_policy::reference_internal)
+		.def_property_readonly("sink_pad", [](MediaLink& self) {
+				shared_ptr<MediaPad> pad = dynamic_pointer_cast<MediaPad>(self.sink);
+				return pad->info.index;
+			}, py::return_value_policy::reference_internal)
+		;
+
 	py::class_<MediaEntity>(m, "MediaEntity")
 		.def_property_readonly("id", &MediaEntity::id)
 		.def_property_readonly("name", &MediaEntity::name)
@@ -176,11 +198,22 @@ void init_pyvid(py::module& m)
 			py::list l;
 			for (auto e : self.get_linked_entities(pad_idx)) {
 				py::object py_owner = py::cast(self.m_media_device);
-				py::object py_cam = py::cast(e);
-				py::detail::keep_alive_impl(py_cam, py_owner);
-				l.append(py_cam);
+				py::object py_item = py::cast(e);
+				py::detail::keep_alive_impl(py_item, py_owner);
+				l.append(py_item);
+			}
+			return l;
+		})
+		.def("get_links", [](MediaEntity& self, uint32_t pad_idx) {
+			py::list l;
+			for (auto link : self.get_links(pad_idx)) {
+				py::object py_owner = py::cast(self.m_media_device);
+				py::object py_item = py::cast(link);
+				py::detail::keep_alive_impl(py_item, py_owner);
+				l.append(py_item);
 			}
 			return l;
 		})
 		;
+
 }

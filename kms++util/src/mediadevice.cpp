@@ -466,3 +466,17 @@ vector<MediaEntity*> MediaEntity::get_linked_entities(uint32_t pad_idx)
 
 	return v;
 }
+
+vector<MediaLink*> MediaEntity::get_links(uint32_t pad_idx)
+{
+	FAIL_IF(pad_idx >= this->pads.size(), "Bad pad index");
+
+	vector<MediaLink*> v;
+
+	auto& pad = this->pads[pad_idx];
+
+	for (auto& link : pad->links)
+		v.push_back(link.get());
+
+	return v;
+}

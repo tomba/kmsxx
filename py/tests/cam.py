@@ -6,134 +6,105 @@ import pykms
 import argparse
 import time
 from collections import deque
-
-#parser = argparse.ArgumentParser()
-#parser.add_argument("-d", "--device", type=str, default="/dev/video0")
-#parser.add_argument("-m", "--media", type=str, default="/dev/media0")
-#parser.add_argument("width", type=int)
-#parser.add_argument("height", type=int)
-#parser.add_argument("fourcc", type=str, nargs="?", default="YUVY")
-#args = parser.parse_args()
-
-#w = args.width
-#h = args.height
-#fmt = pykms.fourcc_to_pixelformat(args.fourcc)
-
-w = 752
-h = 480
-fmt = pykms.PixelFormat.YUYV
-busfmt = pykms.BusFormat.YUYV8_2X8
+import math
 
 print("Configure media entities")
 
 md = pykms.MediaDevice("/dev/media0")
 
-#md.print("")
-#exit(0)
+SHOW_EMBEDDED = True
 
+cameras = [
+    { "sensor": "ov10635 5-0030", "w": 1280, "h": 720, "busfmt": pykms.BusFormat.YUYV8_2X8 },
+    { "sensor": "ov10635 6-0030", "w": 752, "h": 480, "busfmt": pykms.BusFormat.YUYV8_2X8 },
+]
 
-num_cameras = 0
-dev_paths = []
+for camera in cameras:
+    ov10635 = md.find_entity(camera["sensor"])
+    links = ov10635.get_links(0)
 
-def get_rx0():
-    global num_cameras
+    assert(len(links) == 1)
 
-    rx0 = md.find_entity("CAMERARX0")
-    print("RX0 ID {}".format(rx0.id))
+    link = links[0]
 
-    sources = rx0.get_linked_entities(0)
-    assert(len(sources) == 1)
+    ub960 = link.sink
+    ub_sink_pad = link.sink_pad
 
-    ub960 = sources[0]
+    ub_routing = ub960.subdev.get_routing()
 
-    for port in range(4):
-        sources = ub960.get_linked_entities(port)
+    ub_out_streams = []
 
-        if len(sources) == 0:
+    streams = []
+
+    for ub_route in ub_routing:
+        if ub_route.sink_pad != ub_sink_pad:
             continue
 
-        assert(len(sources) == 1)
+        stream = { "ub_source_pad": ub_route.source_pad, "ub_source_stream": ub_route.source_stream }
 
-        ov10635 = sources[0]
+        links = ub960.get_links(ub_route.source_pad)
+        assert(len(links) == 1)
+        link = links[0]
 
-        print("Camera {} at UB960 port {}".format(ov10635.name, port))
+        rx = link.sink
+        rx_sink_pad = link.sink_pad
 
-        ov10635.subdev.set_format(0, w, h, busfmt)
+        stream.update({ "rx": rx.name, "rx_sink_pad": rx_sink_pad })
 
-        ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
+        for rx_route in rx.subdev.get_routing():
+            if rx_route.sink_pad != rx_sink_pad:
+                continue
 
-        num_cameras += 1
+            if rx_route.sink_stream != ub_route.source_stream:
+                continue
 
-    print("num cams", num_cameras)
+            stream.update({ "rx_source_pad": rx_route.source_pad })
 
-    devs = rx0.get_linked_entities(1)
-    for d in devs:
-        dev_paths.append(d.dev_path)
+            links = rx.get_links(rx_route.source_pad)
+            assert(len(links) == 1)
+            link = links[0]
 
-    rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
-    rx0.subdev.set_format(1, w, h, busfmt)
+            vid = link.sink
+
+            stream["dev"] = vid.dev_path
+
+        streams.append(stream)
 
 
+    print("Camera", ov10635.name)
+    for stream in streams:
+        print("    ", stream)
 
-def get_rx1():
-    global num_cameras
+    camera["streams"] = streams
 
-    rx0 = md.find_entity("CAMERARX1")
-    print("RX1 ID {}".format(rx0.id))
+    # Set format between OV10635 outout pad and UB960 input pad
+    ov10635.subdev.set_format(0, camera["w"], camera["h"], camera["busfmt"])
+    ub960.subdev.set_format(ub_sink_pad, *ov10635.subdev.get_format(0))
 
-    sources = rx0.get_linked_entities(0)
-    assert(len(sources) == 1)
+captures = []
 
-    ub960 = sources[0]
+for camera in cameras:
+    # if a camera has two streams, one of them is embedded data
+    has_embedded = len(camera["streams"]) == 2
 
-    for port in range(4):
-        sources = ub960.get_linked_entities(port)
+    for stream in camera["streams"]:
+        # odd streams are embedded data
+        embedded = has_embedded and stream["ub_source_stream"] % 2 == 1
 
-        if len(sources) == 0:
+        if not SHOW_EMBEDDED and embedded:
             continue
 
-        assert(len(sources) == 1)
+        data = { "dev": stream["dev"], "camera": camera, "fmt": pykms.PixelFormat.YUYV,
+            "embedded" : embedded }
 
-        ov10635 = sources[0]
+        captures.append(data)
 
-        print("Camera {} at UB960 port {}".format(ov10635.name, port))
-
-        ov10635.subdev.set_format(0, w, h, busfmt)
-
-        ub960.subdev.set_format(port, *ov10635.subdev.get_format(0))    # input 0
-
-        num_cameras += 1
-
-    print("num cams", num_cameras)
-
-    devs = rx0.get_linked_entities(1)
-    for d in devs:
-        dev_paths.append(d.dev_path)
-
-    rx0.subdev.set_format(0, w, h, busfmt) # XXX we shoudln't set this   #*ub960.subdev.get_format(4))
-    rx0.subdev.set_format(1, w, h, busfmt)
-
-
-get_rx0()
-get_rx1()
-
-#routes = ub960.subdev.get_routing()
-#print(routes)
-#exit(0)
-
-
-print("Capturing in {}x{} {}".format(w, h, fmt))
+#print("Capturing in {}x{} {}".format(w, h, fmt))
 
 card = pykms.Card()
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
 crtc = res.reserve_crtc(conn)
-plane1 = res.reserve_generic_plane(crtc, fmt)
-plane2 = res.reserve_generic_plane(crtc, pykms.PixelFormat.YUYV)
-plane3 = res.reserve_generic_plane(crtc, fmt)
-plane4 = res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
-
-assert(plane1 and plane2 and plane3 and plane4)
 
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
@@ -146,69 +117,91 @@ req.commit_sync(allow_modeset = True)
 
 NUM_BUFS = 5
 
-sensors = []
+for i, capture in enumerate(captures):
+    capture["planefmt"] = capture["fmt"]
 
-if num_cameras >= 1:
-    sensors += [
-        { "idx": 0, "path": dev_paths[0], "plane": plane1, "x": 0, "y": 0, "hack": False },
-        { "idx": 1, "path": dev_paths[1], "plane": plane2, "x": mode.hdisplay - w, "y": 0, "hack": False },
-    ]
+    plane = res.reserve_generic_plane(crtc, capture["fmt"])
+    if plane == None:
+        plane = res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
+        capture["planefmt"] = pykms.PixelFormat.RGB565
 
-if num_cameras == 2:
-    sensors += [
-        { "idx": 2, "path": dev_paths[2], "plane": plane3, "x": 0, "y": mode.vdisplay - h, "hack": False },
-        { "idx": 3, "path": dev_paths[3], "plane": plane4, "x": mode.hdisplay - w, "y": mode.vdisplay - h, "hack": True },
-    ]
+    assert(plane)
 
+    capture["plane"] = plane
+    capture["w"] = capture["camera"]["w"]
+    capture["h"] = capture["camera"]["h"]
 
-for data in sensors:
-    vd = pykms.VideoDevice(data["path"])
+    if capture["embedded"]:
+        w = int(round(math.sqrt(capture["w"])))
+        w //= 8
+        w *= 8
+
+        h = int(math.ceil(capture["w"] / w))
+
+        capture["w"] = w
+        capture["h"] = h
+
+    if i == 0:
+        capture["x"] = 0
+        capture["y"] = 0
+    elif i == 1:
+        capture["x"] = mode.hdisplay - capture["w"]
+        capture["y"] = 0
+    elif i == 2:
+        capture["x"] = 0
+        capture["y"] = mode.vdisplay - capture["h"]
+    elif i == 3:
+        capture["x"] = mode.hdisplay - capture["w"]
+        capture["y"] = mode.vdisplay - capture["h"]
+
+for capture in captures:
+    vd = pykms.VideoDevice(capture["dev"])
     cap = vd.capture_streamer
     cap.set_port(0)
-    cap.set_format(fmt, w, h)
+    cap.set_format(capture["fmt"], capture["w"], capture["h"])
     cap.set_queue_size(NUM_BUFS)
 
-    data["vd"] = vd
-    data["cap"] = cap
+    capture["vd"] = vd
+    capture["cap"] = cap
 
-for data in sensors:
+for capture in captures:
     # Allocate FBs
     fbs = []
     for i in range(NUM_BUFS):
-        fb = pykms.DumbFramebuffer(card, w, h, pykms.PixelFormat.RGB565 if data["hack"] else fmt)
+        fb = pykms.DumbFramebuffer(card, capture["w"], capture["h"], capture["planefmt"])
         fbs.append(fb)
-    data["fbs"] = fbs
+    capture["fbs"] = fbs
 
     # Set fb0 to screen
-    fb = data["fbs"][0]
-    plane = data["plane"]
+    fb = capture["fbs"][0]
+    plane = capture["plane"]
 
     plane.set_props({
         "FB_ID": fb.id,
         "CRTC_ID": crtc.id,
         "SRC_W": fb.width << 16,
         "SRC_H": fb.height << 16,
-        "CRTC_X": data["x"],
-        "CRTC_Y": data["y"],
+        "CRTC_X": capture["x"],
+        "CRTC_Y": capture["y"],
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
     })
 
-    data["kms_old_fb"] = None
-    data["kms_fb"] = fb
-    data["kms_fb_queue"] = deque()
+    capture["kms_old_fb"] = None
+    capture["kms_fb"] = fb
+    capture["kms_fb_queue"] = deque()
 
     # Queue the rest to the camera
-    cap = data["cap"]
+    cap = capture["cap"]
     for i in range(1, NUM_BUFS):
         cap.queue(fbs[i])
 
-for data in sensors:
+for data in captures:
     data["num_frames"] = 0
     data["time"] = time.perf_counter()
 
     #print("ENABLE STREAM")
-    print(f'{data["path"]}: stream on')
+    print(f'{data["dev"]}: stream on')
     data["cap"].stream_on()
     #time.sleep(0.5)
     #print("ENABLED STREAM")
@@ -222,7 +215,7 @@ def readvid(data):
     if data["num_frames"] == 100:
         diff = time.perf_counter() - data["time"]
 
-        print("{}: 100 frames in {:.2f} s, {:.2f} fps".format(data["path"], diff, 100 / diff))
+        print("{}: 100 frames in {:.2f} s, {:.2f} fps".format(data["dev"], diff, 100 / diff))
 
         data["num_frames"] = 0
         data["time"] = time.perf_counter()
@@ -235,15 +228,15 @@ def readvid(data):
     if len(data["kms_fb_queue"]) >= NUM_BUFS - 1:
         print("WARNING fb_queue {}".format(len(data["kms_fb_queue"])))
 
-    #print(f'Buf from {data["path"]}: kms_fb_queue {len(data["kms_fb_queue"])}, commit ongoing {kms_committed}')
+    #print(f'Buf from {data["dev"]}: kms_fb_queue {len(data["kms_fb_queue"])}, commit ongoing {kms_committed}')
 
     # XXX with a small delay we might get more planes to the commit
     if kms_committed == False:
         handle_pageflip()
 
 def readkey(conn, mask):
-    for data in reversed(sensors):
-        print(f'{data["path"]}: stream off')
+    for data in reversed(captures):
+        print(f'{data["dev"]}: stream off')
         data["cap"].stream_off()
         #time.sleep(0.5)
         #print("DISABLED CAP")
@@ -262,8 +255,8 @@ def handle_pageflip():
 
     do_commit = False
 
-    for data in sensors:
-        #print(f'Page flip {data["path"]}: kms_fb_queue {len(data["kms_fb_queue"])}, new_fb {data["kms_fb"]}, old_fb {data["kms_old_fb"]}')
+    for data in captures:
+        #print(f'Page flip {data["dev"]}: kms_fb_queue {len(data["kms_fb_queue"])}, new_fb {data["kms_fb"]}, old_fb {data["kms_old_fb"]}')
 
         cap = data["cap"]
 
@@ -299,7 +292,7 @@ def readdrm(fileobj, mask):
 sel = selectors.DefaultSelector()
 sel.register(sys.stdin, selectors.EVENT_READ, readkey)
 sel.register(card.fd, selectors.EVENT_READ, readdrm)
-for data in sensors:
+for data in captures:
     sel.register(data["cap"].fd, selectors.EVENT_READ, lambda c,m,d=data: readvid(d))
 
 while True:

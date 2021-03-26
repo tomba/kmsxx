@@ -41,7 +41,8 @@ libkmsxxutil = library('kms++util',
                        install : true,
                        include_directories : private_includes,
                        dependencies : libkmsxxutil_deps,
-                       cpp_args : libkmsxxutil_args)
+                       cpp_args : libkmsxxutil_args,
+                       version : meson.project_version())
 
 libkmsxxutil_dep = declare_dependency(include_directories : public_includes,
                                       link_with : libkmsxxutil)

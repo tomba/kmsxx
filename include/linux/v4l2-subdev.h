@@ -211,6 +211,7 @@ struct v4l2_subdev_route {
  * @num_routes: the total number of routes in the routes array
  */
 struct v4l2_subdev_routing {
+	__u32 which;
 	__u64 routes;
 	__u32 num_routes;
 	__u32 reserved[5];

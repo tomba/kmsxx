@@ -94,6 +94,7 @@ vector<SubdevRoute> VideoSubdev::get_routes()
 
 	vrouting.num_routes = ARRAY_SIZE(vroutes);
 	vrouting.routes = (uint64_t)vroutes;
+	vrouting.which = V4L2_SUBDEV_FORMAT_ACTIVE;
 
 	//fmt::print("GET ROUTING for {}\n", m_name);
 	int r;
@@ -133,6 +134,7 @@ int VideoSubdev::set_routes(const std::vector<SubdevRoute>& routes)
 
 	vrouting.num_routes = vroutes.size();
 	vrouting.routes = (uint64_t)vroutes.data();
+	vrouting.which = V4L2_SUBDEV_FORMAT_ACTIVE;
 
 	int r;
 

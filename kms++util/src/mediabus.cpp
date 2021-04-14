@@ -97,7 +97,8 @@ static const map<BusFormat, tuple<uint32_t, std::string>> s_bus_format_map = {
 
 	MAP_BUS_FMT(AHSV8888_1X32),
 
-	MAP_BUS_FMT(METADATA_FIXED),
+	MAP_BUS_FMT(METADATA_8),
+	MAP_BUS_FMT(METADATA_16),
 };
 
 uint32_t BusFormatToCode(BusFormat fmt)

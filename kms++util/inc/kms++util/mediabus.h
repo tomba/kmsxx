@@ -86,7 +86,8 @@ enum class BusFormat {
 
 	AHSV8888_1X32,
 
-	METADATA_FIXED,
+	METADATA_8,
+	METADATA_16,
 };
 
 uint32_t BusFormatToCode(BusFormat fmt);

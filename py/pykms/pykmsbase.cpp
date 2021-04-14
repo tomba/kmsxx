@@ -224,7 +224,8 @@ void init_pykmsbase(py::module& m)
 		.value("RGBA1010102", PixelFormat::RGBA1010102)
 		.value("BGRA1010102", PixelFormat::BGRA1010102)
 
-		.value("META", PixelFormat::META);
+		.value("META_8", PixelFormat::META_8)
+		.value("META_16", PixelFormat::META_16);
 
 
 	m.def("fourcc_to_pixelformat", &FourCCToPixelFormat);

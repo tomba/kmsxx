@@ -150,7 +150,7 @@ stream_meta_0 = {
     "pipe": [
         {
             "entity": "ov10635 5-0030 SENSOR",
-            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_FIXED) },
+            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
         },
         {
             "entity": "ov10635 5-0030",
@@ -165,7 +165,7 @@ stream_meta_0 = {
         {
             "entity": "CAMERARX0",
             "sink": { "pad": 0, "stream": 1, },
-            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_FIXED) },
+            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
         },
         {
             "entity": "CAL output 1",
@@ -173,7 +173,7 @@ stream_meta_0 = {
         },
     ],
 
-    "fmt": pykms.PixelFormat.META,
+    "fmt": pykms.PixelFormat.META_16,
     "w": 1280,
     "h": META_LINES,
     "embedded": True,
@@ -218,7 +218,7 @@ stream_meta_1 = {
     "pipe": [
         {
             "entity": "ov10635 6-0030 SENSOR",
-            "source": { "pad": 1, "fmt": (752, META_LINES, pykms.BusFormat.METADATA_FIXED) },
+            "source": { "pad": 1, "fmt": (752, META_LINES, pykms.BusFormat.METADATA_16) },
         },
         {
             "entity": "ov10635 6-0030",
@@ -233,7 +233,7 @@ stream_meta_1 = {
         {
             "entity": "CAMERARX0",
             "sink": { "pad": 0, "stream": 3, },
-            "source": { "pad": 4, "stream": 0, "fmt": (752, META_LINES, pykms.BusFormat.METADATA_FIXED) },
+            "source": { "pad": 4, "stream": 0, "fmt": (752, META_LINES, pykms.BusFormat.METADATA_16) },
         },
         {
             "entity": "CAL output 3",
@@ -241,7 +241,7 @@ stream_meta_1 = {
         },
     ],
 
-    "fmt": pykms.PixelFormat.META,
+    "fmt": pykms.PixelFormat.META_16,
     "w": 752,
     "h": META_LINES,
     "embedded": True,
@@ -343,7 +343,7 @@ req.commit_sync(allow_modeset = True)
 NUM_BUFS = 5
 
 for i, stream in enumerate(streams):
-    if stream["fmt"] == pykms.PixelFormat.META:
+    if stream["fmt"] == pykms.PixelFormat.META_16:
         stream["plane_fmt"] = pykms.PixelFormat.YUYV
     else:
         stream["plane_fmt"] = stream["fmt"]

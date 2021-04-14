@@ -65,7 +65,8 @@ enum class PixelFormat : uint32_t {
 	RGBA1010102 = MakeFourCC("RA30"),
 	BGRA1010102 = MakeFourCC("BA30"),
 
-	META = MakeFourCC("META"),
+	META_8 = MakeFourCC("ME08"),
+	META_16 = MakeFourCC("ME16"),
 };
 
 static inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)

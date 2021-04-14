@@ -143,9 +143,10 @@ void init_pyvid(py::module& m)
 
 		.BUS_FMT_ENUM(AHSV8888_1X32)
 
-		.BUS_FMT_ENUM(METADATA_FIXED);
+		.BUS_FMT_ENUM(METADATA_8)
+		.BUS_FMT_ENUM(METADATA_16);
 
-	py::class_<VideoSubdev>(m, "ViodeSubdev")
+	py::class_<VideoSubdev>(m, "VideoSubdev")
 		.def("set_format", &VideoSubdev::set_format)
 		.def("get_format", [](VideoSubdev& self, uint32_t pad) {
 			uint32_t w, h;

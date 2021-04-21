@@ -8,6 +8,17 @@ import time
 from collections import deque
 import math
 
+#CONFIG = "ov5640"
+
+#CONFIG = "dra76-ov5640-mc"
+#CONFIG = "dra76-ub960-2-cam"
+#CONFIG = "dra76-ub960-1-cam-meta"
+CONFIG = "dra76-ub960-2-cam-meta"
+
+#CONFIG = "am6-ov5640-mc"
+#CONFIG = "am6-ub960-2-cam"
+#CONFIG = "am6-ub960-1-cam-meta"
+
 print("Configure media entities")
 
 md = pykms.MediaDevice("/dev/media0")
@@ -53,20 +64,34 @@ def link(source, sink):
     link.enabled = True
     src_ent.setup_link(link)
 
-stream_0 = {
+stream_configurations = {}
+
+#
+# Non-MC OV5640
+#
+stream_configurations["ov5640"] = [
+{
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 1280,
+    "h": 720,
+    "embedded": False,
+    "dev": "/dev/video0",
+}
+]
+
+#
+# AM6: MC OV5640
+#
+stream_configurations["am6-ov5640-mc"] = [
+{
     "pipe": [
         {
-            "entity": "ov10635 5-0030",
+            "entity": "ov5640 3-003c",
             "source": { "pad": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
         },
         {
-            "entity": "ds90ub960 4-003d",
-            "sink": { "pad": 0, "stream": 0, },
-            "source": { "pad": 4, "stream": 0 },
-        },
-        {
             "entity": "CAMERARX0",
-            "sink": { "pad": 0, "stream": 0, },
+            "sink": { "pad": 0, "stream": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
             "source": { "pad": 1, "stream": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
         },
         {
@@ -81,38 +106,43 @@ stream_0 = {
     "embedded": False,
     "dev": "/dev/video0",
 }
+]
 
-stream_1 = {
+#
+# DRA76: MC OV5640
+#
+stream_configurations["dra76-ov5640-mc"] = [
+{
     "pipe": [
         {
-            "entity": "ov10635 6-0030",
-            "source": { "pad": 0, "fmt": (752, 480, pykms.BusFormat.YUYV8_2X8) },
-        },
-        {
-            "entity": "ds90ub960 4-003d",
-            "sink": { "pad": 1, "stream": 0, },
-            "source": { "pad": 4, "stream": 1 },
+            "entity": "ov5640 4-003c",
+            "source": { "pad": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
         },
         {
             "entity": "CAMERARX0",
-            "sink": { "pad": 0, "stream": 1, },
-            "source": { "pad": 2, "stream": 0, "fmt": (752, 480, pykms.BusFormat.YUYV8_2X8) },
+            "sink": { "pad": 0, "stream": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
+            "source": { "pad": 1, "stream": 0, "fmt": (1280, 720, pykms.BusFormat.YUYV8_2X8) },
         },
         {
-            "entity": "CAL output 1",
+            "entity": "CAL output 0",
             "sink": { "pad": 0, "stream": 0, },
         },
     ],
 
     "fmt": pykms.PixelFormat.YUYV,
-    "w": 752,
-    "h": 480 ,
+    "w": 1280,
+    "h": 720,
     "embedded": False,
-    "dev": "/dev/video1",
+    "dev": "/dev/video0",
 }
+]
 
-
-stream_pix_0 = {
+#
+# DRA76: MC UB9060 2 cameras, only pixel streams
+#
+stream_configurations["dra76-ub960-2-cam"] = [
+# Camera 0 pixel stream
+{
     "pipe": [
         {
             "entity": "ov10635 5-0030 SENSOR",
@@ -144,43 +174,9 @@ stream_pix_0 = {
     "h": 720 - META_LINES,
     "embedded": False,
     "dev": "/dev/video0",
-}
-
-stream_meta_0 = {
-    "pipe": [
-        {
-            "entity": "ov10635 5-0030 SENSOR",
-            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
-        },
-        {
-            "entity": "ov10635 5-0030",
-            "sink": { "pad": 1, "stream": 0, },
-            "source": { "pad": 2, "stream": 1 },
-        },
-        {
-            "entity": "ds90ub960 4-003d",
-            "sink": { "pad": 0, "stream": 1, },
-            "source": { "pad": 4, "stream": 1 },
-        },
-        {
-            "entity": "CAMERARX0",
-            "sink": { "pad": 0, "stream": 1, },
-            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
-        },
-        {
-            "entity": "CAL output 1",
-            "sink": { "pad": 0, "stream": 0, },
-        },
-    ],
-
-    "fmt": pykms.PixelFormat.META_16,
-    "w": 1280,
-    "h": META_LINES,
-    "embedded": True,
-    "dev": "/dev/video1",
-}
-
-stream_pix_1 = {
+},
+# Camera 1 pixel stream
+{
     "pipe": [
         {
             "entity": "ov10635 6-0030 SENSOR",
@@ -212,9 +208,117 @@ stream_pix_1 = {
     "h": 480 - META_LINES,
     "embedded": False,
     "dev": "/dev/video2",
-}
+},
+]
 
-stream_meta_1 = {
+#
+# DRA76: MC UB9060 2 cameras, pixel and metadata streams
+#
+stream_configurations["dra76-ub960-2-cam-meta"] = [
+# Camera 0 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 4, "stream": 0 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 1, "stream": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 0",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 1280,
+    "h": 720 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video0",
+},
+# Camera 0 metadata stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 1, "stream": 0, },
+            "source": { "pad": 2, "stream": 1 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 4, "stream": 1 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "CAL output 1",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.META_16,
+    "w": 1280,
+    "h": META_LINES,
+    "embedded": True,
+    "dev": "/dev/video1",
+},
+# Camera 1 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 6-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (752, 480 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 6-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 1, "stream": 0, },
+            "source": { "pad": 4, "stream": 2 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 2, },
+            "source": { "pad": 3, "stream": 0, "fmt": (752, 480 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 2",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 752,
+    "h": 480 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video2",
+},
+# Camera 1 metadata stream
+{
     "pipe": [
         {
             "entity": "ov10635 6-0030 SENSOR",
@@ -247,21 +351,239 @@ stream_meta_1 = {
     "embedded": True,
     "dev": "/dev/video3",
 }
-
-streams = [
-    stream_pix_0,
-    stream_meta_0,
-    stream_pix_1,
-    stream_meta_1,
 ]
 
-#streams = [
-#    stream_0,
-#    stream_1,
-#]
+#
+# DRA76: MC UB9060 1 camera, pixel and metadata streams
+#
+stream_configurations["dra76-ub960-1-cam-meta"] = [
+# Camera 0 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 4, "stream": 0 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 1, "stream": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 0",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 1280,
+    "h": 720 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video0",
+},
+# Camera 0 metadata stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 1, "stream": 0, },
+            "source": { "pad": 2, "stream": 1 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 4, "stream": 1 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "CAL output 1",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.META_16,
+    "w": 1280,
+    "h": META_LINES,
+    "embedded": True,
+    "dev": "/dev/video1",
+},
+]
+
+#
+# AM6: MC UB9060 2 cameras, only pixel streams
+#
+stream_configurations["am6-ub960-2-cam"] = [
+# Camera 0 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 4, "stream": 0 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 1, "stream": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 0",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 1280,
+    "h": 720 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video0",
+},
+# Camera 1 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 6-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (752, 480 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 6-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 1, "stream": 0, },
+            "source": { "pad": 4, "stream": 2 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 2, },
+            "source": { "pad": 3, "stream": 0, "fmt": (752, 480 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 2",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 752,
+    "h": 480 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video2",
+},
+]
+
+#
+# AM6: MC UB9060 1 camera, pixel and metadata streams
+#
+stream_configurations["am6-ub960-1-cam-meta"] = [
+# Camera 0 pixel stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 2, "stream": 0 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 4, "stream": 0 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 0, },
+            "source": { "pad": 1, "stream": 0, "fmt": (1280, 720 - META_LINES, pykms.BusFormat.YUYV8_2X8) },
+        },
+        {
+            "entity": "CAL output 0",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.YUYV,
+    "w": 1280,
+    "h": 720 - META_LINES,
+    "embedded": False,
+    "dev": "/dev/video0",
+},
+# Camera 0 metadata stream
+{
+    "pipe": [
+        {
+            "entity": "ov10635 5-0030 SENSOR",
+            "source": { "pad": 1, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "ov10635 5-0030",
+            "sink": { "pad": 1, "stream": 0, },
+            "source": { "pad": 2, "stream": 1 },
+        },
+        {
+            "entity": "ds90ub960 4-003d",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 4, "stream": 1 },
+        },
+        {
+            "entity": "CAMERARX0",
+            "sink": { "pad": 0, "stream": 1, },
+            "source": { "pad": 2, "stream": 0, "fmt": (1280, META_LINES, pykms.BusFormat.METADATA_16) },
+        },
+        {
+            "entity": "CAL output 1",
+            "sink": { "pad": 0, "stream": 0, },
+        },
+    ],
+
+    "fmt": pykms.PixelFormat.META_16,
+    "w": 1280,
+    "h": META_LINES,
+    "embedded": True,
+    "dev": "/dev/video1",
+},
+]
+
+
+
+streams = stream_configurations[CONFIG]
 
 # Resolve entities
 for stream in streams:
+    if not "pipe" in stream:
+        continue
+
     pipe = stream["pipe"]
     for p in pipe:
         p["entity"] = md.find_entity(p["entity"])
@@ -269,6 +591,9 @@ for stream in streams:
 
 # enable links
 for stream in streams:
+    if not "pipe" in stream:
+        continue
+
     pipe = stream["pipe"]
     for i in range(len(pipe) - 1):
         source_ent = pipe[i]["entity"]
@@ -281,7 +606,7 @@ for stream in streams:
 
 # setup routes
 
-all_entities = set([p["entity"] for s in streams for p in s["pipe"]])
+all_entities = set([p["entity"] for s in streams if "pipe" in s for p in s["pipe"]])
 
 for e in all_entities:
     if e.subdev == None:
@@ -314,6 +639,9 @@ for e in all_entities:
 
 # setup bus formats
 for stream in streams:
+    if not "pipe" in stream:
+        continue
+
     for p in stream["pipe"]:
         if ("sink" in p) and ("fmt" in p["sink"]):
             w, h, fmt = p["sink"]["fmt"]

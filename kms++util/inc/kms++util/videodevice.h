@@ -103,7 +103,7 @@ public:
 
 	MetaStreamer(int fd, StreamerType type);
 
-	void set_format(uint32_t size);
+	void set_format(kms::PixelFormat fmt, uint32_t size);
 	void set_queue_size(uint32_t queue_size);
 	void queue(kms::DumbFramebuffer* fb);
 	kms::DumbFramebuffer* dequeue();

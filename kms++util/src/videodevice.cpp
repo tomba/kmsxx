@@ -586,7 +586,7 @@ static v4l2_buf_type get_buf_type(MetaStreamer::StreamerType type)
 	}
 }
 
-void MetaStreamer::set_format(uint32_t size)
+void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
 {
 	int r;
 
@@ -596,7 +596,7 @@ void MetaStreamer::set_format(uint32_t size)
 	//r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
 	//ASSERT(r == 0);
 
-	v4lfmt.fmt.meta.dataformat = MakeFourCC("META");
+	v4lfmt.fmt.meta.dataformat = (uint32_t)fmt;
 	v4lfmt.fmt.meta.buffersize = size;
 
 	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);

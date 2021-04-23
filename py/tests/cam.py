@@ -716,7 +716,7 @@ for stream in streams:
     if stream["embedded"]:
         cap = vd.meta_capture_streamer
         #cap.set_port(0)
-        cap.set_format(stream["fmt"], stream["w"] * 16 // 8)
+        cap.set_format(stream["fmt"], stream["w"] * 16 // 8 * stream["h"])
         cap.set_queue_size(NUM_BUFS)
     else:
         cap = vd.capture_streamer

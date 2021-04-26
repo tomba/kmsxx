@@ -47,6 +47,27 @@ static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
 	return v;
 }
 
+static int v4l2_get_format(int fd, uint32_t buf_type, PixelFormat& fmt, uint32_t& width, uint32_t& height)
+{
+	int r;
+
+	v4l2_format v4lfmt{};
+
+	v4lfmt.type = buf_type;
+	r = ioctl(fd, VIDIOC_G_FMT, &v4lfmt);
+	ASSERT(r == 0);
+
+	bool mplane = buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE || buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+
+	FAIL_IF(mplane, "mplane not supported");
+
+	fmt = (PixelFormat)v4lfmt.fmt.pix.pixelformat;
+	width = v4lfmt.fmt.pix.width;
+	height = v4lfmt.fmt.pix.height;
+
+	return 0;
+}
+
 static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t height, uint32_t buf_type)
 {
 	int r;
@@ -107,6 +128,7 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 		v4lfmt.fmt.pix.width = width;
 		v4lfmt.fmt.pix.height = height;
 		v4lfmt.fmt.pix.bytesperline = width * pfi.planes[0].bitspp / 8;
+		v4lfmt.fmt.pix.field = V4L2_FIELD_NONE;
 
 		r = ioctl(fd, VIDIOC_S_FMT, &v4lfmt);
 		ASSERT(r == 0);
@@ -182,7 +204,7 @@ static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type)
 	v4lreqbuf.memory = V4L2_MEMORY_DMABUF;
 	v4lreqbuf.count = queue_size;
 	int r = ioctl(fd, VIDIOC_REQBUFS, &v4lreqbuf);
-	ASSERT(r == 0);
+	FAIL_IF(r != 0, "VIDIOC_REQBUFS failed: %d", errno);
 	ASSERT(v4lreqbuf.count == queue_size);
 }
 
@@ -243,7 +265,7 @@ VideoDevice::VideoDevice(const string& dev)
 }
 
 VideoDevice::VideoDevice(int fd)
-	: m_fd(fd), m_has_capture(false), m_has_output(false), m_has_m2m(false)
+	: m_fd(fd)
 {
 	if (fd < 0)
 		throw runtime_error("bad fd");
@@ -283,6 +305,10 @@ VideoDevice::VideoDevice(int fd)
 		m_has_mplane_capture = false;
 		m_has_mplane_output = false;
 	}
+
+	if (cap.capabilities & V4L2_CAP_META_CAPTURE) {
+		m_has_meta_capture = true;
+	}
 }
 
 VideoDevice::~VideoDevice()
@@ -312,6 +338,16 @@ VideoStreamer* VideoDevice::get_output_streamer()
 	}
 
 	return m_output_streamer.get();
+}
+
+MetaStreamer* VideoDevice::get_meta_capture_streamer()
+{
+	ASSERT(m_has_meta_capture);
+
+	if (!m_meta_capture_streamer)
+		m_meta_capture_streamer = make_unique<MetaStreamer>(m_fd, MetaStreamer::StreamerType::CaptureMeta);
+
+	return m_meta_capture_streamer.get();
 }
 
 vector<tuple<uint32_t, uint32_t>> VideoDevice::get_discrete_frame_sizes(PixelFormat fmt)
@@ -490,6 +526,11 @@ std::vector<PixelFormat> VideoStreamer::get_formats()
 	return v4l2_get_formats(m_fd, get_buf_type(m_type));
 }
 
+int VideoStreamer::get_format(PixelFormat &fmt, uint32_t &width, uint32_t &height)
+{
+	return v4l2_get_format(m_fd, get_buf_type(m_type), fmt, width, height);
+}
+
 void VideoStreamer::set_format(PixelFormat fmt, uint32_t width, uint32_t height)
 {
 	v4l2_set_format(m_fd, fmt, width, height, get_buf_type(m_type));
@@ -545,6 +586,90 @@ void VideoStreamer::stream_on()
 }
 
 void VideoStreamer::stream_off()
+{
+	uint32_t buf_type = get_buf_type(m_type);
+	int r = ioctl(m_fd, VIDIOC_STREAMOFF, &buf_type);
+	FAIL_IF(r, "Failed to disable stream: %d", r);
+}
+
+
+
+
+
+MetaStreamer::MetaStreamer(int fd, StreamerType type)
+	: m_fd(fd), m_type(type)
+{
+}
+
+static v4l2_buf_type get_buf_type(MetaStreamer::StreamerType type)
+{
+	switch (type) {
+	case MetaStreamer::StreamerType::CaptureMeta:
+		return V4L2_BUF_TYPE_META_CAPTURE;
+	case MetaStreamer::StreamerType::OutputMeta:
+		return (v4l2_buf_type)14; // XXX V4L2_BUF_TYPE_META_OUTPUT;
+	default:
+		FAIL("Bad StreamerType");
+	}
+}
+
+void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
+{
+	int r;
+
+	v4l2_format v4lfmt {};
+
+	v4lfmt.type = get_buf_type(m_type);
+	//r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
+	//ASSERT(r == 0);
+
+	v4lfmt.fmt.meta.dataformat = (uint32_t)fmt;
+	v4lfmt.fmt.meta.buffersize = size;
+
+	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);
+	ASSERT(r == 0);
+}
+
+void MetaStreamer::set_queue_size(uint32_t queue_size)
+{
+	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type));
+	m_fbs.resize(queue_size);
+}
+
+void MetaStreamer::queue(DumbFramebuffer* fb)
+{
+	uint32_t idx;
+
+	for (idx = 0; idx < m_fbs.size(); ++idx) {
+		if (m_fbs[idx] == nullptr)
+			break;
+	}
+
+	FAIL_IF(idx == m_fbs.size(), "queue full");
+
+	m_fbs[idx] = fb;
+
+	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
+}
+
+DumbFramebuffer* MetaStreamer::dequeue()
+{
+	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
+
+	auto fb = m_fbs[idx];
+	m_fbs[idx] = nullptr;
+
+	return fb;
+}
+
+void MetaStreamer::stream_on()
+{
+	uint32_t buf_type = get_buf_type(m_type);
+	int r = ioctl(m_fd, VIDIOC_STREAMON, &buf_type);
+	FAIL_IF(r, "Failed to enable stream: %d", r);
+}
+
+void MetaStreamer::stream_off()
 {
 	uint32_t buf_type = get_buf_type(m_type);
 	int r = ioctl(m_fd, VIDIOC_STREAMOFF, &buf_type);

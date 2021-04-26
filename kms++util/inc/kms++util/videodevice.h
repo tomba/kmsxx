@@ -5,6 +5,7 @@
 #include <kms++/kms++.h>
 
 class VideoStreamer;
+class MetaStreamer;
 
 class VideoDevice
 {
@@ -23,6 +24,7 @@ public:
 
 	VideoStreamer* get_capture_streamer();
 	VideoStreamer* get_output_streamer();
+	MetaStreamer* get_meta_capture_streamer();
 
 	std::vector<std::tuple<uint32_t, uint32_t>> get_discrete_frame_sizes(kms::PixelFormat fmt);
 	VideoFrameSize get_frame_sizes(kms::PixelFormat fmt);
@@ -38,20 +40,23 @@ public:
 private:
 	int m_fd;
 
-	bool m_has_capture;
-	bool m_has_mplane_capture;
+	bool m_has_capture = false;
+	bool m_has_mplane_capture = false;
 
-	bool m_has_output;
-	bool m_has_mplane_output;
+	bool m_has_output = false;
+	bool m_has_mplane_output = false;
 
-	bool m_has_m2m;
-	bool m_has_mplane_m2m;
+	bool m_has_m2m = false;
+	bool m_has_mplane_m2m = false;
+
+	bool m_has_meta_capture = false;
 
 	std::vector<kms::DumbFramebuffer*> m_capture_fbs;
 	std::vector<kms::DumbFramebuffer*> m_output_fbs;
 
 	std::unique_ptr<VideoStreamer> m_capture_streamer;
 	std::unique_ptr<VideoStreamer> m_output_streamer;
+	std::unique_ptr<MetaStreamer> m_meta_capture_streamer;
 };
 
 class VideoStreamer
@@ -73,6 +78,32 @@ public:
 	void set_format(kms::PixelFormat fmt, uint32_t width, uint32_t height);
 	void get_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
+	void set_queue_size(uint32_t queue_size);
+	void queue(kms::DumbFramebuffer* fb);
+	kms::DumbFramebuffer* dequeue();
+	void stream_on();
+	void stream_off();
+
+	int fd() const { return m_fd; }
+
+private:
+	int m_fd;
+	StreamerType m_type;
+	std::vector<kms::DumbFramebuffer*> m_fbs;
+};
+
+
+class MetaStreamer
+{
+public:
+	enum class StreamerType {
+		CaptureMeta,
+		OutputMeta,
+	};
+
+	MetaStreamer(int fd, StreamerType type);
+
+	void set_format(kms::PixelFormat fmt, uint32_t size);
 	void set_queue_size(uint32_t queue_size);
 	void queue(kms::DumbFramebuffer* fb);
 	kms::DumbFramebuffer* dequeue();

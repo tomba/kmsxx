@@ -12,6 +12,7 @@ import math
 #CONFIG = "dra7-ov5640"
 #CONFIG = "j7-ov5640"
 
+#CONFIG = "dra76-ub960-1-cam-meta"
 #CONFIG = "dra76-ub960-2-cam"
 CONFIG = "dra76-ub960-2-cam-meta"
 
@@ -25,19 +26,22 @@ sensor_1_h = 720
 sensor_2_w = 752
 sensor_2_h = 480
 
-mbus_fmt_sensor_1 = (sensor_1_w, sensor_1_h, pykms.BusFormat.YUYV8_2X8)
-fmt_sensor_1 = (sensor_1_w, sensor_1_h, pykms.PixelFormat.YUYV)
+PIX_BUS_FMT = pykms.BusFormat.UYVY8_2X8
+PIX_FMT = pykms.PixelFormat.UYVY
 
-mbus_fmt_sensor_2 = (sensor_2_w, sensor_2_h, pykms.BusFormat.YUYV8_2X8)
+mbus_fmt_sensor_1 = (sensor_1_w, sensor_1_h, PIX_BUS_FMT)
+fmt_sensor_1 = (sensor_1_w, sensor_1_h, PIX_FMT)
 
-mbus_fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, pykms.BusFormat.YUYV8_2X8)
+mbus_fmt_sensor_2 = (sensor_2_w, sensor_2_h, PIX_BUS_FMT)
+
+mbus_fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, PIX_BUS_FMT)
 mbus_fmt_meta_1 = (sensor_1_w, META_LINES, pykms.BusFormat.METADATA_16)
-fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, pykms.PixelFormat.YUYV)
+fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, PIX_FMT)
 fmt_meta_1 = (sensor_1_w, META_LINES, pykms.PixelFormat.META_16)
 
-mbus_fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, pykms.BusFormat.YUYV8_2X8)
+mbus_fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, PIX_BUS_FMT)
 mbus_fmt_meta_2 = (sensor_2_w, META_LINES, pykms.BusFormat.METADATA_16)
-fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, pykms.PixelFormat.YUYV)
+fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, PIX_FMT)
 fmt_meta_2 = (sensor_2_w, META_LINES, pykms.PixelFormat.META_16)
 
 configurations = {}
@@ -115,6 +119,78 @@ configurations["dra7-ov5640"] = {
 	"links": [
 		{ "src": ("ov5640 4-003c", 0), "dst": ("CAMERARX0", 0) },
 		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
+	],
+}
+
+#
+# DRA76: UB9060 1 camera, pixel and metadata streams
+#
+configurations["dra76-ub960-1-cam-meta"] = {
+	"subdevs": [
+		# cam 1
+		{
+			"entity": "ov10635 5-0030",
+			"pads": [
+				{ "pad": 0, "fmt": mbus_fmt_sensor_1 },
+			],
+		},
+		{
+			"entity": "ds90ub913a 4-0044",
+		},
+		# deser
+		{
+			"entity": "ds90ub960 4-003d",
+			"routing": [
+				# cam 1
+				{ "src": (0, 0), "dst": (4, 0) },
+				{ "src": (0, 0), "dst": (4, 1) },
+			],
+			"pads": [
+				# cam 1
+				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (4, 1), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+		{
+			"entity": "CAMERARX0",
+			"routing": [
+				# cam 1
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (2, 0) },
+			],
+			"pads": [
+				# cam 1
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (2, 0), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+	],
+
+	"devices": [
+		# cam 1
+		{
+			"entity": "CAL output 0",
+			"fmt": fmt_pix_1,
+			"embedded": False,
+			"dev": "/dev/video0",
+		},
+		{
+			"entity": "CAL output 1",
+			"fmt": fmt_meta_1,
+			"embedded": True,
+			"dev": "/dev/video1",
+		},
+	],
+
+	"links": [
+		{ "src": ("ov10635 5-0030", 0), "dst": ("ds90ub913a 4-0044", 0) },
+		{ "src": ("ds90ub913a 4-0044", 1), "dst": ("ds90ub960 4-003d", 0) },
+		{ "src": ("ds90ub960 4-003d", 4), "dst": ("CAMERARX0", 0) },
+		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
+		{ "src": ("CAMERARX0", 2), "dst": ("CAL output 1", 0) },
 	],
 }
 

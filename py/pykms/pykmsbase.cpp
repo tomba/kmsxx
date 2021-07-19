@@ -120,7 +120,20 @@ void init_pykmsbase(py::module& m)
 
 	py::class_<Property, DrmObject, unique_ptr<Property, py::nodelete>>(m, "Property")
 		.def_property_readonly("name", &Property::name)
-		.def_property_readonly("enums", &Property::get_enums);
+		.def_property_readonly("type", &Property::type)
+		.def_property_readonly("enums", &Property::get_enums)
+		.def_property_readonly("values", &Property::get_values)
+		.def("__repr__", [](const Property& o) { return "<pykms.Property " + to_string(o.id()) + " '" + o.name() + "'>"; })
+		;
+
+	py::enum_<PropertyType>(m, "PropertyType")
+		.value("Range", PropertyType::Range)
+		.value("Enum", PropertyType::Enum)
+		.value("Blob", PropertyType::Blob)
+		.value("Bitmask", PropertyType::Bitmask)
+		.value("Object", PropertyType::Object)
+		.value("SignedRange", PropertyType::SignedRange)
+		;
 
 	py::class_<Blob>(m, "Blob")
 		.def(py::init([](Card& card, py::buffer buf) {

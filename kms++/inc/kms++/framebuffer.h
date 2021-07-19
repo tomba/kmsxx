@@ -41,6 +41,7 @@ public:
 	uint32_t width() const override { return m_width; }
 	uint32_t height() const override { return m_height; }
 
+	void flush(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 	void flush();
 
 protected:

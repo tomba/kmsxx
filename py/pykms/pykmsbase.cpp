@@ -46,6 +46,10 @@ void init_pykmsbase(py::module& m)
 			return convert_vector(self->get_planes());
 		})
 
+		.def_property_readonly("properties", [](Card* self) {
+			return convert_vector(self->get_properties());
+		})
+
 		.def_property_readonly("has_atomic", &Card::has_atomic)
 		.def("get_prop", (Property * (Card::*)(uint32_t) const) & Card::get_prop)
 

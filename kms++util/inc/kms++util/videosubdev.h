@@ -13,6 +13,7 @@ struct SubdevRoute
 	uint32_t source_stream;
 	bool active;
 	bool immutable;
+	bool source;
 };
 
 enum class ConfigurationType {

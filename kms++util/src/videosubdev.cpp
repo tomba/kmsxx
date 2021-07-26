@@ -123,7 +123,7 @@ vector<SubdevRoute> VideoSubdev::get_routes(ConfigurationType type)
 		const auto& r = vroutes[i];
 
 		v.push_back(SubdevRoute { r.sink_pad, r.sink_stream, r.source_pad, r.source_stream,
-					 !!(r.flags & V4L2_SUBDEV_ROUTE_FL_ACTIVE), !!(r.flags & V4L2_SUBDEV_ROUTE_FL_IMMUTABLE) });
+					 !!(r.flags & V4L2_SUBDEV_ROUTE_FL_ACTIVE), !!(r.flags & V4L2_SUBDEV_ROUTE_FL_IMMUTABLE), !!(r.flags & V4L2_SUBDEV_ROUTE_FL_SOURCE) });
 	}
 
 	return v;
@@ -134,8 +134,10 @@ int VideoSubdev::set_routes(const std::vector<SubdevRoute>& routes, Configuratio
 	vector<v4l2_subdev_route> vroutes;
 
 	for (const auto& r : routes) {
-		v4l2_subdev_route vroute { r.sink_pad, r.sink_stream, r.source_pad, r.source_stream,
-					  (r.active ? V4L2_SUBDEV_ROUTE_FL_ACTIVE : 0) | (r.immutable ? V4L2_SUBDEV_ROUTE_FL_IMMUTABLE : 0) };
+		v4l2_subdev_route vroute{ r.sink_pad, r.sink_stream, r.source_pad, r.source_stream,
+					  (r.active ? V4L2_SUBDEV_ROUTE_FL_ACTIVE : 0) |
+						  (r.immutable ? V4L2_SUBDEV_ROUTE_FL_IMMUTABLE : 0) |
+						  (r.source ? V4L2_SUBDEV_ROUTE_FL_SOURCE : 0) };
 		vroutes.push_back(vroute);
 	}
 

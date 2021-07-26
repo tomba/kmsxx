@@ -177,13 +177,14 @@ void init_pyvid(py::module& m)
 	;
 
 	py::class_<SubdevRoute>(m, "SubdevRoute")
-		.def(py::init([](uint32_t sink_pad, uint32_t sink_stream, uint32_t source_pad, uint32_t source_stream, bool active) {
+		.def(py::init([](uint32_t sink_pad, uint32_t sink_stream, uint32_t source_pad, uint32_t source_stream, bool source) {
 			SubdevRoute r {};
 			r.sink_pad = sink_pad;
 			r.sink_stream = sink_stream;
 			r.source_pad = source_pad;
 			r.source_stream = source_stream;
-			r.active = active;
+			r.active = true;
+			r.source = source;
 			return r;
 		}))
 		.def_readwrite("sink_pad", &SubdevRoute::sink_pad)

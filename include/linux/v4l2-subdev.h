@@ -181,6 +181,7 @@ struct v4l2_subdev_capability {
 
 #define V4L2_SUBDEV_ROUTE_FL_ACTIVE		BIT(0)
 #define V4L2_SUBDEV_ROUTE_FL_IMMUTABLE		BIT(1)
+#define V4L2_SUBDEV_ROUTE_FL_SOURCE		BIT(2)
 
 /**
  * struct v4l2_subdev_route - A route inside a subdev

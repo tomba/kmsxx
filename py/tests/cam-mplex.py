@@ -18,7 +18,7 @@ CONFIG = "dra76-ub960-2-cam-meta"
 
 #CONFIG = "am6-ub960-2-cam"
 
-META_LINES = 3
+META_LINES = 1
 
 sensor_1_w = 1280
 sensor_1_h = 720
@@ -29,19 +29,14 @@ sensor_2_h = 480
 PIX_BUS_FMT = pykms.BusFormat.UYVY8_2X8
 PIX_FMT = pykms.PixelFormat.UYVY
 
-mbus_fmt_sensor_1 = (sensor_1_w, sensor_1_h, PIX_BUS_FMT)
-fmt_sensor_1 = (sensor_1_w, sensor_1_h, PIX_FMT)
-
-mbus_fmt_sensor_2 = (sensor_2_w, sensor_2_h, PIX_BUS_FMT)
-
-mbus_fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, PIX_BUS_FMT)
+mbus_fmt_pix_1 = (sensor_1_w, sensor_1_h, PIX_BUS_FMT)
 mbus_fmt_meta_1 = (sensor_1_w, META_LINES, pykms.BusFormat.METADATA_16)
-fmt_pix_1 = (sensor_1_w, sensor_1_h - META_LINES, PIX_FMT)
+fmt_pix_1 = (sensor_1_w, sensor_1_h, PIX_FMT)
 fmt_meta_1 = (sensor_1_w, META_LINES, pykms.PixelFormat.META_16)
 
-mbus_fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, PIX_BUS_FMT)
+mbus_fmt_pix_2 = (sensor_2_w, sensor_2_h, PIX_BUS_FMT)
 mbus_fmt_meta_2 = (sensor_2_w, META_LINES, pykms.BusFormat.METADATA_16)
-fmt_pix_2 = (sensor_2_w, sensor_2_h - META_LINES, PIX_FMT)
+fmt_pix_2 = (sensor_2_w, sensor_2_h, PIX_FMT)
 fmt_meta_2 = (sensor_2_w, META_LINES, pykms.PixelFormat.META_16)
 
 configurations = {}
@@ -52,7 +47,7 @@ configurations = {}
 configurations["legacy-ov5640"] = {
 	"devices": [
 		{
-			"fmt": fmt_sensor_1,
+			"fmt": fmt_pix_1,
 			"dev": "/dev/video0",
 		},
 	],
@@ -66,7 +61,7 @@ configurations["j7-ov5640"] = {
 		{
 			"entity": "ov5640 9-003c",
 			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
 			],
 		},
 		{
@@ -77,7 +72,7 @@ configurations["j7-ov5640"] = {
 	"devices": [
 		{
 			"entity": "j721e-csi2rx",
-			"fmt": fmt_sensor_1,
+			"fmt": fmt_pix_1,
 			"dev": "/dev/video0",
 		},
 	],
@@ -96,14 +91,14 @@ configurations["dra7-ov5640"] = {
 		{
 			"entity": "ov5640 4-003c",
 			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
 			],
 		},
 		{
 			"entity": "CAMERARX0",
 			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
-				{ "pad": (1, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
 			],
 		},
 	],
@@ -111,7 +106,7 @@ configurations["dra7-ov5640"] = {
 	"devices": [
 		{
 			"entity": "CAL output 0",
-			"fmt": fmt_sensor_1,
+			"fmt": fmt_pix_1,
 			"dev": "/dev/video0",
 		},
 	],
@@ -131,23 +126,39 @@ configurations["dra76-ub960-1-cam-meta"] = {
 		{
 			"entity": "ov10635 5-0030",
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_1 },
+				{ "pad": 0, "fmt": mbus_fmt_pix_1 },
+			],
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
+				{ "src": (0, 1), "dst": (0, 1), "flags": [ "source" ] },
 			],
 		},
+		# Serializer
 		{
 			"entity": "ds90ub913a 4-0044",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (1, 1) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_1 },
+			],
 		},
-		# deser
+		# Deserializer
 		{
 			"entity": "ds90ub960 4-003d",
 			"routing": [
 				# cam 1
 				{ "src": (0, 0), "dst": (4, 0) },
-				{ "src": (0, 0), "dst": (4, 1) },
+				{ "src": (0, 1), "dst": (4, 1) },
 			],
 			"pads": [
 				# cam 1
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
 				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
 				{ "pad": (4, 1), "fmt": mbus_fmt_meta_1 },
 			],
@@ -195,48 +206,71 @@ configurations["dra76-ub960-1-cam-meta"] = {
 }
 
 #
-# DRA76: UB9060 2 cameras, pixel streams
+# DRA76: UB9060 2 cameras, only pixel streams
 #
 configurations["dra76-ub960-2-cam"] = {
 	"subdevs": [
-		# cam 1
+		# Camera 1
 		{
 			"entity": "ov10635 5-0030",
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_1 },
+				{ "pad": 0, "fmt": mbus_fmt_pix_1 },
+			],
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
 			],
 		},
+		# Serializer 1
 		{
 			"entity": "ds90ub913a 4-0044",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+			],
 		},
-		# cam 2
+		# Camera 2
 		{
 			"entity": "ov10635 6-0030",
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_2 },
+				{ "pad": 0, "fmt": mbus_fmt_pix_2 },
+			],
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
 			],
 		},
+		# Serializer 2
 		{
 			"entity": "ds90ub913a 4-0045",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_2 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
+			],
 		},
-		# deser
+		# Deserializer
 		{
 			"entity": "ds90ub960 4-003d",
 			"routing": [
-				# cam 1
+				# Camera 1
 				{ "src": (0, 0), "dst": (4, 0) },
-				# cam 2
+				# Camera 2
 				{ "src": (1, 0), "dst": (4, 1) },
 			],
 			"pads": [
-				# cam 1
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				# Camera 1
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
 				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
-				# cam 2
-				{ "pad": (1, 0), "fmt": mbus_fmt_sensor_2 },
+				# Camera 2
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
 				{ "pad": (4, 1), "fmt": mbus_fmt_pix_2 },
 			],
 		},
+		# CSI-2 RX
 		{
 			"entity": "CAMERARX0",
 			"routing": [
@@ -281,73 +315,6 @@ configurations["dra76-ub960-2-cam"] = {
 		{ "src": ("ds90ub960 4-003d", 4), "dst": ("CAMERARX0", 0) },
 		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
 		{ "src": ("CAMERARX0", 2), "dst": ("CAL output 1", 0) },
-		{ "src": ("CAMERARX0", 3), "dst": ("CAL output 2", 0) },
-		{ "src": ("CAMERARX0", 4), "dst": ("CAL output 3", 0) },
-	],
-}
-
-#
-# DRA76: UB9060 1 camera, pixel and metadata streams
-#
-configurations["dra76-ub960-1-cam-meta"] = {
-	"subdevs": [
-		{
-			"entity": "ov10635 5-0030",
-			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
-			],
-		},
-		{
-			"entity": "ds90ub913a 4-0044",
-		},
-		{
-			"entity": "ds90ub960 4-003d",
-			"routing": [
-				{ "src": (0, 0), "dst": (4, 0) },
-				{ "src": (0, 0), "dst": (4, 1) },
-			],
-			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
-				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
-				{ "pad": (4, 1), "fmt": mbus_fmt_meta_1 },
-			],
-		},
-		{
-			"entity": "CAMERARX0",
-			"routing": [
-				{ "src": (0, 0), "dst": (1, 0) },
-				{ "src": (0, 1), "dst": (2, 0) },
-			],
-			"pads": [
-				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
-				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
-				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
-				{ "pad": (2, 0), "fmt": mbus_fmt_meta_1 },
-			],
-		},
-	],
-
-	"devices": [
-		{
-			"entity": "CAL output 0",
-			"fmt": fmt_pix_1,
-			"embedded": False,
-			"dev": "/dev/video0",
-		},
-		{
-			"entity": "CAL output 1",
-			"fmt": fmt_meta_1,
-			"embedded": True,
-			"dev": "/dev/video1",
-		},
-	],
-
-	"links": [
-		{ "src": ("ov10635 5-0030", 0), "dst": ("ds90ub913a 4-0044", 0) },
-		{ "src": ("ds90ub913a 4-0044", 1), "dst": ("ds90ub960 4-003d", 0) },
-		{ "src": ("ds90ub960 4-003d", 4), "dst": ("CAMERARX0", 0) },
-		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
-		{ "src": ("CAMERARX0", 2), "dst": ("CAL output 1", 0) },
 	],
 }
 
@@ -356,48 +323,81 @@ configurations["dra76-ub960-1-cam-meta"] = {
 #
 configurations["dra76-ub960-2-cam-meta"] = {
 	"subdevs": [
-		# cam 1
+		# Camera 1
 		{
 			"entity": "ov10635 5-0030",
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
+				{ "src": (0, 1), "dst": (0, 1), "flags": [ "source" ] },
+			],
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
 			],
 		},
+		# Serializer 1
 		{
 			"entity": "ds90ub913a 4-0044",
-		},
-		# cam 2
-		{
-			"entity": "ov10635 6-0030",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (1, 1) },
+			],
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_2 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_1 },
 			],
 		},
+		# Camera 2
+		{
+			"entity": "ov10635 6-0030",
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
+				{ "src": (0, 1), "dst": (0, 1), "flags": [ "source" ] },
+			],
+			"pads": [
+				{ "pad": 0, "fmt": mbus_fmt_pix_2 },
+			],
+		},
+		# Serializer 2
 		{
 			"entity": "ds90ub913a 4-0045",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (1, 1) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_2 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_2 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_2 },
+			],
 		},
-		# deser
+		# Deserializer
 		{
 			"entity": "ds90ub960 4-003d",
 			"routing": [
-				# cam 1
+				# Camera 1
 				{ "src": (0, 0), "dst": (4, 0) },
-				{ "src": (0, 0), "dst": (4, 1) },
-				# cam 2
+				{ "src": (0, 1), "dst": (4, 1) },
+				# Camera 2
 				{ "src": (1, 0), "dst": (4, 2) },
-				{ "src": (1, 0), "dst": (4, 3) },
+				{ "src": (1, 1), "dst": (4, 3) },
 			],
 			"pads": [
-				# cam 1
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				# Camera 1
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
 				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
 				{ "pad": (4, 1), "fmt": mbus_fmt_meta_1 },
-				# cam 2
-				{ "pad": (1, 0), "fmt": mbus_fmt_sensor_2 },
+				# Camera 2
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_2 },
 				{ "pad": (4, 2), "fmt": mbus_fmt_pix_2 },
 				{ "pad": (4, 3), "fmt": mbus_fmt_meta_2 },
 			],
 		},
+		# CSI-2 RX
 		{
 			"entity": "CAMERARX0",
 			"routing": [
@@ -474,7 +474,7 @@ configurations["am6-ub960-2-cam"] = {
 		{
 			"entity": "ov10635 6-0030",
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_1 },
+				{ "pad": 0, "fmt": mbus_fmt_pix_1 },
 			],
 		},
 		{
@@ -484,7 +484,7 @@ configurations["am6-ub960-2-cam"] = {
 		{
 			"entity": "ov10635 7-0030",
 			"pads": [
-				{ "pad": 0, "fmt": mbus_fmt_sensor_2 },
+				{ "pad": 0, "fmt": mbus_fmt_pix_2 },
 			],
 		},
 		{
@@ -501,10 +501,10 @@ configurations["am6-ub960-2-cam"] = {
 			],
 			"pads": [
 				# cam 1
-				{ "pad": (0, 0), "fmt": mbus_fmt_sensor_1 },
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
 				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
 				# cam 2
-				{ "pad": (1, 0), "fmt": mbus_fmt_sensor_2 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
 				{ "pad": (4, 1), "fmt": mbus_fmt_pix_2 },
 			],
 		},
@@ -627,7 +627,10 @@ for e in config.get("subdevs", []):
 			sink_pad, sink_stream = r["src"]
 			source_pad, source_stream = r["dst"]
 
-			routes.append(pykms.SubdevRoute(sink_pad, sink_stream, source_pad, source_stream, True))
+			is_source_route = "source" in r.get("flags", [])
+
+			routes.append(pykms.SubdevRoute(sink_pad, sink_stream, source_pad, source_stream,
+			                                is_source_route))
 
 		if len(routes) > 0:
 			subdev.set_routes(routes)
@@ -648,6 +651,8 @@ res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
 crtc = res.reserve_crtc(conn)
 
+card.disable_planes()
+
 mode = conn.get_default_mode()
 modeb = mode.to_blob(card)
 
@@ -667,15 +672,11 @@ for i, stream in enumerate(streams):
 	stream["fourcc"] = stream["fmt"][2]
 
 	if stream["fourcc"] == pykms.PixelFormat.META_16:
-		stream["plane_fourcc"] = pykms.PixelFormat.YUYV
+		stream["plane_fourcc"] = pykms.PixelFormat.RGB565
 	else:
 		stream["plane_fourcc"] = stream["fourcc"]
 
 	plane = res.reserve_generic_plane(crtc, stream["plane_fourcc"])
-	if plane == None:
-		plane = res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
-		stream["plane_fourcc"] = pykms.PixelFormat.RGB565
-
 	assert(plane)
 
 	stream["plane"] = plane

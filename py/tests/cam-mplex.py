@@ -10,6 +10,7 @@ import math
 
 #CONFIG = "legacy-ov5640"
 #CONFIG = "dra7-ov5640"
+#CONFIG = "am6-ov5640"
 #CONFIG = "j7-ov5640"
 
 #CONFIG = "dra76-ub960-1-cam-meta"
@@ -50,6 +51,40 @@ configurations["legacy-ov5640"] = {
 			"fmt": fmt_pix_1,
 			"dev": "/dev/video0",
 		},
+	],
+}
+
+#
+# AM6 EVM: OV5640
+#
+configurations["am6-ov5640"] = {
+	"subdevs": [
+		{
+			"entity": "ov5640 3-003c",
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_2 },
+			],
+		},
+		{
+			"entity": "CAMERARX0",
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_2 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_2 },
+			],
+		},
+	],
+
+	"devices": [
+		{
+			"entity": "CAL output 0",
+			"fmt": fmt_pix_2,
+			"dev": "/dev/video0",
+		},
+	],
+
+	"links": [
+		{ "src": ("ov5640 3-003c", 0), "dst": ("CAMERARX0", 0) },
+		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
 	],
 }
 

@@ -14,12 +14,20 @@
 #include <linux/media.h>
 #include <linux/v4l2-subdev.h>
 
-#include <kms++util/kms++util.h>
-#include <kms++util/mediadevice.h>
-#include <kms++util/videodevice.h>
-#include <kms++util/videosubdev.h>
+#include <v4l2++/mediadevice.h>
+#include <v4l2++/videodevice.h>
+#include <v4l2++/videosubdev.h>
+#include <v4l2++/helpers.h>
 
 using namespace std;
+using namespace v4l2;
+
+static string to_lower(const string& str)
+{
+	string data = str;
+	transform(data.begin(), data.end(), data.begin(), ::tolower);
+	return data;
+}
 
 static string filepath_for_major_minor(uint32_t major, uint32_t minor)
 {

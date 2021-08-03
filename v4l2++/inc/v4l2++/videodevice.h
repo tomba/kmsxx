@@ -2,7 +2,11 @@
 
 #include <string>
 #include <memory>
-#include <kms++/kms++.h>
+#include <vector>
+#include <v4l2++/pixelformats.h>
+
+namespace v4l2
+{
 
 class VideoStreamer;
 class MetaStreamer;
@@ -21,7 +25,7 @@ public:
 	uint32_t m_length;
 	int m_fd;
 	uint32_t m_offset;
-	kms::PixelFormat m_format;
+	PixelFormat m_format;
 };
 
 class VideoDevice
@@ -43,8 +47,8 @@ public:
 	VideoStreamer* get_output_streamer();
 	MetaStreamer* get_meta_capture_streamer();
 
-	std::vector<std::tuple<uint32_t, uint32_t>> get_discrete_frame_sizes(kms::PixelFormat fmt);
-	VideoFrameSize get_frame_sizes(kms::PixelFormat fmt);
+	std::vector<std::tuple<uint32_t, uint32_t>> get_discrete_frame_sizes(PixelFormat fmt);
+	VideoFrameSize get_frame_sizes(PixelFormat fmt);
 
 	int fd() const { return m_fd; }
 	bool has_capture() const { return m_has_capture; }
@@ -91,9 +95,9 @@ public:
 	std::vector<std::string> get_ports();
 	void set_port(uint32_t index);
 
-	std::vector<kms::PixelFormat> get_formats();
-	int get_format(kms::PixelFormat& fmt, uint32_t& width, uint32_t& height);
-	void set_format(kms::PixelFormat fmt, uint32_t width, uint32_t height);
+	std::vector<PixelFormat> get_formats();
+	int get_format(PixelFormat& fmt, uint32_t& width, uint32_t& height);
+	void set_format(PixelFormat fmt, uint32_t width, uint32_t height);
 	void get_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_selection(uint32_t& left, uint32_t& top, uint32_t& width, uint32_t& height);
 	void set_queue_size(uint32_t queue_size, VideoMemoryType mem_type);
@@ -117,5 +121,7 @@ class MetaStreamer : public VideoStreamer
 public:
 	MetaStreamer(int fd, VideoStreamer::StreamerType type);
 
-	void set_format(kms::PixelFormat fmt, uint32_t size);
+	void set_format(PixelFormat fmt, uint32_t size);
 };
+
+}

@@ -8,10 +8,6 @@ libkmsxxutil_sources = files([
     'src/resourcemanager.cpp',
     'src/strhelpers.cpp',
     'src/testpat.cpp',
-    'src/videodevice.cpp',
-    'src/mediadevice.cpp',
-    'src/videosubdev.cpp',
-    'src/mediabus.cpp',
 ])
 
 public_headers = [
@@ -23,10 +19,6 @@ public_headers = [
     'inc/kms++util/opts.h',
     'inc/kms++util/extcpuframebuffer.h',
     'inc/kms++util/resourcemanager.h',
-    'inc/kms++util/videodevice.h',
-    'inc/kms++util/mediadevice.h',
-    'inc/kms++util/videosubdev.h',
-    'inc/kms++util/mediabus.h',
 ]
 
 private_includes = include_directories('src', 'inc')

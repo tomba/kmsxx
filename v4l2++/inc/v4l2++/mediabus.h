@@ -2,6 +2,9 @@
 
 #include <string>
 
+namespace v4l2
+{
+
 enum class BusFormat {
 	FIXED,
 
@@ -94,3 +97,5 @@ uint32_t BusFormatToCode(BusFormat fmt);
 std::string BusFormatToString(BusFormat fmt);
 BusFormat StringToBusFormat(const std::string& fmt);
 BusFormat CodeToBusFormat(uint32_t code);
+
+}

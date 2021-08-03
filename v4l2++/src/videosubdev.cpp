@@ -12,12 +12,11 @@
 #include <linux/media.h>
 #include <linux/v4l2-subdev.h>
 
-#include <kms++/kms++.h>
-#include <kms++util/kms++util.h>
-#include <kms++util/videosubdev.h>
+#include <v4l2++/videosubdev.h>
+#include <v4l2++/helpers.h>
 
 using namespace std;
-using namespace kms;
+using namespace v4l2;
 
 VideoSubdev::VideoSubdev(const string &dev_path)
 {

@@ -1,4 +1,4 @@
-py3_dep = dependency('python3', required : get_option('pykms'))
+py3_dep = dependency('python3', required : get_option('pyv4l2'))
 
 if py3_dep.found() == false
     subdir_done()
@@ -13,44 +13,27 @@ else
     pybind11_dep = dependency('pybind11', fallback : ['pybind11', 'pybind11_dep'])
 endif
 
-pykms_sources = files([
-    'pykmsbase.cpp',
-    'pykms.cpp',
+pyv4l2_sources = files([
+    'pyv4l2.cpp',
 ])
 
-if get_option('utils')
-    pykms_sources += files([
-        'pykmsutil.cpp',
-    ])
-endif
-
-if libdrmomap_dep.found()
-    pykms_sources += files([
-        'pykmsomap.cpp',
-    ])
-endif
-
-pykms_deps = [
-    libkmsxx_dep,
+pyv4l2_deps = [
+    libv4l2xx_dep,
     py3_dep,
     pybind11_dep,
 ]
 
-if get_option('utils')
-    pykms_deps += [ libkmsxxutil_dep ]
-endif
+pyv4l2_args = [ '-fvisibility=hidden' ]
 
-pykms_args = [ '-fvisibility=hidden' ]
+destdir = get_option('libdir') / 'python' + py3_dep.version() / 'site-packages/pyv4l2'
 
-destdir = get_option('libdir') / 'python' + py3_dep.version() / 'site-packages/pykms'
-
-pykms = shared_module('pykms',
-                      pykms_sources,
+pyv4l2 = shared_module('pyv4l2',
+                      pyv4l2_sources,
                       install : true,
                       install_dir : destdir,
                       name_prefix : '',
-                      dependencies : pykms_deps,
-                      cpp_args : pykms_args)
+                      dependencies : pyv4l2_deps,
+                      cpp_args : pyv4l2_args)
 
 # Copy __init__.py to build dir so that we can run without installing
 configure_file(input: '__init__.py', output: '__init__.py', copy: true,

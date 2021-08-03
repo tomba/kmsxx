@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import pykms
+import pyv4l2 as v4l2
 
 META_LINES = 1
 
@@ -10,18 +10,18 @@ sensor_1_h = 720
 sensor_2_w = 752
 sensor_2_h = 480
 
-PIX_BUS_FMT = pykms.BusFormat.UYVY8_2X8
-PIX_FMT = pykms.PixelFormat.UYVY
+PIX_BUS_FMT = v4l2.BusFormat.UYVY8_2X8
+PIX_FMT = v4l2.PixelFormat.UYVY
 
 mbus_fmt_pix_1 = (sensor_1_w, sensor_1_h, PIX_BUS_FMT)
-mbus_fmt_meta_1 = (sensor_1_w, META_LINES, pykms.BusFormat.METADATA_16)
+mbus_fmt_meta_1 = (sensor_1_w, META_LINES, v4l2.BusFormat.METADATA_16)
 fmt_pix_1 = (sensor_1_w, sensor_1_h, PIX_FMT)
-fmt_meta_1 = (sensor_1_w, META_LINES, pykms.PixelFormat.META_16)
+fmt_meta_1 = (sensor_1_w, META_LINES, v4l2.PixelFormat.META_16)
 
 mbus_fmt_pix_2 = (sensor_2_w, sensor_2_h, PIX_BUS_FMT)
-mbus_fmt_meta_2 = (sensor_2_w, META_LINES, pykms.BusFormat.METADATA_16)
+mbus_fmt_meta_2 = (sensor_2_w, META_LINES, v4l2.BusFormat.METADATA_16)
 fmt_pix_2 = (sensor_2_w, sensor_2_h, PIX_FMT)
-fmt_meta_2 = (sensor_2_w, META_LINES, pykms.PixelFormat.META_16)
+fmt_meta_2 = (sensor_2_w, META_LINES, v4l2.PixelFormat.META_16)
 
 configurations = {}
 

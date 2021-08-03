@@ -2,8 +2,10 @@
 
 #include <string>
 #include <memory>
-#include <kms++/kms++.h>
-#include <kms++util/mediabus.h>
+#include <v4l2++/mediabus.h>
+
+namespace v4l2
+{
 
 struct SubdevRoute
 {
@@ -37,3 +39,5 @@ private:
 	int m_fd;
 	std::string m_name;
 };
+
+}

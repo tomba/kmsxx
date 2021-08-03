@@ -6,6 +6,9 @@
 
 #include <linux/media.h>
 
+namespace v4l2
+{
+
 struct MediaDevicePriv;
 
 class MediaEntity;
@@ -154,3 +157,5 @@ struct MediaDevicePriv {
 
 	std::vector<std::shared_ptr<MediaObject>> objects;
 };
+
+}

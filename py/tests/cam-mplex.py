@@ -7,6 +7,7 @@ import time
 from collections import deque
 import importlib
 import pykms
+import pyv4l2 as v4l2
 import mmap
 
 parser = argparse.ArgumentParser()
@@ -71,7 +72,7 @@ def link(source, sink):
 
 print("Configure media entities")
 
-md = pykms.MediaDevice("/dev/media0")
+md = v4l2.MediaDevice("/dev/media0")
 
 disable_all_links(md)
 
@@ -101,7 +102,7 @@ for e in config.get("subdevs", []):
 
 			is_source_route = "source" in r.get("flags", [])
 
-			routes.append(pykms.SubdevRoute(sink_pad, sink_stream, source_pad, source_stream,
+			routes.append(v4l2.SubdevRoute(sink_pad, sink_stream, source_pad, source_stream,
 			                                is_source_route))
 
 		if len(routes) > 0:
@@ -151,10 +152,10 @@ for i, stream in enumerate(streams):
 	stream["h"] = stream["fmt"][1]
 	stream["fourcc"] = stream["fmt"][2]
 
-	if stream["fourcc"] == pykms.PixelFormat.META_16:
+	if stream["fourcc"] == v4l2.PixelFormat.META_16:
 		stream["plane_fourcc"] = pykms.PixelFormat.RGB565
 	else:
-		stream["plane_fourcc"] = stream["fourcc"]
+		stream["plane_fourcc"] = pykms.PixelFormat(stream["fourcc"])
 
 	stream["plane_w"] = stream["w"]
 	stream["plane_h"] = stream["h"]
@@ -191,13 +192,13 @@ for i, stream in enumerate(streams):
 
 
 for stream in streams:
-	vd = pykms.VideoDevice(stream["dev"])
+	vd = v4l2.VideoDevice(stream["dev"])
 
 	cap = vd.capture_streamer
 	cap.set_port(0)
 	cap.set_format(stream["fourcc"], stream["w"], stream["h"])
 
-	mem_type = pykms.VideoMemoryType.DMABUF if args.type == "drm" else pykms.VideoMemoryType.MMAP
+	mem_type = v4l2.VideoMemoryType.DMABUF if args.type == "drm" else v4l2.VideoMemoryType.MMAP
 	cap.set_queue_size(NUM_BUFS, mem_type)
 
 	stream["vd"] = vd
@@ -240,9 +241,9 @@ for stream in streams:
 	cap = stream["cap"]
 	for i in range(first_buf, NUM_BUFS):
 		if args.type == "drm":
-			vbuf = pykms.create_dmabuffer(fbs[i].fd(0))
+			vbuf = v4l2.create_dmabuffer(fbs[i].fd(0))
 		else:
-			vbuf = pykms.create_mmapbuffer()
+			vbuf = v4l2.create_mmapbuffer()
 		cap.queue(vbuf)
 
 for stream in streams:
@@ -335,7 +336,7 @@ def handle_pageflip():
 			assert(args.type == "drm")
 
 			fb = stream["kms_old_fb"]
-			vbuf = pykms.create_dmabuffer(fb.fd(0))
+			vbuf = v4l2.create_dmabuffer(fb.fd(0))
 			cap.queue(vbuf)
 			stream["kms_old_fb"] = None
 

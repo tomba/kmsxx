@@ -1,4 +1,4 @@
-#include <kms++util/mediabus.h>
+#include <v4l2++/mediabus.h>
 #include <linux/media-bus-format.h>
 
 #include <map>
@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 using namespace std;
+using namespace v4l2;
 
 #define MAP_BUS_FMT(fmt)                                      \
 	{                                                     \
@@ -101,17 +102,17 @@ static const map<BusFormat, tuple<uint32_t, std::string>> s_bus_format_map = {
 	MAP_BUS_FMT(METADATA_16),
 };
 
-uint32_t BusFormatToCode(BusFormat fmt)
+uint32_t v4l2::BusFormatToCode(BusFormat fmt)
 {
 	return get<0>(s_bus_format_map.at(fmt));
 }
 
-string BusFormatToString(BusFormat fmt)
+string v4l2::BusFormatToString(BusFormat fmt)
 {
 	return get<1>(s_bus_format_map.at(fmt));
 }
 
-BusFormat StringToBusFormat(const string& fmt)
+BusFormat v4l2::StringToBusFormat(const string& fmt)
 {
 	for (const auto& [k, p] : s_bus_format_map) {
 		if (fmt == get<1>(p))
@@ -121,7 +122,7 @@ BusFormat StringToBusFormat(const string& fmt)
 	throw runtime_error("BusFormat not found");
 }
 
-BusFormat CodeToBusFormat(uint32_t code)
+BusFormat v4l2::CodeToBusFormat(uint32_t code)
 {
 	for (const auto& [k, p] : s_bus_format_map) {
 		if (code == get<0>(p))

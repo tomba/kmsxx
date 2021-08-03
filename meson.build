@@ -39,6 +39,7 @@ libfmt_dep = dependency('fmt')
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 
 subdir('kms++')
+subdir('v4l2++')
 
 if get_option('libutils')
     subdir('kms++util')

@@ -8,12 +8,11 @@
 #include <unistd.h>
 #include <system_error>
 
-#include <kms++/kms++.h>
-#include <kms++util/kms++util.h>
-#include <kms++util/videodevice.h>
+#include <v4l2++/videodevice.h>
+#include <v4l2++/helpers.h>
 
 using namespace std;
-using namespace kms;
+using namespace v4l2;
 
 /*
  * V4L2 and DRM differ in their interpretation of YUV420::NV12

@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import pykms
+import pyv4l2 as v4l2
 import argparse
 
-md = pykms.MediaDevice("/dev/media0")
+md = v4l2.MediaDevice("/dev/media0")
 
 entities = list(md.entities)
 

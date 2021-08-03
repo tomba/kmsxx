@@ -14,14 +14,12 @@
 #include <linux/media.h>
 #include <linux/v4l2-subdev.h>
 
-#include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
 #include <kms++util/mediadevice.h>
 #include <kms++util/videodevice.h>
 #include <kms++util/videosubdev.h>
 
 using namespace std;
-using namespace kms;
 
 static string filepath_for_major_minor(uint32_t major, uint32_t minor)
 {

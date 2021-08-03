@@ -27,6 +27,31 @@ void init_pyvid(py::module& m)
 		.def_property_readonly("frame_sizes", &VideoDevice::get_frame_sizes)
 		.def("get_capture_devices", &VideoDevice::get_capture_devices);
 
+	py::enum_<VideoMemoryType>(m, "VideoMemoryType")
+		.value("MMAP", VideoMemoryType::MMAP)
+		.value("DMABUF", VideoMemoryType::DMABUF)
+		;
+
+	m.def("create_dmabuffer", [](int fd) {
+		VideoBuffer buf {};
+		buf.m_mem_type = VideoMemoryType::DMABUF;
+		buf.m_fd = fd;
+		return buf;
+	});
+
+	m.def("create_mmapbuffer", []() {
+		VideoBuffer buf {};
+		buf.m_mem_type = VideoMemoryType::MMAP;
+		return buf;
+	});
+
+	py::class_<VideoBuffer>(m, "VideoBuffer")
+		.def_readonly("index", &VideoBuffer::m_index)
+		.def_readonly("offset", &VideoBuffer::m_offset)
+		.def_readonly("fd", &VideoBuffer::m_fd)
+		.def_readonly("length", &VideoBuffer::m_length)
+		;
+
 	py::class_<VideoStreamer>(m, "VideoStreamer")
 		.def_property_readonly("fd", &VideoStreamer::fd)
 		.def_property_readonly("ports", &VideoStreamer::get_ports)

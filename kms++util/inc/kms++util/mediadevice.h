@@ -2,11 +2,9 @@
 
 #include <string>
 #include <memory>
-#include <kms++/kms++.h>
+#include <vector>
 
 #include <linux/media.h>
-#include <linux/v4l2-mediabus.h> // XXX
-#include <linux/v4l2-subdev.h>
 
 struct MediaDevicePriv;
 

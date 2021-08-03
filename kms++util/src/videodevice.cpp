@@ -27,6 +27,18 @@ using namespace kms;
  * and forth to keep the data view consistent.
  */
 
+static v4l2_memory get_mem_type(VideoMemoryType type)
+{
+	switch (type) {
+	case VideoMemoryType::MMAP:
+		return V4L2_MEMORY_MMAP;
+	case VideoMemoryType::DMABUF:
+		return V4L2_MEMORY_DMABUF;
+	default:
+		FAIL("Bad VideoMemoryType");
+	}
+}
+
 /* V4L2 helper funcs */
 static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
 {
@@ -197,29 +209,31 @@ static void v4l2_set_selection(int fd, uint32_t& left, uint32_t& top, uint32_t& 
 	height = selection.r.height;
 }
 
-static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type)
+static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type, uint32_t mem_type)
 {
 	v4l2_requestbuffers v4lreqbuf{};
 	v4lreqbuf.type = buf_type;
-	v4lreqbuf.memory = V4L2_MEMORY_DMABUF;
+	v4lreqbuf.memory = mem_type;
 	v4lreqbuf.count = queue_size;
 	int r = ioctl(fd, VIDIOC_REQBUFS, &v4lreqbuf);
 	FAIL_IF(r != 0, "VIDIOC_REQBUFS failed: %d", errno);
 	ASSERT(v4lreqbuf.count == queue_size);
 }
 
-static void v4l2_queue_dmabuf(int fd, uint32_t index, DumbFramebuffer* fb, uint32_t buf_type)
+static void v4l2_queue(int fd, VideoBuffer& fb, uint32_t buf_type)
 {
 	v4l2_buffer buf{};
 	buf.type = buf_type;
-	buf.memory = V4L2_MEMORY_DMABUF;
-	buf.index = index;
-
-	const PixelFormatInfo& pfi = get_pixel_format_info(fb->format());
+	buf.memory = get_mem_type(fb.m_mem_type);
+	buf.index = fb.m_index;
 
 	bool mplane = buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE || buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
 
 	if (mplane) {
+		ASSERT(false);
+		/*
+		const PixelFormatInfo& pfi = get_pixel_format_info(fb->m_format);
+
 		buf.length = pfi.num_planes;
 
 		v4l2_plane planes[4]{};
@@ -233,19 +247,21 @@ static void v4l2_queue_dmabuf(int fd, uint32_t index, DumbFramebuffer* fb, uint3
 
 		int r = ioctl(fd, VIDIOC_QBUF, &buf);
 		ASSERT(r == 0);
+	*/
 	} else {
-		buf.m.fd = fb->prime_fd(0);
+		if (fb.m_mem_type == VideoMemoryType::DMABUF)
+			buf.m.fd = fb.m_fd;
 
 		int r = ioctl(fd, VIDIOC_QBUF, &buf);
 		ASSERT(r == 0);
 	}
 }
 
-static uint32_t v4l2_dequeue(int fd, uint32_t buf_type)
+static uint32_t v4l2_dequeue(int fd, VideoBuffer& fb, uint32_t buf_type)
 {
 	v4l2_buffer buf{};
 	buf.type = buf_type;
-	buf.memory = V4L2_MEMORY_DMABUF;
+	buf.memory = get_mem_type(fb.m_mem_type);
 
 	// V4L2 crashes if planes are not set
 	v4l2_plane planes[4]{};
@@ -255,6 +271,14 @@ static uint32_t v4l2_dequeue(int fd, uint32_t buf_type)
 	int r = ioctl(fd, VIDIOC_DQBUF, &buf);
 	if (r)
 		throw system_error(errno, generic_category());
+
+	fb.m_index = buf.index;
+	fb.m_length = buf.length;
+
+	if (fb.m_mem_type == VideoMemoryType::DMABUF)
+		fb.m_fd = buf.m.fd;
+	else
+		fb.m_offset = buf.m.offset;
 
 	return buf.index;
 }
@@ -516,6 +540,10 @@ static v4l2_buf_type get_buf_type(VideoStreamer::StreamerType type)
 		return V4L2_BUF_TYPE_VIDEO_OUTPUT;
 	case VideoStreamer::StreamerType::OutputMulti:
 		return V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+	case MetaStreamer::StreamerType::CaptureMeta:
+		return V4L2_BUF_TYPE_META_CAPTURE;
+	case MetaStreamer::StreamerType::OutputMeta:
+		return (v4l2_buf_type)14; // XXX V4L2_BUF_TYPE_META_OUTPUT;
 	default:
 		FAIL("Bad StreamerType");
 	}
@@ -546,34 +574,41 @@ void VideoStreamer::set_selection(uint32_t& left, uint32_t& top, uint32_t& width
 	v4l2_set_selection(m_fd, left, top, width, height, get_buf_type(m_type));
 }
 
-void VideoStreamer::set_queue_size(uint32_t queue_size)
+void VideoStreamer::set_queue_size(uint32_t queue_size, VideoMemoryType mem_type)
 {
-	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type));
+	m_mem_type = mem_type;
+
+	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type), get_mem_type(m_mem_type));
+
 	m_fbs.resize(queue_size);
 }
 
-void VideoStreamer::queue(DumbFramebuffer* fb)
+void VideoStreamer::queue(VideoBuffer &fb)
 {
 	uint32_t idx;
 
 	for (idx = 0; idx < m_fbs.size(); ++idx) {
-		if (m_fbs[idx] == nullptr)
+		if (m_fbs[idx] == false)
 			break;
 	}
 
 	FAIL_IF(idx == m_fbs.size(), "queue full");
 
-	m_fbs[idx] = fb;
+	fb.m_index = idx;
 
-	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
+	m_fbs[idx] = true;
+
+	v4l2_queue(m_fd, fb, get_buf_type(m_type));
 }
 
-DumbFramebuffer* VideoStreamer::dequeue()
+VideoBuffer VideoStreamer::dequeue()
 {
-	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
+	VideoBuffer fb {};
+	fb.m_mem_type = m_mem_type;
 
-	auto fb = m_fbs[idx];
-	m_fbs[idx] = nullptr;
+	uint32_t idx = v4l2_dequeue(m_fd, fb, get_buf_type(m_type));
+
+	m_fbs[idx] = false;
 
 	return fb;
 }
@@ -597,20 +632,8 @@ void VideoStreamer::stream_off()
 
 
 MetaStreamer::MetaStreamer(int fd, StreamerType type)
-	: m_fd(fd), m_type(type)
+	: VideoStreamer(fd, type)
 {
-}
-
-static v4l2_buf_type get_buf_type(MetaStreamer::StreamerType type)
-{
-	switch (type) {
-	case MetaStreamer::StreamerType::CaptureMeta:
-		return V4L2_BUF_TYPE_META_CAPTURE;
-	case MetaStreamer::StreamerType::OutputMeta:
-		return (v4l2_buf_type)14; // XXX V4L2_BUF_TYPE_META_OUTPUT;
-	default:
-		FAIL("Bad StreamerType");
-	}
 }
 
 void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
@@ -628,50 +651,4 @@ void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
 
 	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);
 	ASSERT(r == 0);
-}
-
-void MetaStreamer::set_queue_size(uint32_t queue_size)
-{
-	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type));
-	m_fbs.resize(queue_size);
-}
-
-void MetaStreamer::queue(DumbFramebuffer* fb)
-{
-	uint32_t idx;
-
-	for (idx = 0; idx < m_fbs.size(); ++idx) {
-		if (m_fbs[idx] == nullptr)
-			break;
-	}
-
-	FAIL_IF(idx == m_fbs.size(), "queue full");
-
-	m_fbs[idx] = fb;
-
-	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
-}
-
-DumbFramebuffer* MetaStreamer::dequeue()
-{
-	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
-
-	auto fb = m_fbs[idx];
-	m_fbs[idx] = nullptr;
-
-	return fb;
-}
-
-void MetaStreamer::stream_on()
-{
-	uint32_t buf_type = get_buf_type(m_type);
-	int r = ioctl(m_fd, VIDIOC_STREAMON, &buf_type);
-	FAIL_IF(r, "Failed to enable stream: %d", r);
-}
-
-void MetaStreamer::stream_off()
-{
-	uint32_t buf_type = get_buf_type(m_type);
-	int r = ioctl(m_fd, VIDIOC_STREAMOFF, &buf_type);
-	FAIL_IF(r, "Failed to disable stream: %d", r);
 }

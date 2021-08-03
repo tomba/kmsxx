@@ -12,7 +12,12 @@ import mmap
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--save", action="store_true", default=False, help="save frames to files")
 parser.add_argument("-d", "--display", action="store_true", default=False, help="show frames on screen")
+parser.add_argument("-t", "--type", type=str, default="drm", help="buffer type (drm/v4l2)")
 args = parser.parse_args()
+
+if not args.type in ["drm", "v4l2"]:
+	print("Bad buffer type", args.type)
+	exit(-1)
 
 configurations = importlib.import_module("cam-mplex-configs").configurations
 
@@ -113,8 +118,14 @@ for e in config.get("subdevs", []):
 			w, h, fmt = p["fmt"]
 			subdev.set_format(pad, stream, w, h, fmt)
 
-if args.display:
+card = None
+
+if args.type == "drm":
 	card = pykms.Card()
+
+if args.display:
+	if card == None:
+		card = pykms.Card()
 	res = pykms.ResourceManager(card)
 	conn = res.reserve_connector()
 	crtc = res.reserve_crtc(conn)
@@ -129,10 +140,6 @@ if args.display:
 	req.add(crtc, {"ACTIVE": 1,
 			"MODE_ID": modeb.id})
 	req.commit_sync(allow_modeset = True)
-else:
-	## XXX DROP
-	card = pykms.Card()
-
 
 NUM_BUFS = 5
 
@@ -144,30 +151,30 @@ for i, stream in enumerate(streams):
 	stream["h"] = stream["fmt"][1]
 	stream["fourcc"] = stream["fmt"][2]
 
-	if args.display:
-		if stream["fourcc"] == pykms.PixelFormat.META_16:
-			stream["plane_fourcc"] = pykms.PixelFormat.RGB565
-		else:
-			stream["plane_fourcc"] = stream["fourcc"]
+	if stream["fourcc"] == pykms.PixelFormat.META_16:
+		stream["plane_fourcc"] = pykms.PixelFormat.RGB565
+	else:
+		stream["plane_fourcc"] = stream["fourcc"]
 
+	stream["plane_w"] = stream["w"]
+	stream["plane_h"] = stream["h"]
+
+	if "embedded" in stream and stream["embedded"]:
+		divs = [16, 8, 4, 2, 1]
+		for div in divs:
+			w = stream["plane_w"] // div
+			if w % 2 == 0:
+				break
+
+		h = stream["plane_h"] * div
+
+		stream["plane_w"] = w
+		stream["plane_h"] = h
+
+	if args.display:
 		plane = res.reserve_generic_plane(crtc, stream["plane_fourcc"])
 		assert(plane)
-
 		stream["plane"] = plane
-		stream["plane_w"] = stream["w"]
-		stream["plane_h"] = stream["h"]
-
-		if "embedded" in stream and stream["embedded"]:
-			divs = [16, 8, 4, 2, 1]
-			for div in divs:
-				w = stream["plane_w"] // div
-				if w % 2 == 0:
-					break
-
-			h = stream["plane_h"] * div
-
-			stream["plane_w"] = w
-			stream["plane_h"] = h
 
 		if i == 0:
 			stream["x"] = 0
@@ -182,25 +189,31 @@ for i, stream in enumerate(streams):
 			stream["x"] = mode.hdisplay - stream["plane_w"]
 			stream["y"] = mode.vdisplay - stream["plane_h"]
 
+
 for stream in streams:
 	vd = pykms.VideoDevice(stream["dev"])
 
 	cap = vd.capture_streamer
 	cap.set_port(0)
 	cap.set_format(stream["fourcc"], stream["w"], stream["h"])
-	cap.set_queue_size(NUM_BUFS)
+
+	mem_type = pykms.VideoMemoryType.DMABUF if args.type == "drm" else pykms.VideoMemoryType.MMAP
+	cap.set_queue_size(NUM_BUFS, mem_type)
 
 	stream["vd"] = vd
 	stream["cap"] = cap
 
 for stream in streams:
-	if args.display:
+	if args.type == "drm":
 		# Allocate FBs
 		fbs = []
 		for i in range(NUM_BUFS):
 			fb = pykms.DumbFramebuffer(card, stream["plane_w"], stream["plane_h"], stream["plane_fourcc"])
 			fbs.append(fb)
 		stream["fbs"] = fbs
+
+	if args.display:
+		assert(args.type == "drm")
 
 		# Set fb0 to screen
 		fb = stream["fbs"][0]
@@ -220,34 +233,17 @@ for stream in streams:
 		stream["kms_old_fb"] = None
 		stream["kms_fb"] = fb
 		stream["kms_fb_queue"] = deque()
-	else:
-		fbs = []
-		for i in range(NUM_BUFS):
-			if stream["fourcc"] == pykms.PixelFormat.META_16:
-				fourcc = pykms.PixelFormat.RGB565
-			else:
-				fourcc = stream["fourcc"]
 
-			if "embedded" in stream and stream["embedded"]:
-				divs = [16, 8, 4, 2, 1]
-				for div in divs:
-					w = stream["w"] // div
-					if w % 2 == 0:
-						break
-
-				h = stream["h"] * div
-			else:
-				w = stream["w"]
-				h = stream["h"]
-
-			fb = pykms.DumbFramebuffer(card, w, h, fourcc)
-			fbs.append(fb)
-		stream["fbs"] = fbs
+	first_buf = 1 if args.display else 0
 
 	# Queue the rest to the camera
 	cap = stream["cap"]
-	for i in range(1, NUM_BUFS):
-		cap.queue(fbs[i])
+	for i in range(first_buf, NUM_BUFS):
+		if args.type == "drm":
+			vbuf = pykms.create_dmabuffer(fbs[i].fd(0))
+		else:
+			vbuf = pykms.create_mmapbuffer()
+		cap.queue(vbuf)
 
 for stream in streams:
 	stream["num_frames"] = 0
@@ -274,16 +270,25 @@ def readvid(stream):
 		stream["time"] = time.perf_counter()
 
 	cap = stream["cap"]
-	fb = cap.dequeue()
+	vbuf = cap.dequeue()
+
+	if args.type == "drm":
+		fb = next((fb for fb in stream["fbs"] if fb.fd(0) == vbuf.fd), None)
+		assert(fb != None)
 
 	if args.save:
 		filename = "frame-{}-{}.data".format(stream["id"], stream["num_frames"])
+		print("save to " + filename)
 
-#		print("save to " + filename)
-
-		with mmap.mmap(fb.fd(0), fb.size(0), mmap.MAP_SHARED, mmap.PROT_READ) as b:
-			with open(filename, "wb") as f:
-				f.write(b)
+		if args.type == "drm":
+			with mmap.mmap(fb.fd(0), fb.size(0), mmap.MAP_SHARED, mmap.PROT_READ) as b:
+				with open(filename, "wb") as f:
+					f.write(b)
+		else:
+			with mmap.mmap(cap.fd, vbuf.length, mmap.MAP_SHARED, mmap.PROT_READ,
+			               offset=vbuf.offset) as b:
+				with open(filename, "wb") as f:
+					f.write(b)
 
 	if args.display:
 		stream["kms_fb_queue"].append(fb)
@@ -297,7 +302,7 @@ def readvid(stream):
 		if kms_committed == False:
 			handle_pageflip()
 	else:
-		cap.queue(fb)
+		cap.queue(vbuf)
 
 
 def readkey(conn, mask):
@@ -327,7 +332,11 @@ def handle_pageflip():
 		cap = stream["cap"]
 
 		if stream["kms_old_fb"]:
-			cap.queue(stream["kms_old_fb"])
+			assert(args.type == "drm")
+
+			fb = stream["kms_old_fb"]
+			vbuf = pykms.create_dmabuffer(fb.fd(0))
+			cap.queue(vbuf)
 			stream["kms_old_fb"] = None
 
 		if len(stream["kms_fb_queue"]) == 0:

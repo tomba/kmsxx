@@ -11,6 +11,7 @@ import pyv4l2 as v4l2
 import mmap
 
 parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--config", action="store_true", default=False, help="configure only")
 parser.add_argument("-s", "--save", action="store_true", default=False, help="save frames to files")
 parser.add_argument("-d", "--display", action="store_true", default=False, help="show frames on screen")
 parser.add_argument("-t", "--type", type=str, default="drm", help="buffer type (drm/v4l2)")
@@ -198,13 +199,18 @@ for stream in streams:
 	cap.set_port(0)
 	cap.set_format(stream["fourcc"], stream["w"], stream["h"])
 
-	mem_type = v4l2.VideoMemoryType.DMABUF if args.type == "drm" else v4l2.VideoMemoryType.MMAP
-	cap.set_queue_size(NUM_BUFS, mem_type)
-
 	stream["vd"] = vd
 	stream["cap"] = cap
 
+if args.config:
+	exit(0)
+
 for stream in streams:
+	cap = stream["cap"]
+
+	mem_type = v4l2.VideoMemoryType.DMABUF if args.type == "drm" else v4l2.VideoMemoryType.MMAP
+	cap.set_queue_size(NUM_BUFS, mem_type)
+
 	if args.type == "drm":
 		# Allocate FBs
 		fbs = []
@@ -238,7 +244,6 @@ for stream in streams:
 	first_buf = 1 if args.display else 0
 
 	# Queue the rest to the camera
-	cap = stream["cap"]
 	for i in range(first_buf, NUM_BUFS):
 		if args.type == "drm":
 			vbuf = v4l2.create_dmabuffer(fbs[i].fd(0))

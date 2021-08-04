@@ -3,6 +3,7 @@
 import sys
 import selectors
 import pykms
+import pyv4l2 as v4l2
 import argparse
 import time
 
@@ -40,22 +41,26 @@ for i in range(NUM_BUFS):
     fb = pykms.DumbFramebuffer(card, w, h, fmt)
     fbs.append(fb)
 
-vidpath = pykms.VideoDevice.get_capture_devices()[0]
+vidpath = v4l2.VideoDevice.get_capture_devices()[0]
 
-vid = pykms.VideoDevice(vidpath)
+vid = v4l2.VideoDevice(vidpath)
 cap = vid.capture_streamer
 cap.set_port(0)
-cap.set_format(fmt, w, h)
-cap.set_queue_size(NUM_BUFS)
+cap.set_format(v4l2.PixelFormat(fmt), w, h)
+cap.set_queue_size(NUM_BUFS, v4l2.VideoMemoryType.DMABUF)
 
 for fb in fbs:
-    cap.queue(fb)
+    vbuf = v4l2.create_dmabuffer(fb.fd(0))
+    cap.queue(vbuf)
 
 cap.stream_on()
 
 
 def readvid(conn, mask):
-    fb = cap.dequeue()
+    vbuf = cap.dequeue()
+
+    fb = next((fb for fb in fbs if fb.fd(0) == vbuf.fd), None)
+    assert(fb != None)
 
     if card.has_atomic:
         plane.set_props({
@@ -70,7 +75,7 @@ def readvid(conn, mask):
         crtc.set_plane(plane, fb, 0, 0, fb.width, fb.height,
             0, 0, fb.width, fb.height)
 
-    cap.queue(fb)
+    cap.queue(vbuf)
 
 def readkey(conn, mask):
     #print("KEY EVENT");

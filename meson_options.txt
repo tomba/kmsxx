@@ -16,8 +16,5 @@ option('pykms', type : 'feature', value : 'auto',
 option('pyv4l2', type : 'feature', value : 'auto',
        description : 'Build V4L2 python bindings')
 
-option('system-pybind11', type : 'feature', value : 'auto',
-       description : 'Use pybind11 from the system or from meson subproject')
-
 option('kmscube', type : 'boolean', value : false,
        description : 'Build kmscube test application')

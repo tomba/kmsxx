@@ -13,8 +13,5 @@ option('utils', type : 'boolean', value : true,
 option('pykms', type : 'feature', value : 'auto',
        description : 'Build python bindings')
 
-option('system-pybind11', type : 'feature', value : 'auto',
-       description : 'Use pybind11 from the system or from meson subproject')
-
 option('kmscube', type : 'boolean', value : false,
        description : 'Build kmscube test application')

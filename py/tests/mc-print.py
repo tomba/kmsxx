@@ -34,7 +34,7 @@ while len(print_queue) > 0:
 	else:
 		routes = []
 
-	print(ent.name)
+	print(ent.name, ent.dev_path)
 
 	for pad in ent.pads:
 		links = list([l for l in pad.links if l.enabled])

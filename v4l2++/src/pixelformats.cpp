@@ -268,6 +268,16 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 					    1,
 					    { { 32, 1, 1 } },
 				    } },
+	{ PixelFormat::SBGGR12, {
+					PixelColorType::RAW,
+					    1,
+					    { { 16, 1, 1 } },
+					    } },
+	{ PixelFormat::SRGGB12, {
+					PixelColorType::RAW,
+					1,
+					{ { 16, 1, 1 } },
+					} },
 	{ PixelFormat::META_8, {
 					PixelColorType::RGB,
 					1,

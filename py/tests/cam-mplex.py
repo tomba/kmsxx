@@ -9,12 +9,14 @@ import importlib
 import pykms
 import pyv4l2 as v4l2
 import mmap
+import pprint
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", action="store_true", default=False, help="configure only")
 parser.add_argument("-s", "--save", action="store_true", default=False, help="save frames to files")
 parser.add_argument("-d", "--display", action="store_true", default=False, help="show frames on screen")
 parser.add_argument("-t", "--type", type=str, default="drm", help="buffer type (drm/v4l2)")
+parser.add_argument("-p", "--print", action="store_true", default=False, help="print config dict")
 args = parser.parse_args()
 
 if not args.type in ["drm", "v4l2"]:
@@ -23,16 +25,33 @@ if not args.type in ["drm", "v4l2"]:
 
 configurations = importlib.import_module("cam-mplex-configs").configurations
 
-#CONFIG = "legacy-ov5640"
-#CONFIG = "dra7-ov5640"
-#CONFIG = "am6-ov5640"
-#CONFIG = "j7-ov5640"
+def merge_configs(*configs):
+	d = { "subdevs": [], "devices": [], "links": [] }
 
-CONFIG = "dra76-ub960-1-cam-meta"
-#CONFIG = "dra76-ub960-2-cam"
-#CONFIG = "dra76-ub960-2-cam-meta"
+	for config in configs:
+		# links can be appended directly
+		# xxx there may be (harmless) duplicates
+		d["links"] += configurations[config]["links"]
 
-#CONFIG = "am6-ub960-2-cam"
+		# devices can be appended directly
+		d["devices"] += configurations[config]["devices"]
+
+		# subdevs need to be merged based on entity
+		for subdev in configurations[config]["subdevs"]:
+			ent = subdev["entity"]
+
+			dst = next((s for s in d["subdevs"] if s["entity"] == ent), None)
+			if dst:
+				dst["pads"] += subdev["pads"]
+				dst["routing"] += subdev["routing"]
+			else:
+				d["subdevs"].append(subdev)
+
+	return d
+
+config = merge_configs("dra76-ub960-ov10635.0", "dra76-ub960-ov10635.1")
+
+#config = configurations["dra76-ub960-ov10635.0"]
 
 # Disable all possible links
 def disable_all_links(md):
@@ -45,8 +64,6 @@ def disable_all_links(md):
 
 # Enable link between (src_ent, src_pad) -> (sink_ent, sink_pad)
 def link(source, sink):
-	#print("LINK", source, sink)
-
 	src_ent = source[0]
 	sink_ent = sink[0]
 
@@ -59,7 +76,8 @@ def link(source, sink):
 			link = l
 			break
 
-	assert(link != None)
+	if link == None:
+		raise Exception("Failed to find link between", source, sink)
 
 	if link.enabled:
 		return
@@ -76,8 +94,6 @@ print("Configure media entities")
 md = v4l2.MediaDevice("/dev/media0")
 
 disable_all_links(md)
-
-config = configurations[CONFIG]
 
 # Setup links
 for l in config.get("links", []):
@@ -159,50 +175,75 @@ NUM_BUFS = 5
 
 streams = config["devices"]
 
+num_planes = sum(1 for stream in streams if args.display and stream.get("display", True))
+
+display_idx = 0
+
 for i, stream in enumerate(streams):
+	stream["display"] = args.display and stream.get("display", True)
+
 	stream["id"] = i
+
 	stream["w"] = stream["fmt"][0]
 	stream["h"] = stream["fmt"][1]
 	stream["fourcc"] = stream["fmt"][2]
 
-	if stream["fourcc"] == v4l2.PixelFormat.META_16:
-		stream["plane_fourcc"] = pykms.PixelFormat.RGB565
-	else:
-		stream["plane_fourcc"] = pykms.PixelFormat(stream["fourcc"])
+	stream["kms-buf-w"] = stream["w"]
+	stream["kms-buf-h"] = stream["h"]
 
-	stream["plane_w"] = stream["w"]
-	stream["plane_h"] = stream["h"]
+	if stream.get("dra-plane-hack", False):
+		# Hack to reserve the unscaleable GFX plane
+		res.reserve_generic_plane(crtc, pykms.PixelFormat.RGB565)
 
-	if "embedded" in stream and stream["embedded"]:
+	if not "kms-fourcc" in stream:
+		if stream["fourcc"] == v4l2.PixelFormat.META_16:
+			stream["kms-fourcc"] = pykms.PixelFormat.RGB565
+		else:
+			stream["kms-fourcc"] = pykms.PixelFormat(stream["fourcc"])
+
+	if args.type == "drm" and "embedded" in stream and stream["embedded"]:
 		divs = [16, 8, 4, 2, 1]
 		for div in divs:
-			w = stream["plane_w"] // div
+			w = stream["kms-buf-w"] // div
 			if w % 2 == 0:
 				break
 
-		h = stream["plane_h"] * div
+		h = stream["kms-buf-h"] * div
 
-		stream["plane_w"] = w
-		stream["plane_h"] = h
+		stream["kms-buf-w"] = w
+		stream["kms-buf-h"] = h
 
-	if args.display:
-		plane = res.reserve_generic_plane(crtc, stream["plane_fourcc"])
+	if stream["display"]:
+		max_w = mode.hdisplay // (1 if num_planes == 1 else 2)
+		max_h = mode.vdisplay // (1 if num_planes <= 2 else 2)
+
+		stream["kms-src-w"] = min(stream["kms-buf-w"], max_w)
+		stream["kms-src-h"] = min(stream["kms-buf-h"], max_h)
+		stream["kms-src-x"] = (stream["kms-buf-w"] - stream["kms-src-w"]) // 2
+		stream["kms-src-y"] = (stream["kms-buf-h"] - stream["kms-src-h"]) // 2
+
+		stream["kms-dst-w"]  =stream["kms-src-w"]
+		stream["kms-dst-h"] = stream["kms-src-h"]
+
+		if display_idx % 2 == 0:
+			stream["kms-dst-x"] = 0
+		else:
+			stream["kms-dst-x"] = mode.hdisplay - stream["kms-dst-w"]
+
+		if display_idx // 2 == 0:
+			stream["kms-dst-y"] = 0
+		else:
+			stream["kms-dst-y"] = mode.vdisplay - stream["kms-dst-h"]
+
+		display_idx += 1
+
+		plane = res.reserve_generic_plane(crtc, stream["kms-fourcc"])
 		assert(plane)
 		stream["plane"] = plane
 
-		if i == 0:
-			stream["x"] = 0
-			stream["y"] = 0
-		elif i == 1:
-			stream["x"] = mode.hdisplay - stream["plane_w"]
-			stream["y"] = 0
-		elif i == 2:
-			stream["x"] = 0
-			stream["y"] = mode.vdisplay - stream["plane_h"]
-		elif i == 3:
-			stream["x"] = mode.hdisplay - stream["plane_w"]
-			stream["y"] = mode.vdisplay - stream["plane_h"]
-
+if args.print:
+	for stream in streams:
+		pprint.pprint(stream)
 
 for stream in streams:
 	vd = v4l2.VideoDevice(stream["dev"])
@@ -227,11 +268,11 @@ for stream in streams:
 		# Allocate FBs
 		fbs = []
 		for i in range(NUM_BUFS):
-			fb = pykms.DumbFramebuffer(card, stream["plane_w"], stream["plane_h"], stream["plane_fourcc"])
+			fb = pykms.DumbFramebuffer(card, stream["kms-buf-w"], stream["kms-buf-h"], stream["kms-fourcc"])
 			fbs.append(fb)
 		stream["fbs"] = fbs
 
-	if args.display:
+	if stream["display"]:
 		assert(args.type == "drm")
 
 		# Set fb0 to screen
@@ -241,19 +282,21 @@ for stream in streams:
 		plane.set_props({
 			"FB_ID": fb.id,
 			"CRTC_ID": crtc.id,
-			"SRC_W": fb.width << 16,
-			"SRC_H": fb.height << 16,
-			"CRTC_X": stream["x"],
-			"CRTC_Y": stream["y"],
-			"CRTC_W": fb.width,
-			"CRTC_H": fb.height,
+			"SRC_X": stream["kms-src-x"] << 16,
+			"SRC_Y": stream["kms-src-y"] << 16,
+			"SRC_W": stream["kms-src-w"] << 16,
+			"SRC_H": stream["kms-src-h"] << 16,
+			"CRTC_X": stream["kms-dst-x"],
+			"CRTC_Y": stream["kms-dst-y"],
+			"CRTC_W": stream["kms-dst-w"],
+			"CRTC_H": stream["kms-dst-h"],
 		})
 
 		stream["kms_old_fb"] = None
 		stream["kms_fb"] = fb
 		stream["kms_fb_queue"] = deque()
 
-	first_buf = 1 if args.display else 0
+	first_buf = 1 if stream["display"] else 0
 
 	# Queue the rest to the camera
 	for i in range(first_buf, NUM_BUFS):
@@ -308,7 +351,7 @@ def readvid(stream):
 				with open(filename, "wb") as f:
 					f.write(b)
 
-	if args.display:
+	if stream["display"]:
 		stream["kms_fb_queue"].append(fb)
 
 		if len(stream["kms_fb_queue"]) >= NUM_BUFS - 1:
@@ -345,6 +388,9 @@ def handle_pageflip():
 	do_commit = False
 
 	for stream in streams:
+		if not stream["display"]:
+			continue
+
 		#print(f'Page flip {stream["dev"]}: kms_fb_queue {len(stream["kms_fb_queue"])}, new_fb {stream["kms_fb"]}, old_fb {stream["kms_old_fb"]}')
 
 		cap = stream["cap"]

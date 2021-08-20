@@ -33,7 +33,7 @@ static string filepath_for_major_minor(uint32_t major, uint32_t minor)
 {
 	int r;
 
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 20; ++i) {
 		struct stat statbuf;
 
 		string path = fmt::format("/dev/video{}", i);
@@ -46,7 +46,7 @@ static string filepath_for_major_minor(uint32_t major, uint32_t minor)
 			return path;
 	}
 
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 20; ++i) {
 		struct stat statbuf {
 		};
 
@@ -60,7 +60,7 @@ static string filepath_for_major_minor(uint32_t major, uint32_t minor)
 			return path;
 	}
 
-	throw runtime_error("dev node not found");
+	throw runtime_error(fmt::format("dev node not found for major,minor {},{}", major, minor));
 }
 
 /* V4L2 helper funcs */

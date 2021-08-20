@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import pyv4l2 as v4l2
+import pykms
 
 META_LINES = 1
 
@@ -577,3 +578,174 @@ configurations["am6-ub960-2-cam"] = {
 	],
 }
 
+
+#
+# DRA76: UB9060 ov10635 on port 0
+#
+configurations["dra76-ub960-ov10635.0"] = {
+	"subdevs": [
+		# Camera
+		{
+			"entity": "ov10635 5-0030",
+			"pads": [
+				{ "pad": 0, "fmt": mbus_fmt_pix_1 },
+			],
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
+				{ "src": (0, 1), "dst": (0, 1), "flags": [ "source" ] },
+			],
+		},
+		# Serializer
+		{
+			"entity": "ds90ub913a 4-0044",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (1, 1) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+		# Deserializer
+		{
+			"entity": "ds90ub960 4-003d",
+			"routing": [
+				{ "src": (0, 0), "dst": (4, 0) },
+				{ "src": (0, 1), "dst": (4, 4) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (4, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (4, 4), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+		# CSI-2 RX
+		{
+			"entity": "CAMERARX0",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 4), "dst": (5, 0) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 4), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (5, 0), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+	],
+
+	"devices": [
+		# cam 1
+		{
+			"entity": "CAL output 0",
+			"fmt": fmt_pix_1,
+			"embedded": False,
+			"dev": "/dev/video0",
+		},
+		{
+			"entity": "CAL output 4",
+			"fmt": fmt_meta_1,
+			"embedded": True,
+			"dev": "/dev/video4",
+			"display": False,
+		},
+	],
+
+	"links": [
+		{ "src": ("ov10635 5-0030", 0), "dst": ("ds90ub913a 4-0044", 0) },
+		{ "src": ("ds90ub913a 4-0044", 1), "dst": ("ds90ub960 4-003d", 0) },
+		{ "src": ("ds90ub960 4-003d", 4), "dst": ("CAMERARX0", 0) },
+		{ "src": ("CAMERARX0", 1), "dst": ("CAL output 0", 0) },
+		{ "src": ("CAMERARX0", 5), "dst": ("CAL output 4", 0) },
+	],
+}
+
+#
+# DRA76: UB9060 ov10635 on port 1
+#
+configurations["dra76-ub960-ov10635.1"] = {
+	"subdevs": [
+		# Camera
+		{
+			"entity": "ov10635 6-0030",
+			"pads": [
+				{ "pad": 0, "fmt": mbus_fmt_pix_1 },
+			],
+			"routing": [
+				{ "src": (0, 0), "dst": (0, 0), "flags": [ "source" ] },
+				{ "src": (0, 1), "dst": (0, 1), "flags": [ "source" ] },
+			],
+		},
+		# Serializer
+		{
+			"entity": "ds90ub913a 4-0045",
+			"routing": [
+				{ "src": (0, 0), "dst": (1, 0) },
+				{ "src": (0, 1), "dst": (1, 1) },
+			],
+			"pads": [
+				{ "pad": (0, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+		# Deserializer
+		{
+			"entity": "ds90ub960 4-003d",
+			"routing": [
+				{ "src": (1, 0), "dst": (4, 1) },
+				{ "src": (1, 1), "dst": (4, 5) },
+			],
+			"pads": [
+				{ "pad": (1, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (1, 1), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (4, 1), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (4, 5), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+		# CSI-2 RX
+		{
+			"entity": "CAMERARX0",
+			"routing": [
+				{ "src": (0, 1), "dst": (2, 0) },
+				{ "src": (0, 5), "dst": (6, 0) },
+			],
+			"pads": [
+				{ "pad": (0, 1), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (0, 5), "fmt": mbus_fmt_meta_1 },
+				{ "pad": (2, 0), "fmt": mbus_fmt_pix_1 },
+				{ "pad": (6, 0), "fmt": mbus_fmt_meta_1 },
+			],
+		},
+	],
+
+	"devices": [
+		{
+			"entity": "CAL output 1",
+			"fmt": fmt_pix_1,
+			"embedded": False,
+			"dev": "/dev/video1",
+		},
+		{
+			"entity": "CAL output 5",
+			"fmt": fmt_meta_1,
+			"embedded": True,
+			"dev": "/dev/video5",
+			"display": False,
+		},
+	],
+
+	"links": [
+		{ "src": ("ov10635 6-0030", 0), "dst": ("ds90ub913a 4-0045", 0) },
+		{ "src": ("ds90ub913a 4-0045", 1), "dst": ("ds90ub960 4-003d", 1) },
+		{ "src": ("ds90ub960 4-003d", 4), "dst": ("CAMERARX0", 0) },
+		{ "src": ("CAMERARX0", 2), "dst": ("CAL output 1", 0) },
+		{ "src": ("CAMERARX0", 6), "dst": ("CAL output 5", 0) },
+	],
+}

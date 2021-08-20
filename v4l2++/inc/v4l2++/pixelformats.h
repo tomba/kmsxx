@@ -66,6 +66,9 @@ enum class PixelFormat : uint32_t {
 	RGBA1010102 = MakeFourCC("RA30"),
 	BGRA1010102 = MakeFourCC("BA30"),
 
+	SBGGR12 = MakeFourCC("BG12"),
+	SRGGB12 = MakeFourCC("RG12"),
+
 	META_8 = MakeFourCC("ME08"),
 	META_16 = MakeFourCC("ME16"),
 };
@@ -88,6 +91,7 @@ static inline std::string PixelFormatToFourCC(PixelFormat f)
 enum class PixelColorType {
 	RGB,
 	YUV,
+	RAW,
 };
 
 struct PixelFormatPlaneInfo {

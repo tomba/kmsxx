@@ -84,10 +84,14 @@ for l in config.get("links", []):
 	source_ent, source_pad = l["src"]
 	sink_ent, sink_pad = l["dst"]
 
-	source_ent = md.find_entity(source_ent)
-	sink_ent = md.find_entity(sink_ent)
+	try:
+		source_ent = md.find_entity(source_ent)
+		sink_ent = md.find_entity(sink_ent)
 
-	link((source_ent, source_pad), (sink_ent, sink_pad))
+		link((source_ent, source_pad), (sink_ent, sink_pad))
+	except Exception as e:
+		print("Failed to link {} -> {}".format((source_ent, source_pad), (sink_ent, sink_pad)))
+		raise e
 
 # Configure entities
 for e in config.get("subdevs", []):
@@ -107,7 +111,11 @@ for e in config.get("subdevs", []):
 			                                is_source_route))
 
 		if len(routes) > 0:
-			subdev.set_routes(routes)
+			try:
+				subdev.set_routes(routes)
+			except Exception as e:
+				print("Failed to set routes for {}".format(ent))
+				raise e
 
 	# Configure streams
 	if "pads" in e:
@@ -118,7 +126,11 @@ for e in config.get("subdevs", []):
 				pad = p["pad"]
 				stream = 0
 			w, h, fmt = p["fmt"]
-			subdev.set_format(pad, stream, w, h, fmt)
+			try:
+				subdev.set_format(pad, stream, w, h, fmt)
+			except Exception as e:
+				print("Failed to set format for {}".format(ent))
+				raise e
 
 card = None
 

@@ -4,6 +4,7 @@ libv4l2xx_sources = files([
     'src/videodevice.cpp',
     'src/videosubdev.cpp',
     'src/pixelformats.cpp',
+    'src/helpers.cpp',
 ])
 
 public_headers = [

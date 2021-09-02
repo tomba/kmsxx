@@ -72,7 +72,7 @@ static void v4l2_get_device_info(int fd, MediaDevicePriv* priv)
 	priv->info = {};
 
 	r = ioctl(fd, MEDIA_IOC_DEVICE_INFO, &priv->info);
-	FAIL_IF(r, "MEDIA_IOC_DEVICE_INFO failed: %d", r);
+	THROW_IF(r, "MEDIA_IOC_DEVICE_INFO failed: {}", r);
 }
 
 template<typename T>
@@ -93,7 +93,7 @@ static void v4l2_get_topology(int fd, MediaDevicePriv* priv)
 	int r;
 
 	r = ioctl(fd, MEDIA_IOC_G_TOPOLOGY, &topology);
-	FAIL_IF(r, "MEDIA_IOC_G_TOPOLOGY call 1 failed: %d", r);
+	THROW_IF(r, "MEDIA_IOC_G_TOPOLOGY call 1 failed: {}", r);
 
 	media_v2_entity entities[topology.num_entities];
 	media_v2_interface interfaces[topology.num_interfaces];
@@ -111,7 +111,7 @@ static void v4l2_get_topology(int fd, MediaDevicePriv* priv)
 	topology.ptr_links = (uint64_t)&links;
 
 	r = ioctl(fd, MEDIA_IOC_G_TOPOLOGY, &topology);
-	FAIL_IF(r, "MEDIA_IOC_G_TOPOLOGY call 2 failed: %d", r);
+	THROW_IF(r, "MEDIA_IOC_G_TOPOLOGY call 2 failed: {}", r);
 
 	for (const auto& info : entities) {
 		auto ob = make_shared<MediaEntity>(priv->media_device);
@@ -151,25 +151,25 @@ static void v4l2_get_topology(int fd, MediaDevicePriv* priv)
 		if (auto pad = dynamic_pointer_cast<MediaPad>(src)) {
 			pad->links.push_back(link);
 		} else if (auto iface = dynamic_pointer_cast<MediaInterface>(src)) {
-			FAIL_IF(iface->link, "iface->link already set");
+			THROW_IF(iface->link, "iface->link already set");
 			iface->link = link;
 		} else if (auto ent = dynamic_pointer_cast<MediaEntity>(src)) {
-			FAIL_IF(ent->link, "ent->link already set");
+			THROW_IF(ent->link, "ent->link already set");
 			ent->link = link;
 		} else {
-			FAIL("Unhandled object when iterating links");
+			THROW("Unhandled object when iterating links");
 		}
 
 		if (auto pad = dynamic_pointer_cast<MediaPad>(dst)) {
 			pad->links.push_back(link);
 		} else if (auto iface = dynamic_pointer_cast<MediaInterface>(dst)) {
-			FAIL_IF(iface->link, "iface->link already set");
+			THROW_IF(iface->link, "iface->link already set");
 			iface->link = link;
 		} else if (auto ent = dynamic_pointer_cast<MediaEntity>(dst)) {
-			FAIL_IF(ent->link, "ent->link already set");
+			THROW_IF(ent->link, "ent->link already set");
 			ent->link = link;
 		} else {
-			FAIL("Unhandled object when iterating links");
+			THROW("Unhandled object when iterating links");
 		}
 	}
 }
@@ -189,7 +189,7 @@ static void v4l2_get_descs(int fd, MediaDevicePriv* priv)
 		ent->desc.id = eid;
 
 		r = ioctl(fd, MEDIA_IOC_ENUM_ENTITIES, &ent->desc);
-		FAIL_IF(r, "MEDIA_IOC_ENUM_ENTITIES failed: %d", r);
+		THROW_IF(r, "MEDIA_IOC_ENUM_ENTITIES failed: {}", r);
 
 		struct media_pad_desc pad_descs[ent->desc.pads];
 		struct media_link_desc link_descs[ent->desc.links];
@@ -205,7 +205,7 @@ static void v4l2_get_descs(int fd, MediaDevicePriv* priv)
 		links_enum.links = link_descs;
 
 		r = ioctl(fd, MEDIA_IOC_ENUM_LINKS, &links_enum);
-		FAIL_IF(r, "MEDIA_IOC_ENUM_LINKS failed: %d", r);
+		THROW_IF(r, "MEDIA_IOC_ENUM_LINKS failed: {}", r);
 
 		for (const auto& desc : pad_descs) {
 			auto ent = find_object<MediaEntity>(priv, desc.entity);
@@ -226,7 +226,7 @@ static void v4l2_set_link(int fd)
 	int r;
 
 	r = ioctl(fd, MEDIA_IOC_SETUP_LINK, &desc);
-	FAIL_IF(r, "MEDIA_IOC_ENUM_ENTITIES failed: %d", r);
+	THROW_IF(r, "MEDIA_IOC_ENUM_ENTITIES failed: {}", r);
 
 }
 #endif
@@ -449,7 +449,7 @@ bool MediaEntity::is_subdev() const
 
 vector<MediaEntity*> MediaEntity::get_linked_entities(uint32_t pad_idx)
 {
-	FAIL_IF(pad_idx >= this->pads.size(), "Bad pad index");
+	THROW_IF(pad_idx >= this->pads.size(), "Bad pad index");
 
 	vector<MediaEntity*> v;
 
@@ -462,11 +462,11 @@ vector<MediaEntity*> MediaEntity::get_linked_entities(uint32_t pad_idx)
 		else if (pad->info.flags & MEDIA_PAD_FL_SOURCE)
 			remote_ob = link->sink;
 		else
-			FAIL("Bad pad flags");
+			THROW("Bad pad flags");
 
 		shared_ptr<MediaPad> remote_pad = dynamic_pointer_cast<MediaPad>(remote_ob);
-		FAIL_IF(!remote_pad, "Failed to get remote pad");
-		FAIL_IF(!remote_pad->entity, "No entity for remote pad");
+		THROW_IF(!remote_pad, "Failed to get remote pad");
+		THROW_IF(!remote_pad->entity, "No entity for remote pad");
 
 		v.push_back(remote_pad->entity.get());
 	}
@@ -476,7 +476,7 @@ vector<MediaEntity*> MediaEntity::get_linked_entities(uint32_t pad_idx)
 
 vector<MediaLink*> MediaEntity::get_links(uint32_t pad_idx)
 {
-	FAIL_IF(pad_idx >= this->pads.size(), "Bad pad index");
+	THROW_IF(pad_idx >= this->pads.size(), "Bad pad index");
 
 	vector<MediaLink*> v;
 
@@ -502,5 +502,5 @@ void MediaEntity::setup_link(MediaLink* ml)
 	desc.flags = ml->info.flags;
 
 	r = ioctl(m_media_device->fd(), MEDIA_IOC_SETUP_LINK, &desc);
-	FAIL_IF(r, "MEDIA_IOC_SETUP_LINK failed: %d", r);
+	THROW_IF(r, "MEDIA_IOC_SETUP_LINK failed: {}", r);
 }

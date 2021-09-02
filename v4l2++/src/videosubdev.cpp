@@ -149,10 +149,7 @@ int VideoSubdev::set_routes(const std::vector<SubdevRoute>& routes, Configuratio
 	int r;
 
 	r = ioctl(m_fd, VIDIOC_SUBDEV_S_ROUTING, &vrouting);
-	if (r) {
-		fmt::print("SET ROUTING failed for {}: {} {}\n", m_name, r, strerror(errno));
-		return {};
-	}
+	THROW_IF(r, "SET ROUTING failed for {}: {} {}", m_name, r, strerror(errno));
 
 	return 0;
 }

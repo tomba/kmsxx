@@ -9,3 +9,4 @@ py/__pycache__
 meson.build.user
 subprojects/packagecache/
 subprojects/pybind11-*/
+.cache

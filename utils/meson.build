@@ -13,5 +13,7 @@ if libevdev_dep.found()
     executable('kmstouch', 'kmstouch.cpp', dependencies : [ common_deps, libevdev_dep ], install : false)
 endif
 
-executable('omap-wbcap', 'omap-wbcap.cpp', dependencies : [ common_deps ], install : false)
-executable('omap-wbm2m', 'omap-wbm2m.cpp', dependencies : [ common_deps ], install : false)
+if get_option('v4l2').enabled()
+    executable('omap-wbcap', 'omap-wbcap.cpp', dependencies : [ common_deps, libv4l2xx_dep ], install : false)
+    executable('omap-wbm2m', 'omap-wbm2m.cpp', dependencies : [ common_deps, libv4l2xx_dep ], install : false)
+endif

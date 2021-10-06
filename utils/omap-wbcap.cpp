@@ -6,7 +6,7 @@
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
-#include <kms++util/videodevice.h>
+#include <v4l2++/videodevice.h>
 
 #define CAMERA_BUF_QUEUE_SIZE 5
 
@@ -21,17 +21,21 @@ static vector<DumbFramebuffer*> s_ready_fbs;
 class WBStreamer
 {
 public:
-	WBStreamer(VideoStreamer* streamer, Crtc* crtc, PixelFormat pixfmt)
+	WBStreamer(v4l2::VideoStreamer* streamer, Crtc* crtc, PixelFormat pixfmt)
 		: m_capdev(*streamer)
 	{
 		Videomode m = crtc->mode();
 
 		m_capdev.set_port(crtc->idx());
-		m_capdev.set_format(pixfmt, m.hdisplay, m.vdisplay / (m.interlace() ? 2 : 1));
-		m_capdev.set_queue_size(s_fbs.size());
+		m_capdev.set_format((v4l2::PixelFormat)pixfmt, m.hdisplay, m.vdisplay / (m.interlace() ? 2 : 1));
+		m_capdev.set_queue_size(s_fbs.size(), v4l2::VideoMemoryType::DMABUF);
 
 		for (auto fb : s_free_fbs) {
-			m_capdev.queue(fb);
+			v4l2::VideoBuffer vbuf {};
+			vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
+			vbuf.m_fd = fb->prime_fd(0);
+
+			m_capdev.queue(vbuf);
 			s_wb_fbs.push_back(fb);
 		}
 
@@ -59,9 +63,10 @@ public:
 
 	DumbFramebuffer* Dequeue()
 	{
-		auto fb = m_capdev.dequeue();
+		auto vbuf = m_capdev.dequeue();
 
-		auto iter = find(s_wb_fbs.begin(), s_wb_fbs.end(), fb);
+		auto iter = find_if(s_wb_fbs.begin(), s_wb_fbs.end(), [fd=vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
+		auto fb = *iter;
 		s_wb_fbs.erase(iter);
 
 		s_ready_fbs.insert(s_ready_fbs.begin(), fb);
@@ -77,13 +82,17 @@ public:
 		auto fb = s_free_fbs.back();
 		s_free_fbs.pop_back();
 
-		m_capdev.queue(fb);
+		v4l2::VideoBuffer vbuf {};
+		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
+		vbuf.m_fd = fb->prime_fd(0);
+
+		m_capdev.queue(vbuf);
 
 		s_wb_fbs.insert(s_wb_fbs.begin(), fb);
 	}
 
 private:
-	VideoStreamer& m_capdev;
+	v4l2::VideoStreamer& m_capdev;
 };
 
 class WBFlipState : private PageFlipHandlerBase
@@ -304,7 +313,7 @@ int main(int argc, char** argv)
 	if (dst_conn_name.empty())
 		EXIT("No destination connector defined");
 
-	VideoDevice vid("/dev/video11");
+	v4l2::VideoDevice vid("/dev/video11");
 
 	Card card;
 	ResourceManager resman(card);

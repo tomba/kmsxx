@@ -8,12 +8,11 @@
 #include <unistd.h>
 #include <system_error>
 
-#include <kms++/kms++.h>
-#include <kms++util/kms++util.h>
-#include <kms++util/videodevice.h>
+#include <v4l2++/videodevice.h>
+#include <v4l2++/helpers.h>
 
 using namespace std;
-using namespace kms;
+using namespace v4l2;
 
 /*
  * V4L2 and DRM differ in their interpretation of YUV420::NV12
@@ -26,6 +25,18 @@ using namespace kms;
  * we need to translate DRM::NV12 to V4L2:NM12 pixel format back
  * and forth to keep the data view consistent.
  */
+
+static v4l2_memory get_mem_type(VideoMemoryType type)
+{
+	switch (type) {
+	case VideoMemoryType::MMAP:
+		return V4L2_MEMORY_MMAP;
+	case VideoMemoryType::DMABUF:
+		return V4L2_MEMORY_DMABUF;
+	default:
+		FAIL("Bad VideoMemoryType");
+	}
+}
 
 /* V4L2 helper funcs */
 static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
@@ -45,6 +56,27 @@ static vector<PixelFormat> v4l2_get_formats(int fd, uint32_t buf_type)
 	}
 
 	return v;
+}
+
+static int v4l2_get_format(int fd, uint32_t buf_type, PixelFormat& fmt, uint32_t& width, uint32_t& height)
+{
+	int r;
+
+	v4l2_format v4lfmt{};
+
+	v4lfmt.type = buf_type;
+	r = ioctl(fd, VIDIOC_G_FMT, &v4lfmt);
+	ASSERT(r == 0);
+
+	bool mplane = buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE || buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+
+	FAIL_IF(mplane, "mplane not supported");
+
+	fmt = (PixelFormat)v4lfmt.fmt.pix.pixelformat;
+	width = v4lfmt.fmt.pix.width;
+	height = v4lfmt.fmt.pix.height;
+
+	return 0;
 }
 
 static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t height, uint32_t buf_type)
@@ -107,6 +139,7 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 		v4lfmt.fmt.pix.width = width;
 		v4lfmt.fmt.pix.height = height;
 		v4lfmt.fmt.pix.bytesperline = width * pfi.planes[0].bitspp / 8;
+		v4lfmt.fmt.pix.field = V4L2_FIELD_NONE;
 
 		r = ioctl(fd, VIDIOC_S_FMT, &v4lfmt);
 		ASSERT(r == 0);
@@ -175,29 +208,31 @@ static void v4l2_set_selection(int fd, uint32_t& left, uint32_t& top, uint32_t& 
 	height = selection.r.height;
 }
 
-static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type)
+static void v4l2_request_bufs(int fd, uint32_t queue_size, uint32_t buf_type, uint32_t mem_type)
 {
 	v4l2_requestbuffers v4lreqbuf{};
 	v4lreqbuf.type = buf_type;
-	v4lreqbuf.memory = V4L2_MEMORY_DMABUF;
+	v4lreqbuf.memory = mem_type;
 	v4lreqbuf.count = queue_size;
 	int r = ioctl(fd, VIDIOC_REQBUFS, &v4lreqbuf);
-	ASSERT(r == 0);
+	FAIL_IF(r != 0, "VIDIOC_REQBUFS failed: %d", errno);
 	ASSERT(v4lreqbuf.count == queue_size);
 }
 
-static void v4l2_queue_dmabuf(int fd, uint32_t index, DumbFramebuffer* fb, uint32_t buf_type)
+static void v4l2_queue(int fd, VideoBuffer& fb, uint32_t buf_type)
 {
 	v4l2_buffer buf{};
 	buf.type = buf_type;
-	buf.memory = V4L2_MEMORY_DMABUF;
-	buf.index = index;
-
-	const PixelFormatInfo& pfi = get_pixel_format_info(fb->format());
+	buf.memory = get_mem_type(fb.m_mem_type);
+	buf.index = fb.m_index;
 
 	bool mplane = buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE || buf_type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
 
 	if (mplane) {
+		ASSERT(false);
+		/*
+		const PixelFormatInfo& pfi = get_pixel_format_info(fb->m_format);
+
 		buf.length = pfi.num_planes;
 
 		v4l2_plane planes[4]{};
@@ -211,19 +246,21 @@ static void v4l2_queue_dmabuf(int fd, uint32_t index, DumbFramebuffer* fb, uint3
 
 		int r = ioctl(fd, VIDIOC_QBUF, &buf);
 		ASSERT(r == 0);
+	*/
 	} else {
-		buf.m.fd = fb->prime_fd(0);
+		if (fb.m_mem_type == VideoMemoryType::DMABUF)
+			buf.m.fd = fb.m_fd;
 
 		int r = ioctl(fd, VIDIOC_QBUF, &buf);
 		ASSERT(r == 0);
 	}
 }
 
-static uint32_t v4l2_dequeue(int fd, uint32_t buf_type)
+static uint32_t v4l2_dequeue(int fd, VideoBuffer& fb, uint32_t buf_type)
 {
 	v4l2_buffer buf{};
 	buf.type = buf_type;
-	buf.memory = V4L2_MEMORY_DMABUF;
+	buf.memory = get_mem_type(fb.m_mem_type);
 
 	// V4L2 crashes if planes are not set
 	v4l2_plane planes[4]{};
@@ -234,6 +271,14 @@ static uint32_t v4l2_dequeue(int fd, uint32_t buf_type)
 	if (r)
 		throw system_error(errno, generic_category());
 
+	fb.m_index = buf.index;
+	fb.m_length = buf.length;
+
+	if (fb.m_mem_type == VideoMemoryType::DMABUF)
+		fb.m_fd = buf.m.fd;
+	else
+		fb.m_offset = buf.m.offset;
+
 	return buf.index;
 }
 
@@ -243,7 +288,7 @@ VideoDevice::VideoDevice(const string& dev)
 }
 
 VideoDevice::VideoDevice(int fd)
-	: m_fd(fd), m_has_capture(false), m_has_output(false), m_has_m2m(false)
+	: m_fd(fd)
 {
 	if (fd < 0)
 		throw runtime_error("bad fd");
@@ -283,6 +328,10 @@ VideoDevice::VideoDevice(int fd)
 		m_has_mplane_capture = false;
 		m_has_mplane_output = false;
 	}
+
+	if (cap.capabilities & V4L2_CAP_META_CAPTURE) {
+		m_has_meta_capture = true;
+	}
 }
 
 VideoDevice::~VideoDevice()
@@ -312,6 +361,16 @@ VideoStreamer* VideoDevice::get_output_streamer()
 	}
 
 	return m_output_streamer.get();
+}
+
+MetaStreamer* VideoDevice::get_meta_capture_streamer()
+{
+	ASSERT(m_has_meta_capture);
+
+	if (!m_meta_capture_streamer)
+		m_meta_capture_streamer = make_unique<MetaStreamer>(m_fd, MetaStreamer::StreamerType::CaptureMeta);
+
+	return m_meta_capture_streamer.get();
 }
 
 vector<tuple<uint32_t, uint32_t>> VideoDevice::get_discrete_frame_sizes(PixelFormat fmt)
@@ -480,6 +539,10 @@ static v4l2_buf_type get_buf_type(VideoStreamer::StreamerType type)
 		return V4L2_BUF_TYPE_VIDEO_OUTPUT;
 	case VideoStreamer::StreamerType::OutputMulti:
 		return V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+	case MetaStreamer::StreamerType::CaptureMeta:
+		return V4L2_BUF_TYPE_META_CAPTURE;
+	case MetaStreamer::StreamerType::OutputMeta:
+		return (v4l2_buf_type)14; // XXX V4L2_BUF_TYPE_META_OUTPUT;
 	default:
 		FAIL("Bad StreamerType");
 	}
@@ -488,6 +551,11 @@ static v4l2_buf_type get_buf_type(VideoStreamer::StreamerType type)
 std::vector<PixelFormat> VideoStreamer::get_formats()
 {
 	return v4l2_get_formats(m_fd, get_buf_type(m_type));
+}
+
+int VideoStreamer::get_format(PixelFormat &fmt, uint32_t &width, uint32_t &height)
+{
+	return v4l2_get_format(m_fd, get_buf_type(m_type), fmt, width, height);
 }
 
 void VideoStreamer::set_format(PixelFormat fmt, uint32_t width, uint32_t height)
@@ -505,34 +573,41 @@ void VideoStreamer::set_selection(uint32_t& left, uint32_t& top, uint32_t& width
 	v4l2_set_selection(m_fd, left, top, width, height, get_buf_type(m_type));
 }
 
-void VideoStreamer::set_queue_size(uint32_t queue_size)
+void VideoStreamer::set_queue_size(uint32_t queue_size, VideoMemoryType mem_type)
 {
-	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type));
+	m_mem_type = mem_type;
+
+	v4l2_request_bufs(m_fd, queue_size, get_buf_type(m_type), get_mem_type(m_mem_type));
+
 	m_fbs.resize(queue_size);
 }
 
-void VideoStreamer::queue(DumbFramebuffer* fb)
+void VideoStreamer::queue(VideoBuffer &fb)
 {
 	uint32_t idx;
 
 	for (idx = 0; idx < m_fbs.size(); ++idx) {
-		if (m_fbs[idx] == nullptr)
+		if (m_fbs[idx] == false)
 			break;
 	}
 
 	FAIL_IF(idx == m_fbs.size(), "queue full");
 
-	m_fbs[idx] = fb;
+	fb.m_index = idx;
 
-	v4l2_queue_dmabuf(m_fd, idx, fb, get_buf_type(m_type));
+	m_fbs[idx] = true;
+
+	v4l2_queue(m_fd, fb, get_buf_type(m_type));
 }
 
-DumbFramebuffer* VideoStreamer::dequeue()
+VideoBuffer VideoStreamer::dequeue()
 {
-	uint32_t idx = v4l2_dequeue(m_fd, get_buf_type(m_type));
+	VideoBuffer fb {};
+	fb.m_mem_type = m_mem_type;
 
-	auto fb = m_fbs[idx];
-	m_fbs[idx] = nullptr;
+	uint32_t idx = v4l2_dequeue(m_fd, fb, get_buf_type(m_type));
+
+	m_fbs[idx] = false;
 
 	return fb;
 }
@@ -549,4 +624,30 @@ void VideoStreamer::stream_off()
 	uint32_t buf_type = get_buf_type(m_type);
 	int r = ioctl(m_fd, VIDIOC_STREAMOFF, &buf_type);
 	FAIL_IF(r, "Failed to disable stream: %d", r);
+}
+
+
+
+
+
+MetaStreamer::MetaStreamer(int fd, StreamerType type)
+	: VideoStreamer(fd, type)
+{
+}
+
+void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
+{
+	int r;
+
+	v4l2_format v4lfmt {};
+
+	v4lfmt.type = get_buf_type(m_type);
+	//r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
+	//ASSERT(r == 0);
+
+	v4lfmt.fmt.meta.dataformat = (uint32_t)fmt;
+	v4lfmt.fmt.meta.buffersize = size;
+
+	r = ioctl(m_fd, VIDIOC_S_FMT, &v4lfmt);
+	ASSERT(r == 0);
 }

@@ -38,6 +38,10 @@ libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 
 subdir('kms++')
 
+if get_option('v4l2').enabled()
+    subdir('v4l2++')
+endif
+
 if get_option('libutils')
     subdir('kms++util')
 endif

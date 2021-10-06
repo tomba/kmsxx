@@ -10,7 +10,7 @@
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
-#include <kms++util/videodevice.h>
+#include <v4l2++/videodevice.h>
 
 const uint32_t NUM_SRC_BUFS = 2;
 const uint32_t NUM_DST_BUFS = 2;
@@ -106,38 +106,55 @@ int main(int argc, char** argv)
 
 	printf("writing to %s\n", filename.c_str());
 
-	VideoDevice vid("/dev/video10");
+	v4l2::VideoDevice vid("/dev/video10");
 
 	Card card;
 
 	uint32_t src_frame_num = 0;
 	uint32_t dst_frame_num = 0;
 
-	VideoStreamer* out = vid.get_output_streamer();
-	VideoStreamer* in = vid.get_capture_streamer();
+	v4l2::VideoStreamer* out = vid.get_output_streamer();
+	v4l2::VideoStreamer* in = vid.get_capture_streamer();
 
-	out->set_format(src_fmt, src_width, src_height);
-	in->set_format(dst_fmt, dst_width, dst_height);
+	out->set_format((v4l2::PixelFormat)src_fmt, src_width, src_height);
+	in->set_format((v4l2::PixelFormat)dst_fmt, dst_width, dst_height);
 
 	if (use_selection) {
 		out->set_selection(c_left, c_top, c_width, c_height);
 		printf("crop -> %u,%u-%ux%u\n", c_left, c_top, c_width, c_height);
 	}
 
-	out->set_queue_size(NUM_SRC_BUFS);
-	in->set_queue_size(NUM_DST_BUFS);
+	out->set_queue_size(NUM_SRC_BUFS, v4l2::VideoMemoryType::DMABUF);
+	in->set_queue_size(NUM_DST_BUFS, v4l2::VideoMemoryType::DMABUF);
+
+	vector<DumbFramebuffer*> out_fbs;
 
 	for (unsigned i = 0; i < min(NUM_SRC_BUFS, num_src_frames); ++i) {
 		auto fb = new DumbFramebuffer(card, src_width, src_height, src_fmt);
 
 		read_frame(fb, src_frame_num++);
 
-		out->queue(fb);
+		out_fbs.push_back(fb);
+
+		v4l2::VideoBuffer vbuf {};
+		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
+		vbuf.m_fd = fb->prime_fd(0);
+
+		out->queue(vbuf);
 	}
+
+	vector<DumbFramebuffer*> in_fbs;
 
 	for (unsigned i = 0; i < min(NUM_DST_BUFS, num_src_frames); ++i) {
 		auto fb = new DumbFramebuffer(card, dst_width, dst_height, dst_fmt);
-		in->queue(fb);
+
+		in_fbs.push_back(fb);
+
+		v4l2::VideoBuffer vbuf {};
+		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
+		vbuf.m_fd = fb->prime_fd(0);
+
+		in->queue(vbuf);
 	}
 
 	vector<pollfd> fds(3);
@@ -165,11 +182,14 @@ int main(int argc, char** argv)
 			fds[1].revents = 0;
 
 			try {
-				DumbFramebuffer* dst_fb = in->dequeue();
+				auto dst_vbuf = in->dequeue();
+
+				auto dst_fb = *find_if(in_fbs.begin(), in_fbs.end(), [fd=dst_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
+
 				printf("Writing frame %u\n", dst_frame_num);
 				for (unsigned i = 0; i < dst_fb->num_planes(); ++i)
 					os.write((char*)dst_fb->map(i), dst_fb->size(i));
-				in->queue(dst_fb);
+				in->queue(dst_vbuf);
 
 				dst_frame_num++;
 
@@ -183,11 +203,13 @@ int main(int argc, char** argv)
 				break;
 			}
 
-			DumbFramebuffer* src_fb = out->dequeue();
+			auto src_vbuf = out->dequeue();
+
+			auto src_fb = *find_if(out_fbs.begin(), out_fbs.end(), [fd=src_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
 
 			if (src_frame_num < num_src_frames) {
 				read_frame(src_fb, src_frame_num++);
-				out->queue(src_fb);
+				out->queue(src_vbuf);
 			}
 		}
 

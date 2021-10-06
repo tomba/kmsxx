@@ -19,7 +19,6 @@ pykms_sources = files([
 if get_option('utils')
     pykms_sources += files([
         'pykmsutil.cpp',
-        'pyvid.cpp',
     ])
 endif
 

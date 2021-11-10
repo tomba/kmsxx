@@ -36,6 +36,10 @@ libfmt_dep = dependency('fmt')
 
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 
+if libdrmomap_dep.found()
+    add_global_arguments('-DHAS_LIBDRM_OMAP', language : 'cpp')
+endif
+
 subdir('kms++')
 
 if get_option('v4l2').enabled()

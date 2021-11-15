@@ -30,7 +30,7 @@ static vector<string> glob(const string& pattern)
 	int r = glob(pattern.c_str(), 0, NULL, &glob_result);
 	if (r != 0) {
 		globfree(&glob_result);
-		throw runtime_error("failed to find DRM cards");
+		__throw_exception_again runtime_error("failed to find DRM cards");
 	}
 
 	vector<string> filenames;
@@ -49,7 +49,7 @@ static int open_first_kms_device()
 	for (const string& path : paths) {
 		int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
 		if (fd < 0)
-			throw invalid_argument(string(strerror(errno)) + " opening device " + path);
+			__throw_exception_again invalid_argument(string(strerror(errno)) + " opening device " + path);
 
 		auto res = drmModeGetResources(fd);
 		if (!res) {
@@ -67,14 +67,15 @@ static int open_first_kms_device()
 		close(fd);
 	}
 
-	throw runtime_error("No modesetting DRM card found");
+	__throw_exception_again runtime_error("No modesetting DRM card found");
+	return 0;
 }
 
 static int open_device_by_path(string path)
 {
 	int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
 	if (fd < 0)
-		throw invalid_argument(string(strerror(errno)) + " opening device " + path);
+		__throw_exception_again invalid_argument(string(strerror(errno)) + " opening device " + path);
 	return fd;
 }
 
@@ -104,7 +105,8 @@ static int open_device_by_driver(string name, uint32_t idx)
 		close(fd);
 	}
 
-	throw invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
+	__throw_exception_again invalid_argument("Failed to find a DRM device " + name + ":" + to_string(idx));
+	return 0;
 }
 
 std::unique_ptr<Card> Card::open_named_card(const std::string& name)
@@ -112,7 +114,7 @@ std::unique_ptr<Card> Card::open_named_card(const std::string& name)
 	int fd = drmOpen(name.c_str(), 0);
 
 	if (fd < 0)
-		throw invalid_argument(string(strerror(errno)) + " opening card \"" + name + "\"");
+		__throw_exception_again invalid_argument(string(strerror(errno)) + " opening card \"" + name + "\"");
 
 	return std::unique_ptr<Card>(new Card(fd, true));
 }
@@ -133,7 +135,7 @@ Card::Card(const std::string& dev_path)
 		auto isplit = find(drv.begin(), drv.end(), ':');
 
 		if (isplit == drv.begin())
-			throw runtime_error("Invalid KMSXX_DRIVER");
+			__throw_exception_again runtime_error("Invalid KMSXX_DRIVER");
 
 		string name;
 		uint32_t num = 0;
@@ -169,7 +171,7 @@ Card::Card(int fd, bool take_ownership)
 		m_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
 
 		if (m_fd < 0)
-			throw invalid_argument(string(strerror(errno)) + " duplicating fd");
+			__throw_exception_again invalid_argument(string(strerror(errno)) + " duplicating fd");
 	}
 
 	setup();
@@ -191,7 +193,7 @@ void Card::setup()
 
 	r = fstat(m_fd, &stats);
 	if (r < 0)
-		throw invalid_argument("Can't stat device (" + string(strerror(errno)) + ")");
+		__throw_exception_again invalid_argument("Can't stat device (" + string(strerror(errno)) + ")");
 
 	m_minor = minor(stats.st_dev);
 
@@ -319,7 +321,8 @@ Connector* Card::get_first_connected_connector() const
 			return c;
 	}
 
-	throw invalid_argument("no connected connectors");
+	__throw_exception_again invalid_argument("no connected connectors");
+	return nullptr;
 }
 
 DrmObject* Card::get_object(uint32_t id) const
@@ -379,7 +382,7 @@ std::vector<kms::Pipeline> Card::get_connected_pipelines()
 		}
 
 		if (!crtc)
-			throw invalid_argument(string("Connector #") +
+			__throw_exception_again invalid_argument(string("Connector #") +
 					       to_string(conn->idx()) +
 					       " has no possible crtcs");
 

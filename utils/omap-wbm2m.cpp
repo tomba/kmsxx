@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 		if (fds[1].revents) {
 			fds[1].revents = 0;
 
-			try {
+			__try {
 				auto dst_vbuf = in->dequeue();
 
 				auto dst_fb = *find_if(in_fbs.begin(), in_fbs.end(), [fd=dst_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
@@ -196,7 +196,7 @@ int main(int argc, char** argv)
 				if (dst_frame_num >= num_src_frames)
 					break;
 
-			} catch (system_error& se) {
+			} __catch (system_error& se) {
 				if (se.code() != errc::resource_unavailable_try_again)
 					FAIL("dequeue failed: %s", se.what());
 

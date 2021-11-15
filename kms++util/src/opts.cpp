@@ -85,14 +85,14 @@ void OptionSet::parse(int argc, char** argv)
 			break;
 
 		if (c == '?')
-			throw std::invalid_argument(string("Unrecognized option ") + argv[optind - 1]);
+			__throw_exception_again std::invalid_argument(string("Unrecognized option ") + argv[optind - 1]);
 
 		if (c == ':') {
 			const Option& o = find_opt(optopt);
 			if (optopt < 256)
-				throw std::invalid_argument(string("Missing argument to -") + o.m_short);
+				__throw_exception_again std::invalid_argument(string("Missing argument to -") + o.m_short);
 			else
-				throw std::invalid_argument(string("Missing argument to --") + o.m_long);
+				__throw_exception_again std::invalid_argument(string("Missing argument to --") + o.m_long);
 		}
 
 		string sarg = { optarg ?: "" };

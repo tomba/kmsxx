@@ -20,7 +20,7 @@ Blob::Blob(Card& card, void* data, size_t len)
 
 	int r = drmModeCreatePropertyBlob(card.fd(), data, len, &id);
 	if (r)
-		throw invalid_argument("FAILED TO CREATE PROP\n");
+		__throw_exception_again invalid_argument("FAILED TO CREATE PROP\n");
 
 	set_id(id);
 }
@@ -36,7 +36,7 @@ vector<uint8_t> Blob::data()
 	drmModePropertyBlobPtr blob = drmModeGetPropertyBlob(card().fd(), id());
 
 	if (!blob)
-		throw invalid_argument("Blob data not available");
+		__throw_exception_again invalid_argument("Blob data not available");
 
 	uint8_t* data = (uint8_t*)blob->data;
 

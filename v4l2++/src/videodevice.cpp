@@ -269,7 +269,7 @@ static uint32_t v4l2_dequeue(int fd, VideoBuffer& fb, uint32_t buf_type)
 
 	int r = ioctl(fd, VIDIOC_DQBUF, &buf);
 	if (r)
-		throw system_error(errno, generic_category());
+		__throw_exception_again system_error(errno, generic_category());
 
 	fb.m_index = buf.index;
 	fb.m_length = buf.length;
@@ -291,7 +291,7 @@ VideoDevice::VideoDevice(int fd)
 	: m_fd(fd)
 {
 	if (fd < 0)
-		throw runtime_error("bad fd");
+		__throw_exception_again runtime_error("bad fd");
 
 	struct v4l2_capability cap = {};
 	int r = ioctl(fd, VIDIOC_QUERYCAP, &cap);
@@ -427,12 +427,12 @@ vector<string> VideoDevice::get_capture_devices()
 		if (stat(name.c_str(), &buffer) != 0)
 			continue;
 
-		try {
+		__try {
 			VideoDevice vid(name);
 
 			if (vid.has_capture() && !vid.has_m2m())
 				v.push_back(name);
-		} catch (...) {
+		} __catch (...) {
 		}
 	}
 
@@ -450,12 +450,12 @@ vector<string> VideoDevice::get_m2m_devices()
 		if (stat(name.c_str(), &buffer) != 0)
 			continue;
 
-		try {
+		__try {
 			VideoDevice vid(name);
 
 			if (vid.has_m2m())
 				v.push_back(name);
-		} catch (...) {
+		} __catch (...) {
 		}
 	}
 

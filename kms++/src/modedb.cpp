@@ -8,6 +8,7 @@ using namespace std;
 
 namespace kms
 {
+static const Videomode v = Videomode();
 static const Videomode& find_from_table(const Videomode* modes, uint32_t width, uint32_t height, float vrefresh, bool ilace)
 {
 	for (unsigned i = 0; modes[i].clock; ++i) {
@@ -42,7 +43,8 @@ static const Videomode& find_from_table(const Videomode* modes, uint32_t width, 
 		return m;
 	}
 
-	throw invalid_argument("mode not found");
+	__throw_exception_again invalid_argument("mode not found");
+	return v;
 }
 
 const Videomode& find_dmt(uint32_t width, uint32_t height, float vrefresh, bool ilace)

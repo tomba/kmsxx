@@ -52,7 +52,7 @@ void AtomicReq::add(uint32_t ob_id, uint32_t prop_id, uint64_t value)
 {
 	int r = drmModeAtomicAddProperty(m_req, ob_id, prop_id, value);
 	if (r <= 0)
-		throw std::invalid_argument("foo");
+		__throw_exception_again std::invalid_argument("foo");
 }
 
 void AtomicReq::add(DrmPropObject* ob, Property* prop, uint64_t value)
@@ -65,7 +65,7 @@ void AtomicReq::add(kms::DrmPropObject* ob, const string& prop, uint64_t value)
 	Property* p = ob->get_prop(prop);
 
 	if (!p)
-		throw runtime_error("Property not found");
+		__throw_exception_again runtime_error("Property not found");
 
 	add(ob, p, value);
 }

@@ -73,7 +73,7 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 
 			bo = omap_bo_new(m_omap_card.dev(), size, flags);
 			if (!bo)
-				throw invalid_argument(string("omap_bo_new failed: ") + strerror(errno));
+				__throw_exception_again invalid_argument(string("omap_bo_new failed: ") + strerror(errno));
 		} else {
 			unsigned bitspertiler;
 
@@ -93,7 +93,7 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 				bitspertiler = 16;
 				break;
 			default:
-				throw invalid_argument("unimplemented format");
+				__throw_exception_again invalid_argument("unimplemented format");
 			}
 
 			switch (bitspertiler) {
@@ -107,14 +107,14 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 				flags |= OMAP_BO_TILED_32;
 				break;
 			default:
-				throw invalid_argument("bad bitspertiler");
+				__throw_exception_again invalid_argument("bad bitspertiler");
 			}
 
 			uint32_t width_tiler = width * pi.bitspp / bitspertiler;
 
 			bo = omap_bo_new_tiled(m_omap_card.dev(), width_tiler, height, flags);
 			if (!bo)
-				throw invalid_argument(string("omap_bo_new_tiled failed: ") + strerror(errno));
+				__throw_exception_again invalid_argument(string("omap_bo_new_tiled failed: ") + strerror(errno));
 
 			stride = round_up(width * pi.bitspp / 8, PAGE_SIZE);
 		}
@@ -136,7 +136,7 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 	int r = drmModeAddFB2(card().fd(), width, height, (uint32_t)format,
 			      bo_handles, pitches, offsets, &id, 0);
 	if (r)
-		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
 
 	set_id(id);
 }
@@ -169,7 +169,7 @@ uint8_t* OmapFramebuffer::map(unsigned plane)
 
 	p.map = (uint8_t*)omap_bo_map(p.omap_bo);
 	if (p.map == MAP_FAILED)
-		throw invalid_argument(string("mmap failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("mmap failed: ") + strerror(errno));
 
 	return p.map;
 }
@@ -183,7 +183,7 @@ int OmapFramebuffer::prime_fd(unsigned int plane)
 
 	int fd = omap_bo_dmabuf(p.omap_bo);
 	if (fd < 0)
-		throw std::runtime_error("omap_bo_dmabuf failed\n");
+		__throw_exception_again std::runtime_error("omap_bo_dmabuf failed\n");
 
 	p.prime_fd = fd;
 

@@ -58,11 +58,11 @@ PlaneType Plane::plane_type() const
 		case DRM_PLANE_TYPE_CURSOR:
 			return PlaneType::Cursor;
 		default:
-			throw invalid_argument("Bad plane type");
+			__throw_exception_again invalid_argument("Bad plane type");
 		}
-	} else {
-		return PlaneType::Overlay;
 	}
+
+	return PlaneType::Overlay;
 }
 
 vector<Crtc*> Plane::get_possible_crtcs() const

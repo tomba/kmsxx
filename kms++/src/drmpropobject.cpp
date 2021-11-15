@@ -68,7 +68,8 @@ uint64_t DrmPropObject::get_prop_value(const string& name) const
 			return m_prop_values.at(prop->id());
 	}
 
-	throw invalid_argument("property not found: " + name);
+	__throw_exception_again invalid_argument("property not found: " + name);
+	return 0;
 }
 
 unique_ptr<Blob> DrmPropObject::get_prop_value_as_blob(const string& name) const
@@ -93,7 +94,7 @@ int DrmPropObject::set_prop_value(const string& name, uint64_t value)
 	Property* prop = get_prop(name);
 
 	if (prop == nullptr)
-		throw invalid_argument("property not found: " + name);
+		__throw_exception_again invalid_argument("property not found: " + name);
 
 	return set_prop_value(prop->id(), value);
 }

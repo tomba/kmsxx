@@ -153,13 +153,13 @@ static void draw_test_pattern_part(IFramebuffer& fb, unsigned start_y, unsigned 
 			break;
 
 		default:
-			throw invalid_argument("unsupported number of pixel format planes");
+			__throw_exception_again invalid_argument("unsupported number of pixel format planes");
 		}
 
 		break;
 
 	default:
-		throw invalid_argument("unsupported pixel format");
+		__throw_exception_again invalid_argument("unsupported pixel format");
 	}
 }
 

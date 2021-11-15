@@ -139,7 +139,7 @@ void init_pykmsbase(py::module& m)
 		.def(py::init([](Card& card, py::buffer buf) {
 			     py::buffer_info info = buf.request();
 			     if (info.ndim != 1)
-				     throw std::runtime_error("Incompatible buffer dimension!");
+				     __throw_exception_again std::runtime_error("Incompatible buffer dimension!");
 
 			     return new Blob(card, info.ptr, info.size * info.itemsize);
 		     }),

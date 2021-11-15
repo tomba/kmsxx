@@ -273,7 +273,7 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format)
 {
 	if (!format_info_array.count(format))
-		throw invalid_argument("get_pixel_format_info: Unsupported pixelformat");
+		__throw_exception_again invalid_argument("get_pixel_format_info: Unsupported pixelformat");
 
 	return format_info_array.at(format);
 }

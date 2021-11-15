@@ -19,14 +19,14 @@ public:
 	virtual uint32_t width() const = 0;
 	virtual uint32_t height() const = 0;
 
-	virtual PixelFormat format() const { throw std::runtime_error("not implemented"); }
-	virtual unsigned num_planes() const { throw std::runtime_error("not implemented"); }
+	virtual PixelFormat format() const { __throw_exception_again std::runtime_error("not implemented"); return PixelFormat(); }
+	virtual unsigned num_planes() const { __throw_exception_again std::runtime_error("not implemented"); return 0; }
 
-	virtual uint32_t stride(unsigned plane) const { throw std::runtime_error("not implemented"); }
-	virtual uint32_t size(unsigned plane) const { throw std::runtime_error("not implemented"); }
-	virtual uint32_t offset(unsigned plane) const { throw std::runtime_error("not implemented"); }
-	virtual uint8_t* map(unsigned plane) { throw std::runtime_error("not implemented"); }
-	virtual int prime_fd(unsigned plane) { throw std::runtime_error("not implemented"); }
+	virtual uint32_t stride(unsigned plane) const { __throw_exception_again std::runtime_error("not implemented"); return 0; }
+	virtual uint32_t size(unsigned plane) const { __throw_exception_again std::runtime_error("not implemented"); return 0; }
+	virtual uint32_t offset(unsigned plane) const { __throw_exception_again std::runtime_error("not implemented"); return 0; }
+	virtual uint8_t* map(unsigned plane) { __throw_exception_again std::runtime_error("not implemented"); return 0; }
+	virtual int prime_fd(unsigned plane) { __throw_exception_again std::runtime_error("not implemented"); return 0; }
 
 	virtual void begin_cpu_access(CpuAccess access) {}
 	virtual void end_cpu_access() {}

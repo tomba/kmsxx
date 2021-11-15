@@ -59,7 +59,7 @@ PYBIND11_MODULE(pyv4l2, m)
 
 			int r = self->get_format(fmt, w, h);
 			if (r)
-				throw std::system_error(errno, std::generic_category(), "get_format failed");
+				__throw_exception_again std::system_error(errno, std::generic_category(), "get_format failed");
 
 			return make_tuple(w, h, fmt);
 		})

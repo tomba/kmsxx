@@ -149,7 +149,8 @@ Videomode Connector::get_mode(const string& mode) const
 		return m;
 	}
 
-	throw invalid_argument(mode + ": mode not found");
+	__throw_exception_again invalid_argument(mode + ": mode not found");
+	return Videomode();
 }
 
 Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool ilace) const
@@ -188,7 +189,8 @@ Videomode Connector::get_mode(unsigned xres, unsigned yres, float vrefresh, bool
 		return m;
 	}
 
-	throw invalid_argument("mode not found");
+	__throw_exception_again invalid_argument("mode not found");
+	return Videomode();
 }
 
 bool Connector::connected() const

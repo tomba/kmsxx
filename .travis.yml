@@ -54,6 +54,30 @@ jobs:
           packages: [*packages, 'g++-10']
       env: MYCC=gcc-10 MYCXX=g++-10
 
+    - compiler: gcc
+      addons:
+        apt:
+          packages: [*packages, 'g++-7']
+      env: MYCC=gcc-7 MYCXX=g++-7 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: gcc
+      addons:
+        apt:
+          packages: [*packages, 'g++-8']
+      env: MYCC=gcc-8 MYCXX=g++-8 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: gcc
+      addons:
+        apt:
+          packages: [*packages, 'g++-9']
+      env: MYCC=gcc-9 MYCXX=g++-9 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: gcc
+      addons:
+        apt:
+          packages: [*packages, 'g++-10']
+      env: MYCC=gcc-10 MYCXX=g++-10 MYCXXFLAGS=-fno-exceptions
+
     - compiler: clang
       addons:
         apt:
@@ -84,9 +108,39 @@ jobs:
           packages: [*packages, 'clang-10', 'llvm-10-dev']
       env: MYCC=clang-10 MYCXX=clang++-10
 
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-6.0', 'llvm-6.0-dev']
+      env: MYCC=clang-6.0 MYCXX=clang++-6.0 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-7', 'llvm-7-dev']
+      env: MYCC=clang-7 MYCXX=clang++-7 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-8', 'llvm-8-dev']
+      env: MYCC=clang-8 MYCXX=clang++-8 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-9', 'llvm-9-dev']
+      env: MYCC=clang-9 MYCXX=clang++-9 MYCXXFLAGS=-fno-exceptions
+
+    - compiler: clang
+      addons:
+        apt:
+          packages: [*packages, 'clang-10', 'llvm-10-dev']
+      env: MYCC=clang-10 MYCXX=clang++-10 MYCXXFLAGS=-fno-exceptions
+
 # Build steps
 script:
-  - CC=$MYCC CXX=$MYCXX meson -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+  - CXXFLAGS=$MYCXXFLAGS CC=$MYCC CXX=$MYCXX meson -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
   - ninja -v -C build
 
 notifications:

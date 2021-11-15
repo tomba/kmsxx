@@ -155,21 +155,21 @@ static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_s
 		if (s_cvt) {
 			output.mode = videomode_from_cvt(w, h, refresh, ilace, s_cvt_v2, s_cvt_vid_opt);
 		} else if (s_use_dmt) {
-			try {
+			__try {
 				output.mode = find_dmt(w, h, refresh, ilace);
-			} catch (exception& e) {
+			} __catch (exception& e) {
 				EXIT("Mode not found from DMT tables\n");
 			}
 		} else if (s_use_cea) {
-			try {
+			__try {
 				output.mode = find_cea(w, h, refresh, ilace);
-			} catch (exception& e) {
+			} __catch (exception& e) {
 				EXIT("Mode not found from CEA tables\n");
 			}
 		} else {
-			try {
+			__try {
 				output.mode = output.connector->get_mode(w, h, refresh, ilace);
-			} catch (exception& e) {
+			} __catch (exception& e) {
 				EXIT("Mode not found from the connector\n");
 			}
 		}

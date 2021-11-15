@@ -33,7 +33,7 @@ Property::Property(Card& card, uint32_t id)
 	else if (drm_property_type_is(p, DRM_MODE_PROP_SIGNED_RANGE))
 		t = PropertyType::SignedRange;
 	else
-		throw invalid_argument("Invalid property type");
+		__throw_exception_again invalid_argument("Invalid property type");
 
 	m_type = t;
 }

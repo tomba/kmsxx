@@ -52,7 +52,7 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 		creq.bpp = pi.bitspp;
 		r = drmIoctl(card.fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
-			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed: ") + strerror(errno));
+			__throw_exception_again invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed: ") + strerror(errno));
 
 		plane.handle = creq.handle;
 		plane.stride = creq.pitch;
@@ -85,7 +85,7 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
-		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
 
 	set_id(id);
 }
@@ -123,13 +123,13 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 	mreq.handle = p.handle;
 	int r = drmIoctl(card().fd(), DRM_IOCTL_MODE_MAP_DUMB, &mreq);
 	if (r)
-		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed: ") + strerror(errno));
 
 	/* perform actual memory mapping */
 	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			       card().fd(), mreq.offset);
 	if (p.map == MAP_FAILED)
-		throw invalid_argument(string("mmap failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("mmap failed: ") + strerror(errno));
 
 	return p.map;
 }
@@ -142,7 +142,7 @@ int DumbFramebuffer::prime_fd(unsigned int plane)
 	int r = drmPrimeHandleToFD(card().fd(), m_planes.at(plane).handle,
 				   DRM_CLOEXEC | O_RDWR, &m_planes.at(plane).prime_fd);
 	if (r)
-		throw std::runtime_error("drmPrimeHandleToFD failed");
+		__throw_exception_again std::runtime_error("drmPrimeHandleToFD failed");
 
 	return m_planes.at(plane).prime_fd;
 }

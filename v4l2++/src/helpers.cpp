@@ -12,5 +12,5 @@ void __my_throw(const char* file, int line, const char *funcname, const char *co
 
 	fflush(stderr);
 
-	throw std::runtime_error(str);
+	__throw_exception_again std::runtime_error(str);
 }

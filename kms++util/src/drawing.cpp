@@ -11,7 +11,7 @@ namespace kms
 void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 {
 	if (x >= buf.width() || y >= buf.height())
-		throw runtime_error("attempt to draw outside the buffer");
+		__throw_exception_again runtime_error("attempt to draw outside the buffer");
 
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
@@ -104,14 +104,14 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		break;
 	}
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
 void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv)
 {
 	if (x >= buf.width() || y >= buf.height())
-		throw runtime_error("attempt to draw outside the buffer");
+		__throw_exception_again runtime_error("attempt to draw outside the buffer");
 
 	uint8_t* py = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
 	uint8_t* pu = (uint8_t*)(buf.map(1) + buf.stride(1) * y + x);
@@ -131,7 +131,7 @@ void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv)
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -175,7 +175,7 @@ static void draw_yuv422_packed_macropixel(IFramebuffer& buf, unsigned x, unsigne
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -206,7 +206,7 @@ static void draw_yuv422_semiplanar_macropixel(IFramebuffer& buf, unsigned x, uns
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -238,14 +238,14 @@ static void draw_yuv422_planar_macropixel(IFramebuffer& buf, unsigned x, unsigne
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
 void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2)
 {
 	if ((x + 1) >= buf.width() || y >= buf.height())
-		throw runtime_error("attempt to draw outside the buffer");
+		__throw_exception_again runtime_error("attempt to draw outside the buffer");
 
 	ASSERT((x & 1) == 0);
 
@@ -268,7 +268,7 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -307,7 +307,7 @@ static void draw_yuv420_semiplanar_macropixel(IFramebuffer& buf, unsigned x, uns
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -347,7 +347,7 @@ static void draw_yuv420_planar_macropixel(IFramebuffer& buf, unsigned x, unsigne
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -355,7 +355,7 @@ void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 			    YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
 	if ((x + 1) >= buf.width() || (y + 1) >= buf.height())
-		throw runtime_error("attempt to draw outside the buffer");
+		__throw_exception_again runtime_error("attempt to draw outside the buffer");
 
 	ASSERT((x & 1) == 0);
 	ASSERT((y & 1) == 0);
@@ -372,7 +372,7 @@ void draw_yuv420_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 		break;
 
 	default:
-		throw std::invalid_argument("invalid pixelformat");
+		__throw_exception_again std::invalid_argument("invalid pixelformat");
 	}
 }
 
@@ -438,7 +438,7 @@ void draw_rect(IFramebuffer& fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
 		}
 		break;
 	default:
-		throw std::invalid_argument("draw_rect: unknown pixelformat");
+		__throw_exception_again std::invalid_argument("draw_rect: unknown pixelformat");
 	}
 }
 
@@ -544,7 +544,7 @@ static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, R
 		}
 		break;
 	default:
-		throw std::invalid_argument("draw_char: unknown pixelformat");
+		__throw_exception_again std::invalid_argument("draw_char: unknown pixelformat");
 	}
 }
 

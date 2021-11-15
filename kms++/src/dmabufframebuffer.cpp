@@ -34,7 +34,7 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 	m_num_planes = format_info.num_planes;
 
 	if (fds.size() != m_num_planes || pitches.size() != m_num_planes || offsets.size() != m_num_planes)
-		throw std::invalid_argument("the size of fds, pitches and offsets has to match number of planes");
+		__throw_exception_again std::invalid_argument("the size of fds, pitches and offsets has to match number of planes");
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		FramebufferPlane& plane = m_planes.at(i);
@@ -43,7 +43,7 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 
 		r = drmPrimeFDToHandle(card.fd(), fds[i], &plane.handle);
 		if (r)
-			throw invalid_argument(string("drmPrimeFDToHandle: ") + strerror(errno));
+			__throw_exception_again invalid_argument(string("drmPrimeFDToHandle: ") + strerror(errno));
 
 		plane.stride = pitches[i];
 		plane.offset = offsets[i];
@@ -61,13 +61,13 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 		r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
 				  bo_handles, pitches.data(), offsets.data(), &id, 0);
 		if (r)
-			throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
+			__throw_exception_again invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));
 	} else {
 		modifiers.resize(4);
 		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format,
 					       bo_handles, pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
 		if (r)
-			throw invalid_argument(string("drmModeAddFB2WithModifiers failed: ") + strerror(errno));
+			__throw_exception_again invalid_argument(string("drmModeAddFB2WithModifiers failed: ") + strerror(errno));
 	}
 
 	set_id(id);
@@ -88,7 +88,7 @@ uint8_t* DmabufFramebuffer::map(unsigned plane)
 	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			       p.prime_fd, 0);
 	if (p.map == MAP_FAILED)
-		throw invalid_argument(string("mmap failed: ") + strerror(errno));
+		__throw_exception_again invalid_argument(string("mmap failed: ") + strerror(errno));
 
 	return p.map;
 }
@@ -103,7 +103,7 @@ int DmabufFramebuffer::prime_fd(unsigned plane)
 void DmabufFramebuffer::begin_cpu_access(CpuAccess access)
 {
 	if (m_sync_flags != 0)
-		throw runtime_error("begin_cpu sync already started");
+		__throw_exception_again runtime_error("begin_cpu sync already started");
 
 	switch (access) {
 	case CpuAccess::Read:
@@ -124,14 +124,14 @@ void DmabufFramebuffer::begin_cpu_access(CpuAccess access)
 	for (uint32_t p = 0; p < m_num_planes; ++p) {
 		int r = ioctl(prime_fd(p), DMA_BUF_IOCTL_SYNC, &dbs);
 		if (r)
-			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+			__throw_exception_again runtime_error("DMA_BUF_IOCTL_SYNC failed");
 	}
 }
 
 void DmabufFramebuffer::end_cpu_access()
 {
 	if (m_sync_flags == 0)
-		throw runtime_error("begin_cpu sync not started");
+		__throw_exception_again runtime_error("begin_cpu sync not started");
 
 	dma_buf_sync dbs{
 		.flags = DMA_BUF_SYNC_END | m_sync_flags
@@ -140,7 +140,7 @@ void DmabufFramebuffer::end_cpu_access()
 	for (uint32_t p = 0; p < m_num_planes; ++p) {
 		int r = ioctl(prime_fd(p), DMA_BUF_IOCTL_SYNC, &dbs);
 		if (r)
-			throw runtime_error("DMA_BUF_IOCTL_SYNC failed");
+			__throw_exception_again runtime_error("DMA_BUF_IOCTL_SYNC failed");
 	}
 
 	m_sync_flags = 0;

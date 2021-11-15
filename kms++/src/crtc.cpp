@@ -130,7 +130,8 @@ Plane* Crtc::get_primary_plane()
 	if (primary)
 		return primary;
 
-	throw invalid_argument(string("No primary plane for crtc ") + to_string(id()));
+	__throw_exception_again invalid_argument(string("No primary plane for crtc ") + to_string(id()));
+        return primary;
 }
 
 int Crtc::page_flip(Framebuffer& fb, void* data)

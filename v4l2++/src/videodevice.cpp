@@ -133,8 +133,6 @@ static void v4l2_set_format(int fd, PixelFormat fmt, uint32_t width, uint32_t he
 			ASSERT(p.sizeimage == p.bytesperline * height / pfpi.ysub);
 		}
 	} else {
-		ASSERT(pfi.num_planes == 1);
-
 		v4lfmt.fmt.pix.pixelformat = (uint32_t)fmt;
 		v4lfmt.fmt.pix.width = width;
 		v4lfmt.fmt.pix.height = height;

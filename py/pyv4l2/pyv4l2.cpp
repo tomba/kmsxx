@@ -150,4 +150,6 @@ PYBIND11_MODULE(pyv4l2, m)
 
 
 	m.def("fourcc_to_pixelformat", &FourCCToPixelFormat);
+	m.def("pixelformat_to_fourcc", &PixelFormatToFourCC);
+	m.def("drm_fourcc_to_pixelformat", &DRMFourCCToPixelFormat);
 }

@@ -290,10 +290,23 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 				     } },
 };
 
+PixelFormat DRMFourCCToPixelFormat(const std::string& fourcc)
+{
+	// Handle the formats which differ between DRM and V4L2
+	if (fourcc == "RG16")
+		return PixelFormat::RGB565;
+	if (fourcc == "XR24")
+		return PixelFormat::XRGB8888;
+	if (fourcc == "RG24")
+		return PixelFormat::RGB888;
+
+	return FourCCToPixelFormat(fourcc);
+}
+
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format)
 {
 	if (!format_info_array.count(format))
-		throw invalid_argument("get_pixel_format_info: Unsupported pixelformat");
+		throw invalid_argument("v4l2: get_pixel_format_info: Unsupported pixelformat");
 
 	return format_info_array.at(format);
 }

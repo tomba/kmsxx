@@ -247,6 +247,7 @@ void init_pykmsbase(py::module& m)
 		.value("BGRA1010102", PixelFormat::BGRA1010102);
 
 	m.def("fourcc_to_pixelformat", &FourCCToPixelFormat);
+	m.def("pixelformat_to_fourcc", &PixelFormatToFourCC);
 
 	py::enum_<SyncPolarity>(m, "SyncPolarity")
 		.value("Undefined", SyncPolarity::Undefined)
@@ -301,4 +302,22 @@ void init_pykmsbase(py::module& m)
 			},
 			py::arg("data") = 0, py::arg("allow_modeset") = false)
 		.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false);
+
+	py::class_<PixelFormatPlaneInfo>(m, "PixelFormatPlaneInfo")
+		.def_readonly("bitspp", &PixelFormatPlaneInfo::bitspp)
+		.def_readonly("xsub", &PixelFormatPlaneInfo::xsub)
+		.def_readonly("ysub", &PixelFormatPlaneInfo::ysub)
+		;
+
+	py::class_<PixelFormatInfo>(m, "PixelFormatInfo")
+		.def_readonly("num_planes", &PixelFormatInfo::num_planes)
+		.def("plane", [](const PixelFormatInfo& self, uint32_t idx) {
+			if (idx >= self.num_planes)
+				throw runtime_error("invalid plane number");
+			return self.planes[idx];
+		}, py::return_value_policy::reference_internal)
+		;
+
+	m.def("get_pixel_format_info", &get_pixel_format_info,
+	      py::return_value_policy::reference_internal);
 }

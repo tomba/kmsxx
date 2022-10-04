@@ -77,7 +77,8 @@ PYBIND11_MODULE(pyv4l2, m)
 		.def("queue", &VideoStreamer::queue)
 		.def("dequeue", &VideoStreamer::dequeue)
 		.def("stream_on", &VideoStreamer::stream_on)
-		.def("stream_off", &VideoStreamer::stream_off);
+		.def("stream_off", &VideoStreamer::stream_off)
+		.def("export_buffer", &VideoStreamer::export_buffer);
 
 	py::class_<MetaStreamer>(m, "MetaStreamer")
 		.def_property_readonly("fd", &MetaStreamer::fd)

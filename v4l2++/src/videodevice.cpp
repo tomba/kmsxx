@@ -624,7 +624,18 @@ void VideoStreamer::stream_off()
 	FAIL_IF(r, "Failed to disable stream: %d", r);
 }
 
+int VideoStreamer::export_buffer(uint32_t index)
+{
+	struct v4l2_exportbuffer expbuf;
 
+	memset(&expbuf, 0, sizeof(expbuf));
+	expbuf.type = get_buf_type(m_type);
+	expbuf.index = index;
+	int r = ioctl(m_fd, VIDIOC_EXPBUF, &expbuf);
+	FAIL_IF(r, "VIDIOC_EXPBUF failed: %d", r);
+
+	return expbuf.fd;
+}
 
 
 

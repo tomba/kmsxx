@@ -106,6 +106,8 @@ public:
 	void stream_on();
 	void stream_off();
 
+	int export_buffer(uint32_t index);
+
 	int fd() const { return m_fd; }
 
 protected:

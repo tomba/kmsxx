@@ -120,8 +120,9 @@ static string format_plane(Plane& p)
 
 static string format_fb(Framebuffer& fb)
 {
-	return fmt::format("FB {} {}x{}",
-			   fb.id(), fb.width(), fb.height());
+	return fmt::format("FB {} {}x{} {}",
+			   fb.id(), fb.width(), fb.height(),
+			   PixelFormatToFourCC(fb.format()));
 }
 
 static string format_property(const Property* prop, uint64_t val)

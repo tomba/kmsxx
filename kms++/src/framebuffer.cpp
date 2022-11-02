@@ -20,13 +20,14 @@ Framebuffer::Framebuffer(Card& card, uint32_t width, uint32_t height)
 Framebuffer::Framebuffer(Card& card, uint32_t id)
 	: DrmObject(card, id, DRM_MODE_OBJECT_FB)
 {
-	auto fb = drmModeGetFB(card.fd(), id);
+	auto fb = drmModeGetFB2(card.fd(), id);
 
 	if (fb) {
 		m_width = fb->width;
 		m_height = fb->height;
+		m_format = (PixelFormat)fb->pixel_format;
 
-		drmModeFreeFB(fb);
+		drmModeFreeFB2(fb);
 	} else {
 		m_width = m_height = 0;
 	}

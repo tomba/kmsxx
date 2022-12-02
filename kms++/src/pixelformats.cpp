@@ -28,6 +28,22 @@ static const map<PixelFormat, PixelFormatInfo> format_info_array = {
 				     1,
 				     { { 16, 2, 1 } },
 			     } },
+	{ PixelFormat::Y210, {
+				     PixelColorType::YUV,
+				     1,
+				     { { 32, 2, 1 } },
+			     } },
+	{ PixelFormat::Y212, {
+				     PixelColorType::YUV,
+				     1,
+				     { { 32, 2, 1 } },
+			     } },
+	{ PixelFormat::Y216, {
+				     PixelColorType::YUV,
+				     1,
+				     { { 32, 2, 1 } },
+			     } },
+
 	/* YUV semi-planar */
 	{ PixelFormat::NV12, {
 				     PixelColorType::YUV,

@@ -3,6 +3,7 @@
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
+#include <kms++util/endian.h>
 
 using namespace std;
 
@@ -179,6 +180,62 @@ static void draw_yuv422_packed_macropixel(IFramebuffer& buf, unsigned x, unsigne
 	}
 }
 
+static void draw_y2xx_packed_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
+					  YUV yuv1, YUV yuv2)
+{
+	const uint32_t macro_size = 4;
+	uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * macro_size);
+
+	switch (buf.format()) {
+	case PixelFormat::Y210: {
+		// XXX naive expansion to 10 bits, similar to 10-bit funcs in class RGB
+		uint16_t y0 = yuv1.y << 2;
+		uint16_t y1 = yuv2.y << 2;
+		uint16_t cb = ((yuv1.u  << 2) + (yuv2.u << 2)) / 2;
+		uint16_t cr = ((yuv1.v  << 2) + (yuv2.v << 2)) / 2;
+
+		// The 10 bits occupy the msb, so we shift left by 16-10 = 6
+		write16le(&p[0], y0 << 6);
+		write16le(&p[1], cb << 6);
+		write16le(&p[2], y1 << 6);
+		write16le(&p[3], cr << 6);
+		break;
+	}
+
+	case PixelFormat::Y212: {
+		// XXX naive expansion to 12 bits
+		uint16_t y0 = yuv1.y << 4;
+		uint16_t y1 = yuv2.y << 4;
+		uint16_t cb = ((yuv1.u  << 4) + (yuv2.u << 4)) / 2;
+		uint16_t cr = ((yuv1.v  << 4) + (yuv2.v << 4)) / 2;
+
+		// The 10 bits occupy the msb, so we shift left by 16-12 = 4
+		write16le(&p[0], y0 << 4);
+		write16le(&p[1], cb << 4);
+		write16le(&p[2], y1 << 4);
+		write16le(&p[3], cr << 4);
+		break;
+	}
+
+	case PixelFormat::Y216: {
+		// XXX naive expansion to 16 bits
+		uint16_t y0 = yuv1.y << 8;
+		uint16_t y1 = yuv2.y << 8;
+		uint16_t cb = ((yuv1.u  << 8) + (yuv2.u << 8)) / 2;
+		uint16_t cr = ((yuv1.v  << 8) + (yuv2.v << 8)) / 2;
+
+		write16le(&p[0], y0);
+		write16le(&p[1], cb);
+		write16le(&p[2], y1);
+		write16le(&p[3], cr);
+		break;
+	}
+
+	default:
+		throw std::invalid_argument("invalid pixelformat");
+	}
+}
+
 static void draw_yuv422_semiplanar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					      YUV yuv1, YUV yuv2)
 {
@@ -255,6 +312,12 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 	case PixelFormat::YVYU:
 	case PixelFormat::VYUY:
 		draw_yuv422_packed_macropixel(buf, x, y, yuv1, yuv2);
+		break;
+
+	case PixelFormat::Y210:
+	case PixelFormat::Y212:
+	case PixelFormat::Y216:
+		draw_y2xx_packed_macropixel(buf, x, y, yuv1, yuv2);
 		break;
 
 	case PixelFormat::NV16:

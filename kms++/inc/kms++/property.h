@@ -2,6 +2,7 @@
 
 #include "drmobject.h"
 #include <map>
+#include <string>
 #include <vector>
 
 namespace kms

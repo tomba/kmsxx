@@ -67,6 +67,7 @@ EglState::EglState(void* native_display)
 
 		EGLConfig configs[numConfigs];
 		b = eglGetConfigs(m_display, configs, numConfigs, &numConfigs);
+		FAIL_IF(!b, "failed to get configs");
 
 		printf("Available configs:\n");
 

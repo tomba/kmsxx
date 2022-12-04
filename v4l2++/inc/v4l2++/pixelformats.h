@@ -73,14 +73,14 @@ enum class PixelFormat : uint32_t {
 	META_16 = MakeFourCC("ME16"),
 };
 
-static inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
+inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
 {
 	return (PixelFormat)MakeFourCC(fourcc.c_str());
 }
 
 PixelFormat DRMFourCCToPixelFormat(const std::string& fourcc);
 
-static inline std::string PixelFormatToFourCC(PixelFormat f)
+inline std::string PixelFormatToFourCC(PixelFormat f)
 {
 	char buf[5] = { (char)(((uint32_t)f >> 0) & 0xff),
 			(char)(((uint32_t)f >> 8) & 0xff),

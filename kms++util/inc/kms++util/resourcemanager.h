@@ -1,3 +1,5 @@
+#pragma once
+
 #include <kms++/kms++.h>
 #include <set>
 #include <string>

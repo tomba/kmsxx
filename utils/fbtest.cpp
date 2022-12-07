@@ -40,7 +40,9 @@ int main(int argc, char** argv)
 
 	FAIL_IF(ptr == MAP_FAILED, "mmap failed");
 
-	ExtCPUFramebuffer buf(var.xres, var.yres, PixelFormat::XRGB8888,
+	PixelFormat fmt = var.bits_per_pixel == 16 ? PixelFormat::RGB565 : PixelFormat::XRGB8888;
+
+	ExtCPUFramebuffer buf(var.xres, var.yres, fmt,
 			      ptr, var.yres_virtual * fix.line_length, fix.line_length, 0);
 
 	printf("%s: res %dx%d, virtual %dx%d, line_len %d\n",
@@ -50,6 +52,7 @@ int main(int argc, char** argv)
 	       fix.line_length);
 
 	draw_test_pattern(buf);
+	// XXX this may draw over the edge for narrow displays
 	draw_text(buf, buf.width() / 2, 0, fbdev, RGB(255, 255, 255));
 
 	close(fd);

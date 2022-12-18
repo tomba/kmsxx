@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tomba/kmsxx.svg?branch=master)](https://travis-ci.org/tomba/kmsxx)
+[![Build Status](https://github.com/tomba/kmsxx/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/tomba/kmsxx/actions/workflows/c-cpp.yml)
 
 # kms++ - C++ library for kernel mode setting
 

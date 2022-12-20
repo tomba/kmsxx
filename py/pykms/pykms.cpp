@@ -8,7 +8,10 @@ using namespace kms;
 using namespace std;
 
 void init_pykmsbase(py::module& m);
+
+#if HAS_KMSXXUTIL
 void init_pykmsutils(py::module& m);
+#endif
 
 #if HAS_LIBDRM_OMAP
 void init_pykmsomap(py::module& m);
@@ -18,7 +21,9 @@ PYBIND11_MODULE(pykms, m)
 {
 	init_pykmsbase(m);
 
+#if HAS_KMSXXUTIL
 	init_pykmsutils(m);
+#endif
 
 #if HAS_LIBDRM_OMAP
 	init_pykmsomap(m);

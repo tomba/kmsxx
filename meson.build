@@ -40,6 +40,10 @@ if libdrmomap_dep.found()
     add_global_arguments('-DHAS_LIBDRM_OMAP', language : 'cpp')
 endif
 
+if get_option('libutils')
+	add_global_arguments('-DHAS_KMSXXUTIL', language : 'cpp')
+endif
+
 subdir('kms++')
 
 if get_option('v4l2').enabled()

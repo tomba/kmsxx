@@ -8,7 +8,7 @@ namespace py = pybind11;
 using namespace kms;
 using namespace std;
 
-void init_pykmstest(py::module& m)
+void init_pykmsutils(py::module& m)
 {
 	py::class_<RGB>(m, "RGB")
 		.def(py::init<>())

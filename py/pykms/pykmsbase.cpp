@@ -65,7 +65,7 @@ void init_pykmsbase(py::module& m)
 		.def("refresh_props", &DrmPropObject::refresh_props)
 		.def_property_readonly("prop_map", &DrmPropObject::get_prop_map)
 		.def("get_prop_value", (uint64_t(DrmPropObject::*)(const string&) const) & DrmPropObject::get_prop_value)
-		.def("set_prop_value", (int (DrmPropObject::*)(const string&, uint64_t)) & DrmPropObject::set_prop_value)
+		.def("set_prop_value", (int(DrmPropObject::*)(const string&, uint64_t)) & DrmPropObject::set_prop_value)
 		.def("get_prop_value_as_blob", &DrmPropObject::get_prop_value_as_blob)
 		.def("get_prop", &DrmPropObject::get_prop)
 		.def("has_prop", &DrmPropObject::has_prop);
@@ -85,8 +85,8 @@ void init_pykmsbase(py::module& m)
 		.def("refresh", &Connector::refresh);
 
 	py::class_<Crtc, DrmPropObject, unique_ptr<Crtc, py::nodelete>>(m, "Crtc")
-		.def("set_mode", (int (Crtc::*)(Connector*, const Videomode&)) & Crtc::set_mode)
-		.def("set_mode", (int (Crtc::*)(Connector*, Framebuffer&, const Videomode&)) & Crtc::set_mode)
+		.def("set_mode", (int(Crtc::*)(Connector*, const Videomode&)) & Crtc::set_mode)
+		.def("set_mode", (int(Crtc::*)(Connector*, Framebuffer&, const Videomode&)) & Crtc::set_mode)
 		.def("disable_mode", &Crtc::disable_mode)
 		.def(
 			"page_flip",
@@ -123,8 +123,7 @@ void init_pykmsbase(py::module& m)
 		.def_property_readonly("type", &Property::type)
 		.def_property_readonly("enums", &Property::get_enums)
 		.def_property_readonly("values", &Property::get_values)
-		.def("__repr__", [](const Property& o) { return "<pykms.Property " + to_string(o.id()) + " '" + o.name() + "'>"; })
-		;
+		.def("__repr__", [](const Property& o) { return "<pykms.Property " + to_string(o.id()) + " '" + o.name() + "'>"; });
 
 	py::enum_<PropertyType>(m, "PropertyType")
 		.value("Range", PropertyType::Range)
@@ -132,8 +131,7 @@ void init_pykmsbase(py::module& m)
 		.value("Blob", PropertyType::Blob)
 		.value("Bitmask", PropertyType::Bitmask)
 		.value("Object", PropertyType::Object)
-		.value("SignedRange", PropertyType::SignedRange)
-		;
+		.value("SignedRange", PropertyType::SignedRange);
 
 	py::class_<Blob>(m, "Blob")
 		.def(py::init([](Card& card, py::buffer buf) {
@@ -165,8 +163,8 @@ void init_pykmsbase(py::module& m)
 		.def("offset", &Framebuffer::offset)
 		.def("fd", &Framebuffer::prime_fd)
 
-		.def("flush", (void (Framebuffer::*)(void)) & Framebuffer::flush)
-		.def("flush", (void (Framebuffer::*)(uint32_t x, uint32_t y, uint32_t width, uint32_t height)) & Framebuffer::flush)
+		.def("flush", (void(Framebuffer::*)(void)) & Framebuffer::flush)
+		.def("flush", (void(Framebuffer::*)(uint32_t x, uint32_t y, uint32_t width, uint32_t height)) & Framebuffer::flush)
 
 		// XXX pybind11 doesn't support a base object (DrmObject) with custom holder-type,
 		// and a subclass with standard holder-type.
@@ -181,16 +179,14 @@ void init_pykmsbase(py::module& m)
 		     py::keep_alive<1, 2>()) // Keep Card alive until this is destructed
 		.def(py::init<Card&, uint32_t, uint32_t, PixelFormat>(),
 		     py::keep_alive<1, 2>()) // Keep Card alive until this is destructed
-		.def("__repr__", [](const DumbFramebuffer& o) { return "<pykms.DumbFramebuffer " + to_string(o.id()) + ">"; })
-		;
+		.def("__repr__", [](const DumbFramebuffer& o) { return "<pykms.DumbFramebuffer " + to_string(o.id()) + ">"; });
 
 	py::class_<DmabufFramebuffer, Framebuffer>(m, "DmabufFramebuffer")
 		.def(py::init<Card&, uint32_t, uint32_t, const string&, vector<int>, vector<uint32_t>, vector<uint32_t>>(),
 		     py::keep_alive<1, 2>()) // Keep Card alive until this is destructed
 		.def(py::init<Card&, uint32_t, uint32_t, PixelFormat, vector<int>, vector<uint32_t>, vector<uint32_t>>(),
 		     py::keep_alive<1, 2>()) // Keep Card alive until this is destructed
-		.def("__repr__", [](const DmabufFramebuffer& o) { return "<pykms.DmabufFramebuffer " + to_string(o.id()) + ">"; })
-		;
+		.def("__repr__", [](const DmabufFramebuffer& o) { return "<pykms.DmabufFramebuffer " + to_string(o.id()) + ">"; });
 
 	py::enum_<PixelFormat>(m, "PixelFormat")
 		.value("Undefined", PixelFormat::Undefined)
@@ -291,9 +287,9 @@ void init_pykmsbase(py::module& m)
 	py::class_<AtomicReq>(m, "AtomicReq")
 		.def(py::init<Card&>(),
 		     py::keep_alive<1, 2>()) // Keep Card alive until this is destructed
-		.def("add", (void (AtomicReq::*)(DrmPropObject*, const string&, uint64_t)) & AtomicReq::add)
-		.def("add", (void (AtomicReq::*)(DrmPropObject*, Property*, uint64_t)) & AtomicReq::add)
-		.def("add", (void (AtomicReq::*)(DrmPropObject*, const map<string, uint64_t>&)) & AtomicReq::add)
+		.def("add", (void(AtomicReq::*)(DrmPropObject*, const string&, uint64_t)) & AtomicReq::add)
+		.def("add", (void(AtomicReq::*)(DrmPropObject*, Property*, uint64_t)) & AtomicReq::add)
+		.def("add", (void(AtomicReq::*)(DrmPropObject*, const map<string, uint64_t>&)) & AtomicReq::add)
 		.def("test", &AtomicReq::test, py::arg("allow_modeset") = false)
 		.def(
 			"commit",
@@ -306,17 +302,17 @@ void init_pykmsbase(py::module& m)
 	py::class_<PixelFormatPlaneInfo>(m, "PixelFormatPlaneInfo")
 		.def_readonly("bitspp", &PixelFormatPlaneInfo::bitspp)
 		.def_readonly("xsub", &PixelFormatPlaneInfo::xsub)
-		.def_readonly("ysub", &PixelFormatPlaneInfo::ysub)
-		;
+		.def_readonly("ysub", &PixelFormatPlaneInfo::ysub);
 
 	py::class_<PixelFormatInfo>(m, "PixelFormatInfo")
 		.def_readonly("num_planes", &PixelFormatInfo::num_planes)
-		.def("plane", [](const PixelFormatInfo& self, uint32_t idx) {
-			if (idx >= self.num_planes)
-				throw runtime_error("invalid plane number");
-			return self.planes[idx];
-		}, py::return_value_policy::reference_internal)
-		;
+		.def(
+			"plane", [](const PixelFormatInfo& self, uint32_t idx) {
+				if (idx >= self.num_planes)
+					throw runtime_error("invalid plane number");
+				return self.planes[idx];
+			},
+			py::return_value_policy::reference_internal);
 
 	m.def("get_pixel_format_info", &get_pixel_format_info,
 	      py::return_value_policy::reference_internal);

@@ -31,7 +31,7 @@ public:
 		m_capdev.set_queue_size(s_fbs.size(), v4l2::VideoMemoryType::DMABUF);
 
 		for (auto fb : s_free_fbs) {
-			v4l2::VideoBuffer vbuf {};
+			v4l2::VideoBuffer vbuf{};
 			vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
 			vbuf.m_fd = fb->prime_fd(0);
 
@@ -65,7 +65,7 @@ public:
 	{
 		auto vbuf = m_capdev.dequeue();
 
-		auto iter = find_if(s_wb_fbs.begin(), s_wb_fbs.end(), [fd=vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
+		auto iter = find_if(s_wb_fbs.begin(), s_wb_fbs.end(), [fd = vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
 		auto fb = *iter;
 		s_wb_fbs.erase(iter);
 
@@ -82,7 +82,7 @@ public:
 		auto fb = s_free_fbs.back();
 		s_free_fbs.pop_back();
 
-		v4l2::VideoBuffer vbuf {};
+		v4l2::VideoBuffer vbuf{};
 		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
 		vbuf.m_fd = fb->prime_fd(0);
 

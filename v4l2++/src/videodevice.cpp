@@ -551,7 +551,7 @@ std::vector<PixelFormat> VideoStreamer::get_formats()
 	return v4l2_get_formats(m_fd, get_buf_type(m_type));
 }
 
-int VideoStreamer::get_format(PixelFormat &fmt, uint32_t &width, uint32_t &height)
+int VideoStreamer::get_format(PixelFormat& fmt, uint32_t& width, uint32_t& height)
 {
 	return v4l2_get_format(m_fd, get_buf_type(m_type), fmt, width, height);
 }
@@ -580,7 +580,7 @@ void VideoStreamer::set_queue_size(uint32_t queue_size, VideoMemoryType mem_type
 	m_fbs.resize(queue_size);
 }
 
-void VideoStreamer::queue(VideoBuffer &fb)
+void VideoStreamer::queue(VideoBuffer& fb)
 {
 	uint32_t idx;
 
@@ -600,7 +600,7 @@ void VideoStreamer::queue(VideoBuffer &fb)
 
 VideoBuffer VideoStreamer::dequeue()
 {
-	VideoBuffer fb {};
+	VideoBuffer fb{};
 	fb.m_mem_type = m_mem_type;
 
 	uint32_t idx = v4l2_dequeue(m_fd, fb, get_buf_type(m_type));
@@ -637,8 +637,6 @@ int VideoStreamer::export_buffer(uint32_t index)
 	return expbuf.fd;
 }
 
-
-
 MetaStreamer::MetaStreamer(int fd, StreamerType type)
 	: VideoStreamer(fd, type)
 {
@@ -648,7 +646,7 @@ void MetaStreamer::set_format(PixelFormat fmt, uint32_t size)
 {
 	int r;
 
-	v4l2_format v4lfmt {};
+	v4l2_format v4lfmt{};
 
 	v4lfmt.type = get_buf_type(m_type);
 	//r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);

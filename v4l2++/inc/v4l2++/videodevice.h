@@ -11,8 +11,7 @@ namespace v4l2
 class VideoStreamer;
 class MetaStreamer;
 
-enum class VideoMemoryType
-{
+enum class VideoMemoryType {
 	MMAP,
 	DMABUF,
 };
@@ -87,10 +86,10 @@ public:
 		OutputMulti,
 		CaptureMeta,
 		OutputMeta,
-		};
+	};
 
 	VideoStreamer(int fd, StreamerType type);
-	virtual ~VideoStreamer() { }
+	virtual ~VideoStreamer() {}
 
 	std::vector<std::string> get_ports();
 	void set_port(uint32_t index);
@@ -117,7 +116,6 @@ protected:
 	std::vector<bool> m_fbs;
 };
 
-
 class MetaStreamer : public VideoStreamer
 {
 public:
@@ -126,4 +124,4 @@ public:
 	void set_format(PixelFormat fmt, uint32_t size);
 };
 
-}
+} // namespace v4l2

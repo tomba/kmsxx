@@ -25,18 +25,17 @@ PYBIND11_MODULE(pyv4l2, m)
 
 	py::enum_<VideoMemoryType>(m, "VideoMemoryType")
 		.value("MMAP", VideoMemoryType::MMAP)
-		.value("DMABUF", VideoMemoryType::DMABUF)
-		;
+		.value("DMABUF", VideoMemoryType::DMABUF);
 
 	m.def("create_dmabuffer", [](int fd) {
-		VideoBuffer buf {};
+		VideoBuffer buf{};
 		buf.m_mem_type = VideoMemoryType::DMABUF;
 		buf.m_fd = fd;
 		return buf;
 	});
 
 	m.def("create_mmapbuffer", []() {
-		VideoBuffer buf {};
+		VideoBuffer buf{};
 		buf.m_mem_type = VideoMemoryType::MMAP;
 		return buf;
 	});
@@ -45,8 +44,7 @@ PYBIND11_MODULE(pyv4l2, m)
 		.def_readonly("index", &VideoBuffer::m_index)
 		.def_readonly("offset", &VideoBuffer::m_offset)
 		.def_readonly("fd", &VideoBuffer::m_fd)
-		.def_readonly("length", &VideoBuffer::m_length)
-		;
+		.def_readonly("length", &VideoBuffer::m_length);
 
 	py::class_<VideoStreamer>(m, "VideoStreamer")
 		.def_property_readonly("fd", &VideoStreamer::fd)
@@ -112,7 +110,6 @@ PYBIND11_MODULE(pyv4l2, m)
 
 		.value("META_8", PixelFormat::META_8)
 		.value("META_16", PixelFormat::META_16);
-
 
 	m.def("fourcc_to_pixelformat", &FourCCToPixelFormat);
 	m.def("pixelformat_to_fourcc", &PixelFormatToFourCC);

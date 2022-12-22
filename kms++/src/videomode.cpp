@@ -173,9 +173,10 @@ static const map<int, string> mode_aspect_map = {
 	{ DRM_MODE_FLAG_PIC_AR_256_135, "256:135" },
 };
 
-static string mode_type_str(uint32_t val) {
+static string mode_type_str(uint32_t val)
+{
 	vector<string> s;
-	for (const auto & [k, v] : mode_type_map) {
+	for (const auto& [k, v] : mode_type_map) {
 		if (val & k) {
 			if (!v.empty())
 				s.push_back(v);
@@ -188,7 +189,8 @@ static string mode_type_str(uint32_t val) {
 	return join(s, "|");
 }
 
-static string mode_flag_str(uint32_t val) {
+static string mode_flag_str(uint32_t val)
+{
 	vector<string> s;
 	for (const auto& [k, v] : mode_flag_map) {
 		if (val & k) {

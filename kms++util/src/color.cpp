@@ -114,7 +114,8 @@ YUV RGB::yuv(YUVType type) const
 	{                                                                     \
 		((int)((a)*CF_ONE)), ((int)((b)*CF_ONE)), ((int)((c)*CF_ONE)) \
 	}
-#define CLAMP(a) ((a) > (CF_ONE - 1) ? (CF_ONE - 1) : (a) < 0 ? 0 : (a))
+#define CLAMP(a) ((a) > (CF_ONE - 1) ? (CF_ONE - 1) : (a) < 0 ? 0 \
+							      : (a))
 
 const int YUVcoef[static_cast<unsigned>(YUVType::MAX)][3][3] = {
 	[static_cast<unsigned>(YUVType::BT601_Lim)] = {

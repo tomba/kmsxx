@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 
 		out_fbs.push_back(fb);
 
-		v4l2::VideoBuffer vbuf {};
+		v4l2::VideoBuffer vbuf{};
 		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
 		vbuf.m_fd = fb->prime_fd(0);
 
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
 		in_fbs.push_back(fb);
 
-		v4l2::VideoBuffer vbuf {};
+		v4l2::VideoBuffer vbuf{};
 		vbuf.m_mem_type = v4l2::VideoMemoryType::DMABUF;
 		vbuf.m_fd = fb->prime_fd(0);
 
@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 			try {
 				auto dst_vbuf = in->dequeue();
 
-				auto dst_fb = *find_if(in_fbs.begin(), in_fbs.end(), [fd=dst_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
+				auto dst_fb = *find_if(in_fbs.begin(), in_fbs.end(), [fd = dst_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
 
 				printf("Writing frame %u\n", dst_frame_num);
 				for (unsigned i = 0; i < dst_fb->num_planes(); ++i)
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
 
 			auto src_vbuf = out->dequeue();
 
-			auto src_fb = *find_if(out_fbs.begin(), out_fbs.end(), [fd=src_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
+			auto src_fb = *find_if(out_fbs.begin(), out_fbs.end(), [fd = src_vbuf.m_fd](auto& fb) { return fb->prime_fd(0) == fd; });
 
 			if (src_frame_num < num_src_frames) {
 				read_frame(src_fb, src_frame_num++);

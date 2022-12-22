@@ -26,9 +26,9 @@
 	} while (0)
 
 #define FAIL_IF(x, format, ...)                                                                                      \
-	if (unlikely(x)) {                                                                                        \
+	if (unlikely(x)) {                                                                                           \
 		fprintf(stderr, "%s:%d: %s:\n" format "\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__); \
-		abort();                                                                                          \
+		abort();                                                                                             \
 	}
 
 #define EXIT(fmt, ...)                                    \

@@ -1,6 +1,6 @@
 #include <v4l2++/helpers.h>
 
-void __my_throw(const char* file, int line, const char *funcname, const char *cond, fmt::string_view format, fmt::format_args args)
+void __my_throw(const char* file, int line, const char* funcname, const char* cond, fmt::string_view format, fmt::format_args args)
 {
 	std::string str = fmt::vformat(format, args);
 

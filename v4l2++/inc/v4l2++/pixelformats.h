@@ -110,4 +110,4 @@ struct PixelFormatInfo {
 
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format);
 
-} // namespace kms
+} // namespace v4l2

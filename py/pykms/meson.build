@@ -1,6 +1,7 @@
 py3_dep = dependency('python3', required : get_option('pykms'))
 
 if py3_dep.found() == false
+    pybindings_enabled = false
     subdir_done()
 endif
 
@@ -8,8 +9,11 @@ pybind11_dep = dependency('pybind11', fallback : ['pybind11', 'pybind11_dep'],
                           required : get_option('pykms'))
 
 if pybind11_dep.found() == false
+    pybindings_enabled = false
     subdir_done()
 endif
+
+pybindings_enabled = true
 
 pykms_sources = files([
     'pykmsbase.cpp',
@@ -26,6 +30,9 @@ if libdrmomap_dep.found()
     pykms_sources += files([
         'pykmsomap.cpp',
     ])
+    omapdrm_enabled = true
+else
+    omapdrm_enabled = false
 endif
 
 pykms_deps = [

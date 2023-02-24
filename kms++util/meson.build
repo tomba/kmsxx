@@ -1,3 +1,10 @@
+if not get_option('libutils')
+    libutils_enabled = false
+    subdir_done()
+endif
+
+libutils_enabled = true
+
 libkmsxxutil_sources = files([
     'src/colorbar.cpp',
     'src/color.cpp',

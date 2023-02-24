@@ -45,17 +45,17 @@ if get_option('libutils')
 endif
 
 subdir('kms++')
-
-if get_option('libutils')
-    subdir('kms++util')
-endif
-
-if get_option('utils')
-    subdir('utils')
-endif
-
+subdir('kms++util')
+subdir('utils')
+subdir('kmscube')
 subdir('py')
 
-if get_option('kmscube')
-    subdir('kmscube')
-endif
+summary({
+            'omapdrm extensions': omapdrm_enabled,
+            'kms++utils library': libutils_enabled,
+            'Python bindings': pybindings_enabled,
+            'kmscube': kmscube_enabled,
+            'Utilities': libutils_enabled,
+        },
+        section : 'Configuration',
+        bool_yn : true)

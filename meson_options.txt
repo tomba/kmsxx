@@ -13,11 +13,5 @@ option('utils', type : 'boolean', value : true,
 option('pykms', type : 'feature', value : 'auto',
        description : 'Build python bindings')
 
-option('v4l2', type : 'feature', value : 'disabled',
-       description : 'Build V4L2++ library (HACK)')
-
-option('pyv4l2', type : 'feature', value : 'disabled',
-       description : 'Build V4L2 python bindings (HACK)')
-
 option('kmscube', type : 'boolean', value : false,
        description : 'Build kmscube test application')

@@ -30,9 +30,6 @@ if libdrmomap_dep.found()
     pykms_sources += files([
         'pykmsomap.cpp',
     ])
-    omapdrm_enabled = true
-else
-    omapdrm_enabled = false
 endif
 
 pykms_deps = [

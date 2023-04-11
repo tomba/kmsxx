@@ -63,6 +63,9 @@ if libdrmomap_dep.found()
         'src/omap/omapcard.cpp',
         'src/omap/omapframebuffer.cpp',
     ])
+    omapdrm_enabled = true
+else
+    omapdrm_enabled = false
 endif
 
 libkmsxx_deps = [ libdrm_dep, libfmt_dep, libdrmomap_dep ]

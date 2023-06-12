@@ -1,9 +1,6 @@
 option('omap', type : 'feature', value : 'auto',
        description : 'Build omapdrm extensions')
 
-option('static-libc', type : 'boolean', value : false,
-       description : 'Build with -static-libgcc -static-libstdc++')
-
 option('libutils', type : 'boolean', value : true,
        description : 'Build kms++utils library')
 

@@ -118,8 +118,8 @@ static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_s
 
 	const regex modeline_re("(?:(@?)(\\d+):)?" // @12:
 				"(\\d+)," // 33000000,
-				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-])," // 800/210/30/16/-,
-				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-])" // 480/22/13/10/-
+				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-\\?])," // 800/210/30/16/-,
+				"(\\d+)/(\\d+)/(\\d+)/(\\d+)/([+-\\?])" // 480/22/13/10/-
 				"(?:,([i]+))?" // ,i
 	);
 
@@ -202,17 +202,29 @@ static void parse_crtc(ResourceManager& resman, Card& card, const string& crtc_s
 		unsigned hfp = stoul(sm[5]);
 		unsigned hsw = stoul(sm[6]);
 		unsigned hbp = stoul(sm[7]);
-		bool h_pos_sync = sm[8] == "+" ? true : false;
+
+		SyncPolarity h_sync;
+		switch (sm[8].str()[0]) {
+		case '+': h_sync = SyncPolarity::Positive; break;
+		case '-': h_sync = SyncPolarity::Negative; break;
+		default: h_sync = SyncPolarity::Undefined; break;
+		}
 
 		unsigned vact = stoul(sm[9]);
 		unsigned vfp = stoul(sm[10]);
 		unsigned vsw = stoul(sm[11]);
 		unsigned vbp = stoul(sm[12]);
-		bool v_pos_sync = sm[13] == "+" ? true : false;
+
+		SyncPolarity v_sync;
+		switch (sm[13].str()[0]) {
+		case '+': v_sync = SyncPolarity::Positive; break;
+		case '-': v_sync = SyncPolarity::Negative; break;
+		default: v_sync = SyncPolarity::Undefined; break;
+		}
 
 		output.mode = videomode_from_timings(clock / 1000, hact, hfp, hsw, hbp, vact, vfp, vsw, vbp);
-		output.mode.set_hsync(h_pos_sync ? SyncPolarity::Positive : SyncPolarity::Negative);
-		output.mode.set_vsync(v_pos_sync ? SyncPolarity::Positive : SyncPolarity::Negative);
+		output.mode.set_hsync(h_sync);
+		output.mode.set_vsync(v_sync);
 
 		if (sm[14].matched) {
 			for (int i = 0; i < sm[14].length(); ++i) {

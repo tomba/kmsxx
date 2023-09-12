@@ -32,8 +32,8 @@ struct PropInfo {
 struct PlaneInfo {
 	Plane* plane;
 
-	unsigned x;
-	unsigned y;
+	signed x;
+	signed y;
 	unsigned w;
 	unsigned h;
 
@@ -256,7 +256,7 @@ static void parse_plane(ResourceManager& resman, Card& card, const string& plane
 {
 	// 3:400,400-400x400
 	const regex plane_re("(?:(@?)(\\d+):)?" // 3:
-			     "(?:(\\d+),(\\d+)-)?" // 400,400-
+			     "(?:(-?\\d+),(-?\\d+)-)?" // 400,400-
 			     "(\\d+)x(\\d+)"); // 400x400
 
 	smatch sm;
@@ -291,12 +291,12 @@ static void parse_plane(ResourceManager& resman, Card& card, const string& plane
 	pinfo.h = stoul(sm[6]);
 
 	if (sm[3].matched)
-		pinfo.x = stoul(sm[3]);
+		pinfo.x = stol(sm[3]);
 	else
 		pinfo.x = output.mode.hdisplay / 2 - pinfo.w / 2;
 
 	if (sm[4].matched)
-		pinfo.y = stoul(sm[4]);
+		pinfo.y = stol(sm[4]);
 	else
 		pinfo.y = output.mode.vdisplay / 2 - pinfo.h / 2;
 }

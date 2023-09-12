@@ -105,8 +105,8 @@ static string format_plane(Plane& p)
 				   (uint32_t)p.get_prop_value("SRC_Y") >> 16,
 				   (uint32_t)p.get_prop_value("SRC_W") >> 16,
 				   (uint32_t)p.get_prop_value("SRC_H") >> 16,
-				   (uint32_t)p.get_prop_value("CRTC_X"),
-				   (uint32_t)p.get_prop_value("CRTC_Y"),
+				   (int32_t)p.get_prop_value("CRTC_X"),
+				   (int32_t)p.get_prop_value("CRTC_Y"),
 				   (uint32_t)p.get_prop_value("CRTC_W"),
 				   (uint32_t)p.get_prop_value("CRTC_H"));
 	}

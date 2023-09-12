@@ -15,6 +15,15 @@ namespace kms
 #ifndef DRM_MODE_CONNECTOR_DPI
 #define DRM_MODE_CONNECTOR_DPI 17
 #endif
+#ifndef DRM_MODE_CONNECTOR_WRITEBACK
+#define DRM_MODE_CONNECTOR_WRITEBACK 18
+#endif
+#ifndef DRM_MODE_CONNECTOR_SPI
+#define DRM_MODE_CONNECTOR_SPI 19
+#endif
+#ifndef DRM_MODE_CONNECTOR_USB
+#define DRM_MODE_CONNECTOR_USB 20
+#endif
 
 static const map<int, string> connector_names = {
 	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
@@ -35,6 +44,9 @@ static const map<int, string> connector_names = {
 	{ DRM_MODE_CONNECTOR_VIRTUAL, "Virtual" },
 	{ DRM_MODE_CONNECTOR_DSI, "DSI" },
 	{ DRM_MODE_CONNECTOR_DPI, "DPI" },
+	{ DRM_MODE_CONNECTOR_WRITEBACK, "Writeback" },
+	{ DRM_MODE_CONNECTOR_SPI, "SPI" },
+	{ DRM_MODE_CONNECTOR_USB, "USB" },
 };
 
 static const map<int, string> connection_str = {

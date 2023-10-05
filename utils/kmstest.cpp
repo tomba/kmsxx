@@ -835,7 +835,9 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 
 	// XXX DRM framework doesn't allow moving an active plane from one crtc to another.
 	// See drm_atomic.c::plane_switching_crtc().
-	// For the time being, disable all crtcs and planes here.
+	// For the time being, try and disable all crtcs and planes here.
+	// Do not check the return value as some simple displays don't support the crtc being
+	// enabled but the primary plane being disabled.
 
 	AtomicReq disable_req(card);
 
@@ -856,9 +858,7 @@ static void set_crtcs_n_planes_atomic(Card& card, const vector<OutputInfo>& outp
 					       { "CRTC_ID", 0 },
 				       });
 
-	r = disable_req.commit_sync(true);
-	if (r)
-		EXIT("Atomic commit failed when disabling: %d\n", r);
+	disable_req.commit_sync(true);
 
 	// Keep blobs here so that we keep ref to them until we have committed the req
 	vector<unique_ptr<Blob>> blobs;

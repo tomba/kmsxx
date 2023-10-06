@@ -27,7 +27,7 @@ pykms_sources = files([
     'pykms.cpp',
 ])
 
-if get_option('utils')
+if get_option('libutils')
     pykms_sources += files([
         'pykmsutil.cpp',
     ])
@@ -45,7 +45,7 @@ pykms_deps = [
     pybind11_dep,
 ]
 
-if get_option('utils')
+if get_option('libutils')
     pykms_deps += [ libkmsxxutil_dep ]
 endif
 

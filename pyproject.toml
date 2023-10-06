@@ -1,0 +1,26 @@
+[build-system]
+build-backend = 'mesonpy'
+requires = ['meson-python', 'pybind11']
+
+[project]
+name = 'pykms'
+version = '0.0.0a1'
+description = 'kms++ python bindings'
+readme = 'README.md'
+requires-python = '>=3.10'
+
+#[project.urls]
+#Source = "https://github.com/will-v-pi/pykms"
+#"kms++ Homepage" = "https://github.com/tomba/kmsxx"
+
+#[tool.meson-python.args]
+#setup = [
+#    '-Drevision=a4002d2'
+#]
+
+[tool.cibuildwheel]
+
+manylinux-x86_64-image = "manylinux_2_28"
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && yum install -y fmt-devel"

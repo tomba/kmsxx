@@ -13,10 +13,10 @@ requires-python = '>=3.10'
 #Source = "https://github.com/will-v-pi/pykms"
 #"kms++ Homepage" = "https://github.com/tomba/kmsxx"
 
-#[tool.meson-python.args]
-#setup = [
-#    '-Drevision=a4002d2'
-#]
+[tool.meson-python.args]
+setup = [
+    '-Dutils=false'
+]
 
 [tool.cibuildwheel]
 

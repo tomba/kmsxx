@@ -54,7 +54,7 @@ pykms_args = [ '-fvisibility=hidden' ]
 
 pykms = py.extension_module('pykms',
                       pykms_sources,
-                      install : false,
+                      install : true,
                       #                      install_dir : destdir,
                       #                      name_prefix : '',
                       dependencies : pykms_deps,

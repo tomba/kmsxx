@@ -17,8 +17,8 @@ jobs:
       # Used to host cibuildwheel
       - uses: actions/setup-python@v3
 
-      - name: install deps
-        run: sudo apt install -y meson ninja-build libdrm-dev libevdev-dev libfmt-dev
+#      - name: install deps
+#        run: sudo apt install -y meson ninja-build libdrm-dev libevdev-dev libfmt-dev
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.16.2

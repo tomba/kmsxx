@@ -28,19 +28,20 @@ install = ['--tags=runtime,python-runtime']
 
 archs = ['x86_64', 'aarch64']
 
-skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x"
+skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x *-musllinux*"
 
 manylinux-x86_64-image = "manylinux_2_28"
-manylinux-i686-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
-manylinux-ppc64le-image = "manylinux_2_28"
-manylinux-s390x-image = "manylinux_2_28"
 
-manylinux-pypy_x86_64-image = "manylinux_2_28"
-manylinux-pypy_i686-image = "manylinux_2_28"
-manylinux-pypy_aarch64-image = "manylinux_2_28"
+#manylinux-i686-image = "manylinux_2_28"
+#manylinux-ppc64le-image = "manylinux_2_28"
+#manylinux-s390x-image = "manylinux_2_28"
 
-build-verbosity = "3"
+#manylinux-pypy_x86_64-image = "manylinux_2_28"
+#manylinux-pypy_i686-image = "manylinux_2_28"
+#manylinux-pypy_aarch64-image = "manylinux_2_28"
+
+#build-verbosity = "3"
 
 
 #[tool.cibuildwheel.linux]

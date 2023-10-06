@@ -46,8 +46,7 @@ libkmsxxutil = library('kms++util',
                        install : true,
                        include_directories : private_includes,
                        dependencies : libkmsxxutil_deps,
-                       cpp_args : libkmsxxutil_args,
-                       soversion : 0)
+                       cpp_args : libkmsxxutil_args)
 
 libkmsxxutil_dep = declare_dependency(include_directories : public_includes,
                                       link_with : libkmsxxutil)

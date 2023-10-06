@@ -50,7 +50,8 @@ if get_option('libutils')
     pykms_deps += [ libkmsxxutil_dep ]
 endif
 
-pykms_args = [ '-fvisibility=hidden' ]
+pykms_args = []
+#pykms_args = [ '-fvisibility=hidden' ]
 
 pykms = py.extension_module('pykms',
                       pykms_sources,
@@ -59,4 +60,3 @@ pykms = py.extension_module('pykms',
                       #                      name_prefix : '',
                       dependencies : pykms_deps,
                       cpp_args : pykms_args)
-

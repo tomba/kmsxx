@@ -17,13 +17,15 @@ requires-python = '>=3.10'
 [tool.meson-python.args]
 setup = [
     '-Dutils=false',
-#    '--default-library=static',
+    '--default-library=static',
 ]
 
 install = ['--tags=runtime,python-runtime']
 
 [tool.cibuildwheel]
 manylinux-x86_64-image = "manylinux_2_28"
+#skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x"
+build-verbosity = "3"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && yum install -y fmt-devel"

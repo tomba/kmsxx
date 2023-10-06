@@ -16,6 +16,6 @@ jobs:
     - name: install deps
       run: sudo apt install -y meson ninja-build libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
     - name: configure
-      run: meson -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+      run: meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
     - name: build
       run: ninja -v -C build

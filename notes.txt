@@ -1,0 +1,7 @@
+
+pip install .
+
+pip wheel .  --wheel-dir=built_wheel --no-deps --no-clean -v --config-settings=builddir="wbuild"
+
+python3 -m cibuildwheel --output-dir wheelhouse --platform=linux
+

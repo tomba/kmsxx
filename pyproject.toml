@@ -4,7 +4,7 @@ requires = ['meson-python', 'pybind11']
 
 [project]
 name = 'pykms'
-version = '0.0.0a1'
+version = '0.0.0'
 description = 'kms++ python bindings'
 readme = 'README.md'
 requires-python = '>=3.10'
@@ -13,13 +13,16 @@ requires-python = '>=3.10'
 #Source = "https://github.com/will-v-pi/pykms"
 #"kms++ Homepage" = "https://github.com/tomba/kmsxx"
 
+
 [tool.meson-python.args]
 setup = [
-    '-Dutils=false'
+    '-Dutils=false',
+#    '--default-library=static',
 ]
 
-[tool.cibuildwheel]
+install = ['--tags=runtime,python-runtime']
 
+[tool.cibuildwheel]
 manylinux-x86_64-image = "manylinux_2_28"
 
 [tool.cibuildwheel.linux]

@@ -75,13 +75,14 @@ libkmsxx = library('kms++',
                    install : true,
                    include_directories : private_includes,
                    dependencies : libkmsxx_deps,
-                   version : meson.project_version())
+#                   version : meson.project_version(),
+                   soversion : 0)
 
 
 libkmsxx_dep = declare_dependency(include_directories : public_includes,
                                   link_with : libkmsxx)
 
-install_headers(public_headers, subdir : 'kms++')
+#install_headers(public_headers, subdir : 'kms++')
 
 if libdrmomap_dep.found()
     install_headers(public_headers_omap, subdir : 'kms++/omap')

@@ -22,7 +22,7 @@ setup = [
 
 install = ['--tags=runtime,python-runtime']
 
-compile = ['-v']
+#compile = ['-v']
 
 [tool.cibuildwheel]
 manylinux-x86_64-image = "manylinux_2_28"

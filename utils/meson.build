@@ -1,6 +1,14 @@
-if not get_option('libutils')
-    error('"utils" option requires "libutils" option enabled')
+if not get_option('utils')
+    utils_enabled = false
+    subdir_done()
 endif
+
+if not get_option('libutils')
+    utils_enabled = false
+    subdir_done()
+endif
+
+utils_enabled = true
 
 common_deps = [ libkmsxx_dep, libkmsxxutil_dep, libfmt_dep ]
 

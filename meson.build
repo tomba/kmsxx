@@ -47,7 +47,7 @@ summary({
             'kms++utils library': libutils_enabled,
             'Python bindings': pybindings_enabled,
             'kmscube': kmscube_enabled,
-            'Utilities': libutils_enabled,
+            'Utilities': utils_enabled,
         },
         section : 'Configuration',
         bool_yn : true)

@@ -22,6 +22,8 @@ setup = [
 
 install = ['--tags=runtime,python-runtime']
 
+compile = ['-v']
+
 [tool.cibuildwheel]
 manylinux-x86_64-image = "manylinux_2_28"
 #skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x"

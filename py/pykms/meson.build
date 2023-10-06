@@ -59,4 +59,12 @@ pykms = py.extension_module('pykms',
                       #                      install_dir : destdir,
                       #                      name_prefix : '',
                       dependencies : pykms_deps,
-                      cpp_args : pykms_args)
+                      cpp_args : pykms_args,
+                      subdir : 'pykms')
+
+# Copy __init__.py to build dir so that we can run without installing
+configure_file(input: '__init__.py', output: '__init__.py', copy: true)
+
+py.install_sources('__init__.py',
+                    pure : false,
+                    subdir : 'pykms')

@@ -25,9 +25,29 @@ install = ['--tags=runtime,python-runtime']
 #compile = ['-v']
 
 [tool.cibuildwheel]
+
+archs = ['x86_64', 'aarch64']
+
+skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x"
+
 manylinux-x86_64-image = "manylinux_2_28"
-#skip = "cp36-* cp37-* cp38-* pp* *_ppc64le *_i686 *_s390x"
+manylinux-i686-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+manylinux-ppc64le-image = "manylinux_2_28"
+manylinux-s390x-image = "manylinux_2_28"
+
+manylinux-pypy_x86_64-image = "manylinux_2_28"
+manylinux-pypy_i686-image = "manylinux_2_28"
+manylinux-pypy_aarch64-image = "manylinux_2_28"
+
 build-verbosity = "3"
+
+
+#[tool.cibuildwheel.linux]
+#manylinux-x86_64-image = "manylinux2014"
+#manylinux-aarch64-image = "manylinux2014"
+#before-build = "bash {project}/tools/wheels/cibw_before_build_linux.sh {project}"
+
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && yum install -y fmt-devel"

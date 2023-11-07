@@ -172,7 +172,18 @@ void init_pykmsbase(py::module& m)
 		// Note that this means that python thinks we don't derive from DrmObject
 		.def_property_readonly("id", &DrmObject::id)
 		.def_property_readonly("idx", &DrmObject::idx)
-		.def_property_readonly("card", &DrmObject::card);
+		.def_property_readonly("card", &DrmObject::card)
+		.def("map", [](Framebuffer& self, uint32_t plane) {
+			const auto& format_info = get_pixel_format_info(self.format());
+
+			if (plane >= format_info.num_planes)
+				throw runtime_error("map: bad plane number");
+
+			array<uint32_t, 2> shape{ self.height(), self.width() * format_info.planes[plane].bitspp / 8 };
+			array<uint32_t, 2> strides{ self.stride(plane), sizeof(uint8_t) };
+
+			return py::memoryview::from_buffer(self.map(plane), shape, strides);
+		});
 
 	py::class_<DumbFramebuffer, Framebuffer>(m, "DumbFramebuffer")
 		.def(py::init<Card&, uint32_t, uint32_t, const string&>(),

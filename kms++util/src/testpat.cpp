@@ -173,7 +173,7 @@ static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 
 	// Create the mmaps before starting the threads
 	for (unsigned i = 0; i < fb.num_planes(); ++i)
-		fb.map(0);
+		fb.map(i);
 
 	unsigned num_threads = thread::hardware_concurrency();
 	vector<thread> workers;

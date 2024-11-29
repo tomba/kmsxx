@@ -11,6 +11,7 @@
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
+#include "cube.h"
 #include "cube-egl.h"
 #include "cube-gles2.h"
 
@@ -250,6 +251,10 @@ private:
 		if (m_plane)
 			m_surface2->free_prev();
 
+		if (s_num_frames && m_frame_num >= s_num_frames) {
+			s_need_exit = true;
+		}
+
 		if (s_need_exit)
 			return;
 
@@ -289,7 +294,7 @@ private:
 		s_flip_pending++;
 	}
 
-	int m_frame_num;
+	unsigned m_frame_num;
 	chrono::steady_clock::time_point m_t1;
 
 	Connector* m_connector;

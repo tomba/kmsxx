@@ -49,10 +49,10 @@ private:
 class GbmSurface
 {
 public:
-	GbmSurface(GbmDevice& gdev, int width, int height)
+	GbmSurface(GbmDevice& gdev, int width, int height, uint32_t format)
 	{
 		m_surface = gbm_surface_create(gdev.handle(), width, height,
-					       GBM_FORMAT_XRGB8888,
+					       format,
 					       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
 		FAIL_IF(!m_surface, "failed to create gbm surface");
 	}
@@ -93,7 +93,7 @@ public:
 		: card(card), egl(egl), m_width(width), m_height(height),
 		  bo_prev(0), bo_next(0)
 	{
-		gsurface = unique_ptr<GbmSurface>(new GbmSurface(gdev, width, height));
+		gsurface = unique_ptr<GbmSurface>(new GbmSurface(gdev, width, height, egl.native_visual_id()));
 		esurface = eglCreateWindowSurface(egl.display(), egl.config(), gsurface->handle(), NULL);
 		FAIL_IF(esurface == EGL_NO_SURFACE, "failed to create egl surface");
 	}
@@ -319,7 +319,7 @@ void main_gbm()
 	FAIL_IF(!card.has_atomic(), "No atomic modesetting");
 
 	GbmDevice gdev(card);
-	EglState egl(gdev.handle());
+	EglState egl(gdev.handle(), GBM_FORMAT_XRGB8888);
 
 	ResourceManager resman(card);
 

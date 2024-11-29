@@ -22,7 +22,10 @@ static void print_egl_config(EGLDisplay dpy, EGLConfig cfg)
 	       getconf(EGL_NATIVE_VISUAL_TYPE));
 }
 
-EglState::EglState(void* native_display)
+EglState::EglState(void* native_display) : EglState(native_display, 0) {}
+
+EglState::EglState(void* native_display, EGLint native_visual_id)
+	: m_native_visual_id(native_visual_id)
 {
 	EGLBoolean b;
 	EGLint major, minor, n;
@@ -60,11 +63,11 @@ EglState::EglState(void* native_display)
 	b = eglBindAPI(EGL_OPENGL_ES_API);
 	FAIL_IF(!b, "failed to bind api EGL_OPENGL_ES_API");
 
-	if (s_verbose) {
-		EGLint numConfigs;
-		b = eglGetConfigs(m_display, nullptr, 0, &numConfigs);
-		FAIL_IF(!b, "failed to get number of configs");
+	EGLint numConfigs;
+	b = eglGetConfigs(m_display, nullptr, 0, &numConfigs);
+	FAIL_IF(!b, "failed to get number of configs");
 
+	if (s_verbose) {
 		EGLConfig configs[numConfigs];
 		b = eglGetConfigs(m_display, configs, numConfigs, &numConfigs);
 		FAIL_IF(!b, "failed to get configs");
@@ -75,9 +78,24 @@ EglState::EglState(void* native_display)
 			print_egl_config(m_display, configs[i]);
 	}
 
-	b = eglChooseConfig(m_display, config_attribs, &m_config, 1, &n);
-	FAIL_IF(!b || n != 1, "failed to choose config");
+	std::vector<EGLConfig> configs(numConfigs);
+	b = eglChooseConfig(m_display, config_attribs, configs.data(), numConfigs, &n);
+	FAIL_IF(!b || n < 1, "failed to choose config");
 
+	// elgChooseConfig does implement matching by EGL_NATIVE_VISUAL_ID, do a manual
+	// loop. Picks the first returned if native_visual_id is not set.
+	for (const auto& config : configs) {
+		EGLint id;
+		b = eglGetConfigAttrib(m_display, config, EGL_NATIVE_VISUAL_ID, &id);
+		if(!b) {
+			printf("failed to get native visual id\n");
+			continue;
+		}
+		if(id == native_visual_id || !native_visual_id) {
+			m_config = config;
+			break;
+		}
+	}
 	if (s_verbose) {
 		printf("Chosen config:\n");
 		print_egl_config(m_display, m_config);

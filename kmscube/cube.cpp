@@ -32,7 +32,7 @@ using namespace std;
 
 bool s_verbose;
 bool s_fullscreen;
-unsigned s_num_frames;
+unsigned s_num_frames = 0;
 
 int main(int argc, char* argv[])
 {

@@ -180,6 +180,8 @@ static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 
 	unsigned part = (fb.height() / num_threads) & ~1;
 
+	std::vector<std::exception_ptr> errors(num_threads);
+
 	for (unsigned n = 0; n < num_threads; ++n) {
 		unsigned start = n * part;
 		unsigned end = start + part;
@@ -187,11 +189,22 @@ static void draw_test_pattern_impl(IFramebuffer& fb, YUVType yuvt)
 		if (n == num_threads - 1)
 			end = fb.height();
 
-		workers.push_back(thread([&fb, start, end, yuvt]() { draw_test_pattern_part(fb, start, end, yuvt); }));
+		workers.push_back(thread([&fb, start, end, yuvt, &error = errors[n]]() {
+			try {
+				draw_test_pattern_part(fb, start, end, yuvt);
+			} catch(...) {
+				error = std::current_exception();
+			}
+		}));
 	}
 
 	for (thread& t : workers)
 		t.join();
+
+	auto i = std::find_if(errors.begin(), errors.end(), [](auto& e) { return e != nullptr; });
+	if (i != errors.end())
+		std::rethrow_exception(*i);
+
 #else
 	draw_test_pattern_part(fb, 0, fb.height(), yuvt);
 #endif

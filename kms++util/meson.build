@@ -28,7 +28,7 @@ public_headers = [
     'inc/kms++util/resourcemanager.h',
 ]
 
-private_includes = include_directories('src', 'inc')
+private_includes = include_directories('src', 'inc', '../ext/mdspan/include')
 public_includes = include_directories('inc')
 
 thread_dep = dependency('threads', required : false)

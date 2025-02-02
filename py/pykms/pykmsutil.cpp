@@ -46,7 +46,7 @@ void init_pykmsutils(py::module& m)
 
 	// Use lambdas to handle IFramebuffer
 	m.def(
-		"draw_test_pattern", [](Framebuffer& fb, YUVType yuvt) { draw_test_pattern(fb, yuvt); },
+		"draw_test_pattern", [](Framebuffer& fb, YUVType yuvt) { draw_test_pattern(fb); },
 		py::arg("fb"),
 		py::arg("yuvt") = YUVType::BT601_Lim);
 	m.def("draw_color_bar", [](Framebuffer& fb, int old_xpos, int xpos, int width) {

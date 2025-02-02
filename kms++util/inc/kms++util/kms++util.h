@@ -29,7 +29,19 @@ void draw_text(IFramebuffer& buf, uint32_t x, uint32_t y, const std::string& str
 
 void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width);
 
-void draw_test_pattern(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
+void draw_test_pattern_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
+void draw_test_pattern_single_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
+void draw_test_pattern_multi_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
+
+struct TestPatternOptions {
+	std::string pattern;
+	RecStandard rec = RecStandard::BT709;
+	ColorRange range = ColorRange::Limited;
+};
+
+void draw_test_pattern(IFramebuffer& fb, const TestPatternOptions& options = {});
+void draw_test_pattern_single(IFramebuffer& fb, const TestPatternOptions& options = {});
+void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options = {});
 } // namespace kms
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

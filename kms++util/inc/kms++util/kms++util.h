@@ -3,6 +3,7 @@
 #include <kms++/kms++.h>
 
 #include <kms++util/color.h>
+#include <kms++util/color16.h>
 #include <kms++util/strhelpers.h>
 #include <kms++util/cpuframebuffer.h>
 #include <kms++util/extcpuframebuffer.h>

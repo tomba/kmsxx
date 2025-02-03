@@ -19,6 +19,7 @@ libkmsxxutil_sources = files([
 
 public_headers = [
     'inc/kms++util/color.h',
+    'inc/kms++util/color16.h',
     'inc/kms++util/kms++util.h',
     'inc/kms++util/stopwatch.h',
     'inc/kms++util/cpuframebuffer.h',

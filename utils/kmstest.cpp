@@ -70,6 +70,7 @@ static bool s_cvt_v2;
 static bool s_cvt_vid_opt;
 static unsigned s_max_flips;
 static bool s_print_crc;
+static TestPatternOptions s_pattern_options;
 
 __attribute__((unused)) static void print_regex_match(smatch sm)
 {
@@ -408,6 +409,9 @@ static const char* usage_str =
 	"      --flip[=max]          Do page flipping for each output with an optional maximum flips count\n"
 	"      --sync                Synchronize page flipping\n"
 	"      --crc                 Print CRC16 for framebuffer contents\n"
+	"  -T, --pattern=PAT         test, white, black, red, green, blue, smpte\n"
+	"      --rec=REC             bt601, bt709, bt2020\n"
+	"      --range=RANGE         limited, full\n"
 	"\n"
 	"<connector>, <crtc> and <plane> can be given by index (<idx>) or id (@<id>).\n"
 	"<connector> can also be given by name.\n"
@@ -510,6 +514,35 @@ static vector<Arg> parse_cmdline(int argc, char** argv)
 		}),
 		Option("|crc", []() {
 			s_print_crc = true;
+		}),
+		Option("T|pattern=", [&](string s) {
+			s_pattern_options.pattern = s;
+		}),
+		Option("|rec=", [&](string s) {
+			s = to_lower(s);
+
+			if (s == "bt601")
+				s_pattern_options.rec = RecStandard::BT601;
+			else if (s == "bt709")
+				s_pattern_options.rec = RecStandard::BT709;
+			else if (s == "bt2020")
+				s_pattern_options.rec = RecStandard::BT2020;
+			else {
+				usage();
+				exit(-1);
+			}
+		}),
+		Option("|range=", [&](string s) {
+			s = to_lower(s);
+
+			if (s == "limited")
+				s_pattern_options.range = ColorRange::Limited;
+			else if (s == "full")
+				s_pattern_options.range = ColorRange::Full;
+			else {
+				usage();
+				exit(-1);
+			}
 		}),
 		Option("h|help", [&]() {
 			usage();
@@ -771,11 +804,11 @@ static void draw_test_patterns(const vector<OutputInfo>& outputs)
 {
 	for (const OutputInfo& o : outputs) {
 		for (auto fb : o.legacy_fbs)
-			draw_test_pattern(*fb);
+			draw_test_pattern(*fb, s_pattern_options);
 
 		for (const PlaneInfo& p : o.planes)
 			for (auto fb : p.fbs)
-				draw_test_pattern(*fb);
+				draw_test_pattern(*fb, s_pattern_options);
 	}
 }
 

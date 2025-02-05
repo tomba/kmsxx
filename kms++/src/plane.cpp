@@ -40,8 +40,10 @@ bool Plane::supports_format(PixelFormat fmt) const
 {
 	auto p = m_priv->drm_plane;
 
+	uint32_t fcc = pixel_format_to_fourcc(fmt);
+
 	for (unsigned i = 0; i < p->count_formats; ++i)
-		if ((uint32_t)fmt == p->formats[i])
+		if (fcc == p->formats[i])
 			return true;
 
 	return false;
@@ -94,7 +96,7 @@ vector<PixelFormat> Plane::get_formats() const
 	vector<PixelFormat> r;
 
 	for (unsigned i = 0; i < p->count_formats; ++i)
-		r.push_back((PixelFormat)p->formats[i]);
+		r.push_back(fourcc_to_pixel_format(p->formats[i]));
 
 	return r;
 }

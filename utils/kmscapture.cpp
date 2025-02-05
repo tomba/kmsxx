@@ -107,7 +107,7 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc* crtc, Plane* plane,
 	uint32_t best_h = 240;
 
 	struct v4l2_frmsizeenum v4lfrms = {};
-	v4lfrms.pixel_format = (uint32_t)pixfmt;
+	v4lfrms.pixel_format = pixel_format_to_fourcc(pixfmt);
 	while (ioctl(m_fd, VIDIOC_ENUM_FRAMESIZES, &v4lfrms) == 0) {
 		if (v4lfrms.type != V4L2_FRMSIZE_TYPE_DISCRETE) {
 			v4lfrms.index++;
@@ -142,7 +142,7 @@ CameraPipeline::CameraPipeline(int cam_fd, Card& card, Crtc* crtc, Plane* plane,
 	r = ioctl(m_fd, VIDIOC_G_FMT, &v4lfmt);
 	ASSERT(r == 0);
 
-	v4lfmt.fmt.pix.pixelformat = (uint32_t)pixfmt;
+	v4lfmt.fmt.pix.pixelformat = pixel_format_to_fourcc(pixfmt);
 	v4lfmt.fmt.pix.width = m_in_width;
 	v4lfmt.fmt.pix.height = m_in_height;
 

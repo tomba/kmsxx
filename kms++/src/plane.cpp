@@ -96,7 +96,11 @@ vector<PixelFormat> Plane::get_formats() const
 	vector<PixelFormat> r;
 
 	for (unsigned i = 0; i < p->count_formats; ++i)
-		r.push_back(fourcc_to_pixel_format(p->formats[i]));
+		try {
+			r.push_back(fourcc_to_pixel_format(p->formats[i]));
+		} catch (const std::invalid_argument&) {
+			// skip formats that are not supported
+		}
 
 	return r;
 }

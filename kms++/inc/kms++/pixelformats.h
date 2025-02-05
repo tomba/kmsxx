@@ -26,84 +26,70 @@ constexpr std::string fourcc_to_str(uint32_t fourcc)
 	return std::string(buf, 4);
 }
 
-enum class PixelFormat : uint32_t {
+enum class PixelFormat {
 	Undefined = 0,
 
-	NV12 = str_to_fourcc("NV12"),
-	NV21 = str_to_fourcc("NV21"),
-	NV16 = str_to_fourcc("NV16"),
-	NV61 = str_to_fourcc("NV61"),
+	NV12,
+	NV21,
+	NV16,
+	NV61,
 
-	YUV420 = str_to_fourcc("YU12"),
-	YVU420 = str_to_fourcc("YV12"),
-	YUV422 = str_to_fourcc("YU16"),
-	YVU422 = str_to_fourcc("YV16"),
-	YUV444 = str_to_fourcc("YU24"),
-	YVU444 = str_to_fourcc("YV24"),
+	YUV420,
+	YVU420,
+	YUV422,
+	YVU422,
+	YUV444,
+	YVU444,
 
-	UYVY = str_to_fourcc("UYVY"),
-	YUYV = str_to_fourcc("YUYV"),
-	YVYU = str_to_fourcc("YVYU"),
-	VYUY = str_to_fourcc("VYUY"),
+	UYVY,
+	YUYV,
+	YVYU,
+	VYUY,
 
-	Y210 = str_to_fourcc("Y210"),
-	Y212 = str_to_fourcc("Y212"),
-	Y216 = str_to_fourcc("Y216"),
+	Y210,
+	Y212,
+	Y216,
 
-	XRGB8888 = str_to_fourcc("XR24"),
-	XBGR8888 = str_to_fourcc("XB24"),
-	RGBX8888 = str_to_fourcc("RX24"),
-	BGRX8888 = str_to_fourcc("BX24"),
+	XRGB8888,
+	XBGR8888,
+	RGBX8888,
+	BGRX8888,
 
-	ARGB8888 = str_to_fourcc("AR24"),
-	ABGR8888 = str_to_fourcc("AB24"),
-	RGBA8888 = str_to_fourcc("RA24"),
-	BGRA8888 = str_to_fourcc("BA24"),
+	ARGB8888,
+	ABGR8888,
+	RGBA8888,
+	BGRA8888,
 
-	RGB888 = str_to_fourcc("RG24"),
-	BGR888 = str_to_fourcc("BG24"),
+	RGB888,
+	BGR888,
 
-	RGB332 = str_to_fourcc("RGB8"),
+	RGB332,
 
-	RGB565 = str_to_fourcc("RG16"),
-	BGR565 = str_to_fourcc("BG16"),
+	RGB565,
+	BGR565,
 
-	XRGB4444 = str_to_fourcc("XR12"),
-	XRGB1555 = str_to_fourcc("XR15"),
+	XRGB4444,
+	XRGB1555,
 
-	ARGB4444 = str_to_fourcc("AR12"),
-	ARGB1555 = str_to_fourcc("AR15"),
+	ARGB4444,
+	ARGB1555,
 
-	XRGB2101010 = str_to_fourcc("XR30"),
-	XBGR2101010 = str_to_fourcc("XB30"),
-	RGBX1010102 = str_to_fourcc("RX30"),
-	BGRX1010102 = str_to_fourcc("BX30"),
+	XRGB2101010,
+	XBGR2101010,
+	RGBX1010102,
+	BGRX1010102,
 
-	ARGB2101010 = str_to_fourcc("AR30"),
-	ABGR2101010 = str_to_fourcc("AB30"),
-	RGBA1010102 = str_to_fourcc("RA30"),
-	BGRA1010102 = str_to_fourcc("BA30"),
+	ARGB2101010,
+	ABGR2101010,
+	RGBA1010102,
+	BGRA1010102,
 };
 
-inline PixelFormat fourcc_to_pixel_format(uint32_t fourcc)
-{
-	return (PixelFormat)fourcc;
-}
+PixelFormat fourcc_to_pixel_format(uint32_t fourcc);
+uint32_t pixel_format_to_fourcc(PixelFormat f);
 
-inline uint32_t pixel_format_to_fourcc(PixelFormat f)
-{
-	return (uint32_t)f;
-}
-
-inline PixelFormat fourcc_str_to_pixel_format(const std::string& fourcc)
-{
-	return (PixelFormat)str_to_fourcc(fourcc.c_str());
-}
-
-inline std::string pixel_format_to_fourcc_str(PixelFormat f)
-{
-	return fourcc_to_str((uint32_t)f);
-}
+PixelFormat fourcc_str_to_pixel_format(const std::string& fourcc);
+std::string pixel_format_to_fourcc_str(PixelFormat f);
 
 enum class PixelColorType {
 	Undefined,

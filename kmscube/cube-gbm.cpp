@@ -133,7 +133,7 @@ public:
 		uint32_t height = gbm_bo_get_height(bo);
 		uint32_t stride = gbm_bo_get_stride(bo);
 		uint32_t handle = gbm_bo_get_handle(bo).u32;
-		PixelFormat format = (PixelFormat)gbm_bo_get_format(bo);
+		PixelFormat format = fourcc_to_pixel_format(gbm_bo_get_format(bo));
 
 		vector<uint32_t> handles{ handle };
 		vector<uint32_t> strides{ stride };

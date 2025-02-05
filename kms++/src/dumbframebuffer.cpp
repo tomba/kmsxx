@@ -75,7 +75,7 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 		m_planes[3].offset,
 	};
 	uint32_t id;
-	r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format,
+	r = drmModeAddFB2(card.fd(), width, height, pixel_format_to_fourcc(format),
 			  bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));

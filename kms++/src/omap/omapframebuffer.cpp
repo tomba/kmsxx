@@ -133,7 +133,7 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 	uint32_t pitches[4] = { m_planes[0].stride, m_planes[1].stride };
 	uint32_t offsets[4] = { m_planes[0].offset, m_planes[1].offset };
 	uint32_t id;
-	int r = drmModeAddFB2(card().fd(), width, height, (uint32_t)format,
+	int r = drmModeAddFB2(card().fd(), width, height, pixel_format_to_fourcc(format),
 			      bo_handles, pitches, offsets, &id, 0);
 	if (r)
 		throw invalid_argument(string("drmModeAddFB2 failed: ") + strerror(errno));

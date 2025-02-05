@@ -44,10 +44,10 @@ ExtFramebuffer::ExtFramebuffer(Card& card, uint32_t width, uint32_t height, Pixe
 	int r;
 
 	if (modifiers.empty()) {
-		r = drmModeAddFB2(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), &id, 0);
+		r = drmModeAddFB2(card.fd(), width, height, pixel_format_to_fourcc(format), handles.data(), pitches.data(), offsets.data(), &id, 0);
 	} else {
 		modifiers.resize(4);
-		r = drmModeAddFB2WithModifiers(card.fd(), width, height, (uint32_t)format, handles.data(), pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
+		r = drmModeAddFB2WithModifiers(card.fd(), width, height, pixel_format_to_fourcc(format), handles.data(), pitches.data(), offsets.data(), modifiers.data(), &id, DRM_MODE_FB_MODIFIERS);
 	}
 
 	if (r)

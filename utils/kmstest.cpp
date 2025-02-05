@@ -361,7 +361,7 @@ static void parse_fb(Card& card, const string& fb_str, OutputInfo* output, Plane
 		if (sm[2].matched)
 			h = stoul(sm[2]);
 		if (sm[3].matched)
-			format = FourCCToPixelFormat(sm[3]);
+			format = fourcc_str_to_pixel_format(sm[3]);
 	}
 
 	vector<Framebuffer*> v;
@@ -747,7 +747,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 
 		if (!o.legacy_fbs.empty()) {
 			auto fb = o.legacy_fbs[0];
-			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(), PixelFormatToFourCC(fb->format()));
+			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(), pixel_format_to_fourcc_str(fb->format()));
 		}
 
 		for (unsigned j = 0; j < o.planes.size(); ++j) {
@@ -760,7 +760,7 @@ static void print_outputs(const vector<OutputInfo>& outputs)
 			fmt::print("\n");
 
 			fmt::print("    Fb {} {}x{}-{}\n", fb->id(), fb->width(), fb->height(),
-				   PixelFormatToFourCC(fb->format()));
+				   pixel_format_to_fourcc_str(fb->format()));
 			if (s_print_crc)
 				fmt::print("      CRC16 {}\n", fb_crc(fb).c_str());
 		}

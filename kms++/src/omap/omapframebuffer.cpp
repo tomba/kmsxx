@@ -26,7 +26,7 @@ using namespace std;
 namespace kms
 {
 OmapFramebuffer::OmapFramebuffer(OmapCard& card, uint32_t width, uint32_t height, const string& fourcc, Flags flags)
-	: OmapFramebuffer(card, width, height, FourCCToPixelFormat(fourcc), flags)
+	: OmapFramebuffer(card, width, height, fourcc_str_to_pixel_format(fourcc), flags)
 {
 }
 

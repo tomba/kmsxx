@@ -17,7 +17,7 @@ namespace kms
 {
 DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height, const string& format,
 				     vector<int> fds, vector<uint32_t> pitches, vector<uint32_t> offsets, vector<uint64_t> modifiers)
-	: DmabufFramebuffer(card, width, height, FourCCToPixelFormat(format), fds, pitches, offsets, modifiers)
+	: DmabufFramebuffer(card, width, height, fourcc_str_to_pixel_format(format), fds, pitches, offsets, modifiers)
 {
 }
 

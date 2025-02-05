@@ -20,7 +20,7 @@ using namespace std;
 namespace kms
 {
 DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, const string& fourcc)
-	: DumbFramebuffer(card, width, height, FourCCToPixelFormat(fourcc))
+	: DumbFramebuffer(card, width, height, fourcc_str_to_pixel_format(fourcc))
 {
 }
 

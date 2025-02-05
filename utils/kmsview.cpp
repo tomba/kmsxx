@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 	uint32_t h = stoi(params[2]);
 	string modestr = params[3];
 
-	auto pixfmt = FourCCToPixelFormat(modestr);
+	auto pixfmt = fourcc_str_to_pixel_format(modestr);
 
 	ifstream is(filename, ifstream::binary);
 

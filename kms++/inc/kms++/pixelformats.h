@@ -7,7 +7,7 @@
 
 namespace kms
 {
-constexpr uint32_t MakeFourCC(const std::string& fourcc)
+constexpr uint32_t str_to_fourcc(const std::string& fourcc)
 {
 	if (fourcc.empty())
 		return 0;
@@ -15,80 +15,94 @@ constexpr uint32_t MakeFourCC(const std::string& fourcc)
 	return fourcc[0] | (fourcc[1] << 8) | (fourcc[2] << 16) | (fourcc[3] << 24);
 }
 
+constexpr std::string fourcc_to_str(uint32_t fourcc)
+{
+	char buf[4] = {
+		(char)((fourcc >> 0) & 0xff),
+		(char)((fourcc >> 8) & 0xff),
+		(char)((fourcc >> 16) & 0xff),
+		(char)((fourcc >> 24) & 0xff),
+	};
+	return std::string(buf, 4);
+}
+
 enum class PixelFormat : uint32_t {
 	Undefined = 0,
 
-	NV12 = MakeFourCC("NV12"),
-	NV21 = MakeFourCC("NV21"),
-	NV16 = MakeFourCC("NV16"),
-	NV61 = MakeFourCC("NV61"),
+	NV12 = str_to_fourcc("NV12"),
+	NV21 = str_to_fourcc("NV21"),
+	NV16 = str_to_fourcc("NV16"),
+	NV61 = str_to_fourcc("NV61"),
 
-	YUV420 = MakeFourCC("YU12"),
-	YVU420 = MakeFourCC("YV12"),
-	YUV422 = MakeFourCC("YU16"),
-	YVU422 = MakeFourCC("YV16"),
-	YUV444 = MakeFourCC("YU24"),
-	YVU444 = MakeFourCC("YV24"),
+	YUV420 = str_to_fourcc("YU12"),
+	YVU420 = str_to_fourcc("YV12"),
+	YUV422 = str_to_fourcc("YU16"),
+	YVU422 = str_to_fourcc("YV16"),
+	YUV444 = str_to_fourcc("YU24"),
+	YVU444 = str_to_fourcc("YV24"),
 
-	UYVY = MakeFourCC("UYVY"),
-	YUYV = MakeFourCC("YUYV"),
-	YVYU = MakeFourCC("YVYU"),
-	VYUY = MakeFourCC("VYUY"),
+	UYVY = str_to_fourcc("UYVY"),
+	YUYV = str_to_fourcc("YUYV"),
+	YVYU = str_to_fourcc("YVYU"),
+	VYUY = str_to_fourcc("VYUY"),
 
-	Y210 = MakeFourCC("Y210"),
-	Y212 = MakeFourCC("Y212"),
-	Y216 = MakeFourCC("Y216"),
+	Y210 = str_to_fourcc("Y210"),
+	Y212 = str_to_fourcc("Y212"),
+	Y216 = str_to_fourcc("Y216"),
 
-	XRGB8888 = MakeFourCC("XR24"),
-	XBGR8888 = MakeFourCC("XB24"),
-	RGBX8888 = MakeFourCC("RX24"),
-	BGRX8888 = MakeFourCC("BX24"),
+	XRGB8888 = str_to_fourcc("XR24"),
+	XBGR8888 = str_to_fourcc("XB24"),
+	RGBX8888 = str_to_fourcc("RX24"),
+	BGRX8888 = str_to_fourcc("BX24"),
 
-	ARGB8888 = MakeFourCC("AR24"),
-	ABGR8888 = MakeFourCC("AB24"),
-	RGBA8888 = MakeFourCC("RA24"),
-	BGRA8888 = MakeFourCC("BA24"),
+	ARGB8888 = str_to_fourcc("AR24"),
+	ABGR8888 = str_to_fourcc("AB24"),
+	RGBA8888 = str_to_fourcc("RA24"),
+	BGRA8888 = str_to_fourcc("BA24"),
 
-	RGB888 = MakeFourCC("RG24"),
-	BGR888 = MakeFourCC("BG24"),
+	RGB888 = str_to_fourcc("RG24"),
+	BGR888 = str_to_fourcc("BG24"),
 
-	RGB332 = MakeFourCC("RGB8"),
+	RGB332 = str_to_fourcc("RGB8"),
 
-	RGB565 = MakeFourCC("RG16"),
-	BGR565 = MakeFourCC("BG16"),
+	RGB565 = str_to_fourcc("RG16"),
+	BGR565 = str_to_fourcc("BG16"),
 
-	XRGB4444 = MakeFourCC("XR12"),
-	XRGB1555 = MakeFourCC("XR15"),
+	XRGB4444 = str_to_fourcc("XR12"),
+	XRGB1555 = str_to_fourcc("XR15"),
 
-	ARGB4444 = MakeFourCC("AR12"),
-	ARGB1555 = MakeFourCC("AR15"),
+	ARGB4444 = str_to_fourcc("AR12"),
+	ARGB1555 = str_to_fourcc("AR15"),
 
-	XRGB2101010 = MakeFourCC("XR30"),
-	XBGR2101010 = MakeFourCC("XB30"),
-	RGBX1010102 = MakeFourCC("RX30"),
-	BGRX1010102 = MakeFourCC("BX30"),
+	XRGB2101010 = str_to_fourcc("XR30"),
+	XBGR2101010 = str_to_fourcc("XB30"),
+	RGBX1010102 = str_to_fourcc("RX30"),
+	BGRX1010102 = str_to_fourcc("BX30"),
 
-	ARGB2101010 = MakeFourCC("AR30"),
-	ABGR2101010 = MakeFourCC("AB30"),
-	RGBA1010102 = MakeFourCC("RA30"),
-	BGRA1010102 = MakeFourCC("BA30"),
+	ARGB2101010 = str_to_fourcc("AR30"),
+	ABGR2101010 = str_to_fourcc("AB30"),
+	RGBA1010102 = str_to_fourcc("RA30"),
+	BGRA1010102 = str_to_fourcc("BA30"),
 };
 
-inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
+inline PixelFormat fourcc_to_pixel_format(uint32_t fourcc)
 {
-	return (PixelFormat)MakeFourCC(fourcc.c_str());
+	return (PixelFormat)fourcc;
 }
 
-inline std::string PixelFormatToFourCC(PixelFormat f)
+inline uint32_t pixel_format_to_fourcc(PixelFormat f)
 {
-	uint32_t v = (uint32_t)f;
+	return (uint32_t)f;
+}
 
-	char buf[4] = { (char)((v >> 0) & 0xff),
-			(char)((v >> 8) & 0xff),
-			(char)((v >> 16) & 0xff),
-			(char)((v >> 24) & 0xff),
-			};
-	return std::string(buf, 4);
+inline PixelFormat fourcc_str_to_pixel_format(const std::string& fourcc)
+{
+	return (PixelFormat)str_to_fourcc(fourcc.c_str());
+}
+
+inline std::string pixel_format_to_fourcc_str(PixelFormat f)
+{
+	return fourcc_to_str((uint32_t)f);
 }
 
 enum class PixelColorType {
@@ -124,8 +138,8 @@ struct PixelFormatInfo {
 				  const std::string& v4l2_4cc, PixelColorType color,
 				  std::tuple<uint8_t, uint8_t> pixel_align,
 				  std::vector<PixelFormatPlaneInfo> planes)
-		: name(name), drm_fourcc(kms::MakeFourCC(drm_fourcc)),
-		  v4l2_4cc(kms::MakeFourCC(v4l2_4cc)), type(color),
+		: name(name), drm_fourcc(kms::str_to_fourcc(drm_fourcc)),
+		  v4l2_4cc(kms::str_to_fourcc(v4l2_4cc)), type(color),
 		  pixel_align(pixel_align), num_planes(planes.size()), planes(planes)
 	{
 	}

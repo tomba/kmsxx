@@ -253,8 +253,8 @@ void init_pykmsbase(py::module& m)
 		.value("RGBA1010102", PixelFormat::RGBA1010102)
 		.value("BGRA1010102", PixelFormat::BGRA1010102);
 
-	m.def("fourcc_to_pixelformat", &FourCCToPixelFormat);
-	m.def("pixelformat_to_fourcc", &PixelFormatToFourCC);
+	m.def("fourcc_to_pixelformat", &fourcc_str_to_pixel_format);
+	m.def("pixelformat_to_fourcc", &pixel_format_to_fourcc_str);
 
 	py::enum_<SyncPolarity>(m, "SyncPolarity")
 		.value("Undefined", SyncPolarity::Undefined)

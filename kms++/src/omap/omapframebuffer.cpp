@@ -67,9 +67,9 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 		uint32_t stride;
 
 		if (!(buffer_flags & Flags::Tiled)) {
-			stride = width * pi.bitspp / 8;
+			stride =  format_info.stride(width, i);
 
-			uint32_t size = stride * height / pi.ysub;
+			uint32_t size = format_info.planesize(stride, height, i);
 
 			bo = omap_bo_new(m_omap_card.dev(), size, flags);
 			if (!bo)
@@ -110,13 +110,13 @@ void OmapFramebuffer::Create(uint32_t width, uint32_t height, PixelFormat format
 				throw invalid_argument("bad bitspertiler");
 			}
 
-			uint32_t width_tiler = width * pi.bitspp / bitspertiler;
+			uint32_t width_tiler = format_info.stride(width, i) / pi.bytes_per_block;
 
 			bo = omap_bo_new_tiled(m_omap_card.dev(), width_tiler, height, flags);
 			if (!bo)
 				throw invalid_argument(string("omap_bo_new_tiled failed: ") + strerror(errno));
 
-			stride = round_up(width * pi.bitspp / 8, PAGE_SIZE);
+			stride = format_info.stride(width, i, PAGE_SIZE);
 		}
 
 		plane.omap_bo = bo;

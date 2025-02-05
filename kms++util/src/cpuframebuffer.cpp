@@ -14,11 +14,10 @@ CPUFramebuffer::CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat form
 	m_num_planes = format_info.num_planes;
 
 	for (unsigned i = 0; i < format_info.num_planes; ++i) {
-		const PixelFormatPlaneInfo& pi = format_info.planes[i];
 		FramebufferPlane& plane = m_planes[i];
 
-		plane.stride = width * pi.bitspp / 8;
-		plane.size = plane.stride * height / pi.ysub;
+		plane.stride = format_info.stride(width, i);
+		plane.size = format_info.planesize(plane.stride, height, i);
 		plane.offset = 0;
 		plane.map = new uint8_t[plane.size];
 	}

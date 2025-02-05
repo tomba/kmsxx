@@ -2,12 +2,16 @@
 
 #include <cstdint>
 #include <string>
-#include <stdexcept>
+#include <tuple>
+#include <vector>
 
 namespace kms
 {
-constexpr uint32_t MakeFourCC(const char* fourcc)
+constexpr uint32_t MakeFourCC(const std::string& fourcc)
 {
+	if (fourcc.empty())
+		return 0;
+
 	return fourcc[0] | (fourcc[1] << 8) | (fourcc[2] << 16) | (fourcc[3] << 24);
 }
 
@@ -88,20 +92,59 @@ inline std::string PixelFormatToFourCC(PixelFormat f)
 }
 
 enum class PixelColorType {
+	Undefined,
 	RGB,
 	YUV,
+	RAW,
 };
 
 struct PixelFormatPlaneInfo {
-	uint8_t bitspp;
-	uint8_t xsub;
-	uint8_t ysub;
+	constexpr PixelFormatPlaneInfo() = default;
+
+	constexpr PixelFormatPlaneInfo(uint8_t bytes_per_block)
+		: bytes_per_block(bytes_per_block), pixels_per_block(1), hsub(1), vsub(1)
+	{
+	}
+
+	constexpr PixelFormatPlaneInfo(uint8_t bytes_per_block, uint8_t pixels_per_block,
+				       uint8_t hsub, uint8_t vsub)
+		: bytes_per_block(bytes_per_block), pixels_per_block(pixels_per_block),
+		  hsub(hsub), vsub(vsub)
+	{
+	}
+
+	uint8_t bytes_per_block;
+	uint8_t pixels_per_block;
+	uint8_t hsub;
+	uint8_t vsub;
 };
 
 struct PixelFormatInfo {
+	constexpr PixelFormatInfo(const std::string& name, const std::string& drm_fourcc,
+				  const std::string& v4l2_4cc, PixelColorType color,
+				  std::tuple<uint8_t, uint8_t> pixel_align,
+				  std::vector<PixelFormatPlaneInfo> planes)
+		: name(name), drm_fourcc(kms::MakeFourCC(drm_fourcc)),
+		  v4l2_4cc(kms::MakeFourCC(v4l2_4cc)), type(color),
+		  pixel_align(pixel_align), num_planes(planes.size()), planes(planes)
+	{
+	}
+
+	std::string name;
+	uint32_t drm_fourcc;
+	uint32_t v4l2_4cc;
+
 	PixelColorType type;
-	uint8_t num_planes;
-	struct PixelFormatPlaneInfo planes[4];
+	std::tuple<uint8_t, uint8_t> pixel_align;
+
+	uint8_t num_planes; // this should be dropped, and use 'planes' vector size
+	std::vector<PixelFormatPlaneInfo> planes;
+
+	std::tuple<uint32_t, uint32_t> align_pixels(uint32_t width, uint32_t height) const;
+	uint32_t stride(uint32_t width, uint32_t plane = 0, uint32_t align = 1) const;
+	uint32_t planesize(uint32_t stride, uint32_t height, uint32_t plane = 0) const;
+	uint32_t framesize(uint32_t width, uint32_t height, uint32_t align = 1) const;
+	std::tuple<uint32_t, uint32_t, uint32_t> dumb_size(uint32_t width, uint32_t height, uint32_t plane = 0, uint32_t align = 1) const;
 };
 
 const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format);

@@ -34,22 +34,15 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 	m_num_planes = format_info.num_planes;
 
 	for (int i = 0; i < format_info.num_planes; ++i) {
-		const PixelFormatPlaneInfo& pi = format_info.planes[i];
 		FramebufferPlane& plane = m_planes.at(i);
+
+		auto [w, h, bpp] = format_info.dumb_size(width, height);
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();
-		creq.width = width;
-		creq.height = height / pi.ysub;
-		/*
-		 * For fully planar YUV buffers, the chroma planes don't combine
-		 * U and V components, their width must thus be divided by the
-		 * horizontal subsampling factor.
-		 */
-		if (format_info.type == PixelColorType::YUV &&
-		    format_info.num_planes == 3)
-			creq.width /= pi.xsub;
-		creq.bpp = pi.bitspp;
+		creq.width = w;
+		creq.height = h;
+		creq.bpp = bpp;
 		r = drmIoctl(card.fd(), DRM_IOCTL_MODE_CREATE_DUMB, &creq);
 		if (r)
 			throw invalid_argument(string("DRM_IOCTL_MODE_CREATE_DUMB failed: ") + strerror(errno));

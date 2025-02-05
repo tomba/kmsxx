@@ -77,12 +77,14 @@ inline PixelFormat FourCCToPixelFormat(const std::string& fourcc)
 
 inline std::string PixelFormatToFourCC(PixelFormat f)
 {
-	char buf[5] = { (char)(((uint32_t)f >> 0) & 0xff),
-			(char)(((uint32_t)f >> 8) & 0xff),
-			(char)(((uint32_t)f >> 16) & 0xff),
-			(char)(((uint32_t)f >> 24) & 0xff),
-			0 };
-	return std::string(buf);
+	uint32_t v = (uint32_t)f;
+
+	char buf[4] = { (char)((v >> 0) & 0xff),
+			(char)((v >> 8) & 0xff),
+			(char)((v >> 16) & 0xff),
+			(char)((v >> 24) & 0xff),
+			};
+	return std::string(buf, 4);
 }
 
 enum class PixelColorType {

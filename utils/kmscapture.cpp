@@ -79,7 +79,7 @@ DmabufFramebuffer* CameraPipeline::GetDmabufFrameBuffer(Card& card, uint32_t i, 
 	ASSERT(format_info.num_planes == 1);
 
 	vector<int> fds{ dmafd };
-	vector<uint32_t> pitches{ m_in_width * (format_info.planes[0].bitspp / 8) };
+	vector<uint32_t> pitches{ format_info.stride(m_in_width, 0) };
 	vector<uint32_t> offsets{ 0 };
 
 	return new DmabufFramebuffer(card, m_in_width, m_in_height, pixfmt,

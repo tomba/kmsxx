@@ -179,7 +179,7 @@ void init_pykmsbase(py::module& m)
 			if (plane >= format_info.num_planes)
 				throw runtime_error("map: bad plane number");
 
-			array<uint32_t, 2> shape{ self.height(), self.width() * format_info.planes[plane].bitspp / 8 };
+			array<uint32_t, 2> shape{ self.height(), format_info.stride(self.width(), plane) };
 			array<uint32_t, 2> strides{ self.stride(plane), sizeof(uint8_t) };
 
 			return py::memoryview::from_buffer(self.map(plane), shape, strides);
@@ -311,9 +311,10 @@ void init_pykmsbase(py::module& m)
 		.def("commit_sync", &AtomicReq::commit_sync, py::arg("allow_modeset") = false);
 
 	py::class_<PixelFormatPlaneInfo>(m, "PixelFormatPlaneInfo")
-		.def_readonly("bitspp", &PixelFormatPlaneInfo::bitspp)
-		.def_readonly("xsub", &PixelFormatPlaneInfo::xsub)
-		.def_readonly("ysub", &PixelFormatPlaneInfo::ysub);
+		.def_readonly("bytes_per_block", &PixelFormatPlaneInfo::bytes_per_block)
+		.def_readonly("pixels_per_block", &PixelFormatPlaneInfo::pixels_per_block)
+		.def_readonly("hsub", &PixelFormatPlaneInfo::hsub)
+		.def_readonly("vsub", &PixelFormatPlaneInfo::vsub);
 
 	py::class_<PixelFormatInfo>(m, "PixelFormatInfo")
 		.def_readonly("num_planes", &PixelFormatInfo::num_planes)

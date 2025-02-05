@@ -118,7 +118,7 @@ static void draw_test_pattern_part(IFramebuffer& fb, unsigned start_y, unsigned 
 		break;
 
 	case PixelColorType::YUV:
-		switch (plane_info.xsub + plane_info.ysub) {
+		switch (plane_info.hsub + plane_info.vsub) {
 		case 2:
 			for (y = start_y; y < end_y; y++) {
 				for (x = 0; x < w; x++) {

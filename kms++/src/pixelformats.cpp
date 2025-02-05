@@ -235,6 +235,30 @@ const struct PixelFormatInfo& get_pixel_format_info(PixelFormat format)
 	return format_info_array.at(format);
 }
 
+PixelFormat fourcc_to_pixel_format(uint32_t fourcc)
+{
+	for (const auto& [fmt, pfi] : format_info_array) {
+		if (pfi.drm_fourcc == fourcc)
+			return fmt;
+	}
+
+	throw invalid_argument("FourCC not supported");
+}
+
+uint32_t pixel_format_to_fourcc(PixelFormat f)
+{
+	return format_info_array.at(f).drm_fourcc;
+}
+
+PixelFormat fourcc_str_to_pixel_format(const std::string& fourcc)
+{
+	return fourcc_to_pixel_format(str_to_fourcc(fourcc));
+}
+
+std::string pixel_format_to_fourcc_str(PixelFormat f)
+{
+	return fourcc_to_str(format_info_array.at(f).drm_fourcc);
+}
 
 static constexpr uint32_t _div_round_up(uint32_t a, uint32_t b)
 {

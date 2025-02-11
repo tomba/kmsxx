@@ -3,101 +3,101 @@
 import urwid
 import pykms
 
-def exit_on_q(key):
-	if key in ('q', 'Q'):
-		raise urwid.ExitMainLoop()
-	elif key == 'a':
-		apply_mode()
+ALARM_HANDLE = None
 
-alarm_handle = None
+def exit_on_q(key):
+    if key in ('q', 'Q'):
+        raise urwid.ExitMainLoop()
+    elif key == 'a':
+        apply_mode()
 
 def recalc_info(l, d):
-	global alarm_handle
+    global ALARM_HANDLE
 
-	alarm_handle = None
+    ALARM_HANDLE = None
 
-	for w in recalc_list:
-		w.recalc()
+    for w in recalc_list:
+        w.recalc()
 
 def div_or_zero(n, d):
-	if d == 0:
-		return 0
-	else:
-		return n / d
+    if d == 0:
+        return 0
+    else:
+        return n / d
 
 class MyIntEdit(urwid.IntEdit):
-	_metaclass_ = urwid.signals.MetaSignals
-	signals = ['value_change']
+    _metaclass_ = urwid.signals.MetaSignals
+    signals = ['value_change']
 
-	def __init__(self, caption, calc=None):
-		self._myval = 0
-		self._disable_change = False
-		self._calc = calc
-		self._updlist = None
+    def __init__(self, caption, calc=None):
+        self._myval = 0
+        self._disable_change = False
+        self._calc = calc
+        self._updlist = None
 
-		super().__init__(caption, 0)
+        super().__init__(caption, 0)
 
-	def set_edit_text(self, text):
-		global alarm_handle
+    def set_edit_text(self, text):
+        global ALARM_HANDLE
 
-		super().set_edit_text(text)
-		newtext = super().get_edit_text()
-		new_val = int(newtext) if newtext != "" else 0
-		if new_val != self._myval:
-			self._myval = new_val
-			if not self._disable_change:
-				urwid.emit_signal(self, 'value_change', self, self._myval)
+        super().set_edit_text(text)
+        newtext = super().get_edit_text()
+        new_val = int(newtext) if newtext != "" else 0
+        if new_val != self._myval:
+            self._myval = new_val
+            if not self._disable_change:
+                urwid.emit_signal(self, 'value_change', self, self._myval)
 
-				if alarm_handle == None:
-					alarm_handle = loop.set_alarm_in(0, recalc_info)
+                if ALARM_HANDLE == None:
+                    ALARM_HANDLE = loop.set_alarm_in(0, recalc_info)
 
-				if self._updlist != None:
-					for w in self._updlist:
-						w.recalc()
+                if self._updlist != None:
+                    for w in self._updlist:
+                        w.recalc()
 
-	def recalc(self):
-		self._disable_change = True
-		self.set_val(self._calc())
-		self._disable_change = False
+    def recalc(self):
+        self._disable_change = True
+        self.set_val(self._calc())
+        self._disable_change = False
 
-	def set_val(self, val):
-		self.set_edit_text(str(int(val)))
+    def set_val(self, val):
+        self.set_edit_text(str(int(val)))
 
-	def get_val(self):
-		return self._myval
+    def get_val(self):
+        return self._myval
 
-	def set_updlist(self, list):
-		self._updlist = list
+    def set_updlist(self, list):
+        self._updlist = list
 
-	def keypress(self, size, key):
-		if key == '+':
-			self.set_edit_text(str(self.value() + 1))
-		elif key == '-':
-			self.set_edit_text(str(self.value() - 1))
-		else:
-			return super().keypress(size, key)
+    def keypress(self, size, key):
+        if key == '+':
+            self.set_edit_text(str(self.value() + 1))
+        elif key == '-':
+            self.set_edit_text(str(self.value() - 1))
+        else:
+            return super().keypress(size, key)
 
 class MyIntText(urwid.Text):
-	def __init__(self, fmt, calc=None):
-		super().__init__("")
-		self._fmt = fmt
-		self._calc = calc
+    def __init__(self, fmt, calc=None):
+        super().__init__("")
+        self._fmt = fmt
+        self._calc = calc
 
-	def recalc(self):
-		val = self._calc()
-		super().set_text(self._fmt.format(val))
+    def recalc(self):
+        val = self._calc()
+        super().set_text(self._fmt.format(val))
 
 def khz_to_ps(khz):
-	if khz == 0:
-		return 0
-	else:
-		return 1.0 / khz * 1000 * 1000 * 1000
+    if khz == 0:
+        return 0
+    else:
+        return 1.0 / khz * 1000 * 1000 * 1000
 
 def khz_to_us(khz):
-	if khz == 0:
-		return 0
-	else:
-		return 1.0 / khz * 1000
+    if khz == 0:
+        return 0
+    else:
+        return 1.0 / khz * 1000
 
 pclk_khz_widget = MyIntEdit(u"pclk (kHz) ")
 pclk_ps_widget = MyIntText(fmt="pclk {:.2f} ps", calc = lambda: khz_to_ps(pclk_khz_widget.get_val()))
@@ -115,11 +115,11 @@ hbp_widget = MyIntEdit(u"hbp   ", calc = lambda: htot_widget.get_val() - hse_wid
 
 hdisp2_widget = MyIntEdit(u"hdisp ", calc = lambda: hdisp_widget.get_val())
 hss_widget = MyIntEdit(u"hss   ",
-	calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val())
+    calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val())
 hse_widget = MyIntEdit(u"hse   ",
-	calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val() + hsw_widget.get_val())
+    calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val() + hsw_widget.get_val())
 htot_widget = MyIntEdit(u"htot  ",
-	calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val() + hsw_widget.get_val() + hbp_widget.get_val())
+    calc = lambda: hdisp_widget.get_val() + hfp_widget.get_val() + hsw_widget.get_val() + hbp_widget.get_val())
 
 hwidgets1 = [hdisp_widget, hfp_widget, hsw_widget, hbp_widget]
 hwidgets2 = [hdisp2_widget, hss_widget, hse_widget, htot_widget]
@@ -138,11 +138,11 @@ vbp_widget = MyIntEdit(u"vbp   ", calc = lambda: vtot_widget.get_val() - vse_wid
 
 vdisp2_widget = MyIntEdit(u"vdisp ", calc = lambda: vdisp_widget.get_val())
 vss_widget = MyIntEdit(u"vss   ",
-	calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val())
+    calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val())
 vse_widget = MyIntEdit(u"vse   ",
-	calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val() + vsw_widget.get_val())
+    calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val() + vsw_widget.get_val())
 vtot_widget = MyIntEdit(u"vtot  ",
-	calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val() + vsw_widget.get_val() + vbp_widget.get_val())
+    calc = lambda: vdisp_widget.get_val() + vfp_widget.get_val() + vsw_widget.get_val() + vbp_widget.get_val())
 
 vwidgets1 = [vdisp_widget, vfp_widget, vsw_widget, vbp_widget]
 vwidgets2 = [vdisp2_widget, vss_widget, vse_widget, vtot_widget]
@@ -155,16 +155,16 @@ v_columns = urwid.LineBox(urwid.Columns([(15, vert_pile1), (15, vert_pile2)]), t
 # Info widgets
 
 line_us_widget = MyIntText(fmt="line {:.2f} us",
-	calc = lambda: khz_to_us(pclk_khz_widget.get_val()) * htot_widget.get_val())
+    calc = lambda: khz_to_us(pclk_khz_widget.get_val()) * htot_widget.get_val())
 line_khz_widget = MyIntText(fmt="line {:.2f} kHz",
-	calc = lambda: div_or_zero(pclk_khz_widget.get_val(), htot_widget.get_val()))
+    calc = lambda: div_or_zero(pclk_khz_widget.get_val(), htot_widget.get_val()))
 
 frame_tot_widget = MyIntText(fmt="tot {} pix",
-	calc = lambda: htot_widget.get_val() * vtot_widget.get_val())
+    calc = lambda: htot_widget.get_val() * vtot_widget.get_val())
 frame_us_widget = MyIntText(fmt="frame {:.2f} ms",
-	calc = lambda: khz_to_us(pclk_khz_widget.get_val()) * htot_widget.get_val() * vtot_widget.get_val() / 1000)
+    calc = lambda: khz_to_us(pclk_khz_widget.get_val()) * htot_widget.get_val() * vtot_widget.get_val() / 1000)
 frame_khz_widget = MyIntText(fmt="frame {:.2f} Hz",
-	calc = lambda: div_or_zero(pclk_khz_widget.get_val() * 1000,  htot_widget.get_val() * vtot_widget.get_val()))
+    calc = lambda: div_or_zero(pclk_khz_widget.get_val() * 1000,  htot_widget.get_val() * vtot_widget.get_val()))
 
 info_box = urwid.LineBox(urwid.Pile([line_us_widget, line_khz_widget, urwid.Divider(), frame_tot_widget, frame_us_widget, frame_khz_widget]), title = "Info")
 
@@ -202,76 +202,76 @@ DRM_MODE_FLAG_INTERLACE = (1<<4)
 DRM_MODE_FLAG_DBLCLK = (1<<12)
 
 def mode_is_ilace(mode):
-	return (mode.flags & DRM_MODE_FLAG_INTERLACE) != 0
+    return (mode.flags & DRM_MODE_FLAG_INTERLACE) != 0
 
 def apply_mode():
-	global fb
+    global fb
 
-	mode = pykms.Videomode()
-	mode.clock = pclk_khz_widget.get_val()
+    mode = pykms.Videomode()
+    mode.clock = pclk_khz_widget.get_val()
 
-	mode.hdisplay = hdisp2_widget.get_val()
-	mode.hsync_start = hss_widget.get_val()
-	mode.hsync_end = hse_widget.get_val()
-	mode.htotal = htot_widget.get_val()
+    mode.hdisplay = hdisp2_widget.get_val()
+    mode.hsync_start = hss_widget.get_val()
+    mode.hsync_end = hse_widget.get_val()
+    mode.htotal = htot_widget.get_val()
 
-	mode.vdisplay = vdisp2_widget.get_val()
-	mode.vsync_start = vss_widget.get_val()
-	mode.vsync_end = vse_widget.get_val()
-	mode.vtotal = vtot_widget.get_val()
+    mode.vdisplay = vdisp2_widget.get_val()
+    mode.vsync_start = vss_widget.get_val()
+    mode.vsync_end = vse_widget.get_val()
+    mode.vtotal = vtot_widget.get_val()
 
-	if ilace_box.state:
-		mode.flags |= DRM_MODE_FLAG_INTERLACE
+    if ilace_box.state:
+        mode.flags |= DRM_MODE_FLAG_INTERLACE
 
-	if dblclk_box.state:
-		mode.flags |= DRM_MODE_FLAG_DBLCLK
+    if dblclk_box.state:
+        mode.flags |= DRM_MODE_FLAG_DBLCLK
 
-	if hsync_pol.state == True:
-		mode.flags |= DRM_MODE_FLAG_PHSYNC
-	elif hsync_pol.state == False:
-		mode.flags |= DRM_MODE_FLAG_NHSYNC
+    if hsync_pol.state == True:
+        mode.flags |= DRM_MODE_FLAG_PHSYNC
+    elif hsync_pol.state == False:
+        mode.flags |= DRM_MODE_FLAG_NHSYNC
 
-	if vsync_pol.state == True:
-		mode.flags |= DRM_MODE_FLAG_PVSYNC
-	elif vsync_pol.state == False:
-		mode.flags |= DRM_MODE_FLAG_NVSYNC
+    if vsync_pol.state == True:
+        mode.flags |= DRM_MODE_FLAG_PVSYNC
+    elif vsync_pol.state == False:
+        mode.flags |= DRM_MODE_FLAG_NVSYNC
 
-	fb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
-	pykms.draw_test_pattern(fb);
+    fb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24");
+    pykms.draw_test_pattern(fb);
 
-	crtc.set_mode(conn, fb, mode)
+    crtc.set_mode(conn, fb, mode)
 
 def read_mode(mode):
-	pclk_khz_widget.set_val(mode.clock)
-	hdisp2_widget.set_val(mode.hdisplay)
-	hss_widget.set_val(mode.hsync_start)
-	hse_widget.set_val(mode.hsync_end)
-	htot_widget.set_val(mode.htotal)
+    pclk_khz_widget.set_val(mode.clock)
+    hdisp2_widget.set_val(mode.hdisplay)
+    hss_widget.set_val(mode.hsync_start)
+    hse_widget.set_val(mode.hsync_end)
+    htot_widget.set_val(mode.htotal)
 
-	vdisp2_widget.set_val(mode.vdisplay)
-	vss_widget.set_val(mode.vsync_start)
-	vse_widget.set_val(mode.vsync_end)
-	vtot_widget.set_val(mode.vtotal)
+    vdisp2_widget.set_val(mode.vdisplay)
+    vss_widget.set_val(mode.vsync_start)
+    vse_widget.set_val(mode.vsync_end)
+    vtot_widget.set_val(mode.vtotal)
 
-	ilace_box.set_state(mode_is_ilace(mode))
-	dblclk_box.set_state((mode.flags & DRM_MODE_FLAG_DBLCLK) != 0)
+    ilace_box.set_state(mode_is_ilace(mode))
+    dblclk_box.set_state((mode.flags & DRM_MODE_FLAG_DBLCLK) != 0)
 
-	sync = 'mixed'
-	if (mode.flags & DRM_MODE_FLAG_PHSYNC) != 0:
-		sync = True
-	elif (mode.flags & DRM_MODE_FLAG_NHSYNC) != 0:
-		sync = False
-	hsync_pol.set_state(sync)
+    sync = 'mixed'
+    if (mode.flags & DRM_MODE_FLAG_PHSYNC) != 0:
+        sync = True
+    elif (mode.flags & DRM_MODE_FLAG_NHSYNC) != 0:
+        sync = False
+    hsync_pol.set_state(sync)
 
-	sync = 'mixed'
-	if (mode.flags & DRM_MODE_FLAG_PVSYNC) != 0:
-		sync = True
-	elif (mode.flags & DRM_MODE_FLAG_NVSYNC) != 0:
-		sync = False
-	vsync_pol.set_state(sync)
+    sync = 'mixed'
+    if (mode.flags & DRM_MODE_FLAG_PVSYNC) != 0:
+        sync = True
+    elif (mode.flags & DRM_MODE_FLAG_NVSYNC) != 0:
+        sync = False
+    vsync_pol.set_state(sync)
 
 def apply_press(w):
-	apply_mode()
+    apply_mode()
 
 ilace_box = urwid.CheckBox('interlace')
 hsync_pol = urwid.CheckBox('hsync positive', has_mixed=True)
@@ -285,24 +285,24 @@ apply_button = urwid.LineBox(urwid.Padding(urwid.Button('apply', on_press=apply_
 # Main
 
 def mode_press(w, mode):
-	read_mode(mode)
+    read_mode(mode)
 
 def mode_to_str(mode):
-	return "{}@{}{}".format(mode.name, mode.vrefresh, "i" if mode_is_ilace(mode) else "")
+    return "{}@{}{}".format(mode.name, mode.vrefresh, "i" if mode_is_ilace(mode) else "")
 
 mode_buttons = []
 
 card = pykms.Card()
 
 res = pykms.ResourceManager(card)
-conn = res.reserve_connector()
+conn = res.reserve_connector('DSI')
 crtc = res.reserve_crtc(conn)
 plane = res.reserve_generic_plane(crtc)
 modes = conn.get_modes()
 i = 0
 for m in modes:
-	mode_buttons.append(urwid.Button(mode_to_str(m), on_press=mode_press, user_data=m))
-	i += 1
+    mode_buttons.append(urwid.Button(mode_to_str(m), on_press=mode_press, user_data=m))
+    i += 1
 
 modes_pile = urwid.LineBox(urwid.Pile(mode_buttons), title = "Video modes")
 

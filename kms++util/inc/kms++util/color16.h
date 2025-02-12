@@ -101,6 +101,25 @@ public:
 	constexpr RGB16 to_rgb(RecStandard rec = RecStandard::BT709,
 			       ColorRange range = ColorRange::Limited) const noexcept;
 
+
+	static constexpr YUV16 from_10(uint16_t r, uint16_t g, uint16_t b)
+	{
+		return YUV16 {
+			static_cast<uint16_t>((r << 6) | (r >> 4)),
+			static_cast<uint16_t>((g << 6) | (g >> 4)),
+			static_cast<uint16_t>((b << 6) | (b >> 4)),
+		};
+	}
+
+	static constexpr YUV16 from_12(uint16_t r, uint16_t g, uint16_t b)
+	{
+		return YUV16 {
+			static_cast<uint16_t>((r << 4) | (r >> 8)),
+			static_cast<uint16_t>((g << 4) | (g >> 8)),
+			static_cast<uint16_t>((b << 4) | (b >> 8)),
+		};
+	}
+
 	static constexpr uint16_t max_value = 0xffff;
 };
 

@@ -116,6 +116,154 @@ static void get_test_pattern_line_yuv(size_t w, size_t h, size_t row,
 				 .to_yuv(options.rec, options.range);
 }
 
+// SMPTE RP 219-1:2014
+// High-Definition, Standard-Definition Compatible Color Bar Signal
+// Limited range YUV
+static YUV16 get_smpte_pixel(size_t w, size_t h, size_t x, size_t y)
+{
+	// Pattern colors (12-bit values, limited range)
+	constexpr YUV16 gray40 = YUV16::from_12(1658, 2048, 2048); // 40% Gray
+	constexpr YUV16 white75 = YUV16::from_12(2884, 2048, 2048); // 75% White
+	constexpr YUV16 yellow75 = YUV16::from_12(2694, 704, 2171); // 75% Yellow
+	constexpr YUV16 cyan75 = YUV16::from_12(2325, 2356, 704); // 75% Cyan
+	constexpr YUV16 green75 = YUV16::from_12(2136, 1012, 827); // 75% Green
+	constexpr YUV16 magenta75 = YUV16::from_12(1004, 3084, 3269); // 75% Magenta
+	constexpr YUV16 red75 = YUV16::from_12(815, 1740, 3392); // 75% Red
+	constexpr YUV16 blue75 = YUV16::from_12(446, 3392, 1925); // 75% Blue
+	constexpr YUV16 cyan100 = YUV16::from_12(3015, 2459, 256); // 100% Cyan
+	constexpr YUV16 blue100 = YUV16::from_12(509, 3840, 1884); // 100% Blue
+	constexpr YUV16 yellow100 = YUV16::from_12(3507, 256, 2212); // 100% Yellow
+	constexpr YUV16 black = YUV16::from_12(256, 2048, 2048); // 0% Black
+	constexpr YUV16 white100 = YUV16::from_12(3760, 2048, 2048); // 100% White
+	constexpr YUV16 red100 = YUV16::from_12(1001, 1637, 3840); // 100% Red
+	constexpr YUV16 gray15 = YUV16::from_12(782, 2048, 2048); // 15% Gray
+
+	// PLUGE steps
+	constexpr YUV16 black_m2 = YUV16::from_12(186, 2048, 2048); // -2% Black
+	constexpr YUV16 black_p2 = YUV16::from_12(326, 2048, 2048); // +2% Black
+	constexpr YUV16 black_p4 = YUV16::from_12(396, 2048, 2048); // +4% Black
+
+	// High precision for x-axis calculations
+	constexpr size_t M = 1024;
+	x = x * M;
+	const size_t a = w * M;
+	const size_t c = (a * 3 / 4) / 7;
+	const size_t d = a / 8;
+
+	// Pattern heights
+	const size_t pattern1_height = (h * 7) / 12;
+	const size_t pattern2_height = pattern1_height + (h / 12);
+	const size_t pattern3_height = pattern2_height + (h / 12);
+
+	// Pattern 1 (75% color bars)
+	if (y < pattern1_height) {
+		if (x < d || x >= (a - d))
+			return gray40;
+
+		size_t bar_index = (x - d) / c;
+		switch (bar_index) {
+		case 0:
+			return white75;
+		case 1:
+			return yellow75;
+		case 2:
+			return cyan75;
+		case 3:
+			return green75;
+		case 4:
+			return magenta75;
+		case 5:
+			return red75;
+		default:
+			return blue75;
+		}
+	}
+
+	// Pattern 2 (Color difference reference)
+	if (y >= pattern1_height && y < pattern2_height) {
+		if (x < d)
+			return cyan100;
+
+		if (x >= (a - d))
+			return blue100;
+
+		return white75;
+	}
+
+	// Pattern 3 (Ramp)
+	if (y >= pattern2_height && y < pattern3_height) {
+		if (x < d)
+			return yellow100;
+
+		if (x >= (a - d))
+			return red100;
+
+		const size_t ramp_width = a - 2 * d;
+		const size_t ramp_x = x - d;
+
+		uint16_t y = 256 + (3760 - 256) * ramp_x / ramp_width;
+		return YUV16::from_12(y, 2048, 2048);
+	}
+
+	// Pattern 4 (PLUGE)
+	if (y >= pattern3_height) {
+		const size_t c0 = d;
+		const size_t c1 = c0 + c * 3 / 2;
+		const size_t c2 = c1 + 2 * c;
+		const size_t c3 = c2 + c * 5 / 6;
+
+		if (x < c0)
+			return gray15;
+
+		if (x < c1)
+			return black;
+
+		if (x < c2)
+			return white100;
+
+		if (x < c3)
+			return black;
+
+		if (x >= a - d)
+			return gray15;
+
+		if (x >= a - d - c)
+			return black;
+
+		const size_t step = (x - c3) / (c / 3);
+
+		switch (step) {
+		case 0:
+			return black_m2; // -2%
+		case 1:
+			return black; // 0%
+		case 2:
+			return black_p2; // +2%
+		case 3:
+			return black; // 0%
+		default:
+			return black_p4; // +4%
+		}
+	}
+
+	return black;
+}
+
+static void get_smpte_line_rgb(size_t w, size_t h, size_t row, std::span<RGB16> buf,
+			       const TestPatternOptions& options)
+{
+	for (size_t x = 0; x < w; ++x)
+		buf[x] = get_smpte_pixel(w, h, x, row)
+				 .to_rgb(RecStandard::BT709, ColorRange::Limited);
+}
+
+static void get_smpte_line_yuv(size_t w, size_t h, size_t row, std::span<YUV16> buf,
+                               const TestPatternOptions& options)
+{
+	for (size_t x = 0; x < w; ++x)
+		buf[x] = get_smpte_pixel(w, h, x, row);
+}
+
 static void get_plain_line_rgb(size_t w, const RGB16& color, std::span<RGB16> buf)
 {
 	for (size_t x = 0; x < w; ++x)
@@ -157,6 +305,14 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 				     &options](size_t y, std::span<YUV16> span) {
 			get_plain_line_yuv(fb.width(),
 					   rgb.to_yuv(options.rec, options.range), span);
+		};
+	} else if (options.pattern == "smpte") {
+		generate_line_rgb = [&fb, &options](size_t y, std::span<RGB16> span) {
+			get_smpte_line_rgb(fb.width(), fb.height(), y, span, options);
+		};
+
+		generate_line_yuv = [&fb, &options](size_t y, std::span<YUV16> span) {
+			get_smpte_line_yuv(fb.width(), fb.height(), y, span, options);
 		};
 	} else {
 		generate_line_rgb = [&fb](size_t y, std::span<RGB16> span) {

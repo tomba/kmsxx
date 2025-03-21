@@ -84,3 +84,23 @@ void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options
 		fprintf(stderr, fmt "\n", ##__VA_ARGS__); \
 		exit(-1);                                 \
 	}
+
+extern "C" {
+
+struct CDrawTestPatternParameters {
+	uint32_t width;
+	uint32_t height;
+	uint32_t fourcc;;
+	uint8_t* buffers[4];
+	uint32_t sizes[4];
+	uint32_t pitches[4];
+	uint32_t offsets[4];
+
+	const char* pattern;
+	uint32_t rec_standard;
+	bool full_range;
+};
+
+int c_draw_test_pattern(struct CDrawTestPatternParameters* params);
+
+}

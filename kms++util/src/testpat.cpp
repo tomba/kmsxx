@@ -475,3 +475,45 @@ void draw_test_pattern(IFramebuffer& fb, const TestPatternOptions& options)
 }
 
 } // namespace kms
+
+extern "C" {
+
+int c_draw_test_pattern(struct CDrawTestPatternParameters* params)
+{
+	using namespace kms;
+
+	try {
+		auto fmt = fourcc_to_pixel_format(params->fourcc);
+
+		ExtCPUFramebuffer fb(params->width,
+		                     params->height,
+		                     fmt,
+		                     params->buffers,
+		                     params->sizes,
+		                     params->pitches,
+		                     params->offsets);
+
+		RecStandard rec;
+		if (params->rec_standard == 0)
+			rec = RecStandard::BT601;
+		else if (params->rec_standard == 1)
+			rec = RecStandard::BT709;
+		else if (params->rec_standard == 2)
+			rec = RecStandard::BT2020;
+		else
+			return -1;
+
+		TestPatternOptions options;
+		options.pattern = params->pattern;
+		options.rec = rec;
+		options.range = params->full_range ? ColorRange::Full : ColorRange::Limited;
+
+		draw_test_pattern(fb, options);
+	} catch (const exception&) {
+		return -1;
+	}
+
+	return 0;
+}
+
+}

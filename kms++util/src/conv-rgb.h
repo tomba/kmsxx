@@ -195,7 +195,6 @@ class ARGB_Writer
 	static constexpr size_t b_idx = Plane::template find_pos<ComponentType::B>();
 
 	static constexpr size_t a_shift = has_alpha ? 16 - Plane::template component_size<a_idx> : 0;
-	static constexpr size_t x_shift = has_padding ? 16 - Plane::template component_size<x_idx> : 0;
 	static constexpr size_t r_shift = 16 - Plane::template component_size<r_idx>;
 	static constexpr size_t g_shift = 16 - Plane::template component_size<g_idx>;
 	static constexpr size_t b_shift = 16 - Plane::template component_size<b_idx>;

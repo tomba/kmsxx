@@ -355,6 +355,12 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 							   generate_line_yuv);           \
 		break;
 
+#define CASE_Y_ONLY(x)                                                                   \
+	case PixelFormat::x:                                                             \
+		Y_Writer<x##_Layout>::write_pattern(fb, start_y, end_y,                  \
+						    generate_line_yuv);                  \
+		break;
+
 	switch (fb.format()) {
 		CASE_YUV_SEMI(XV20);
 		CASE_YUV_SEMI(XV15);
@@ -404,6 +410,9 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 		CASE_YUV_PLANAR(YVU422);
 		CASE_YUV_PLANAR(YUV420);
 		CASE_YUV_PLANAR(YVU420);
+
+		CASE_Y_ONLY(Y8);
+		CASE_Y_ONLY(Y10_P32);
 
 	default:
 		break;

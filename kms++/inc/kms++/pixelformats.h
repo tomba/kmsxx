@@ -115,6 +115,8 @@ uint32_t pixel_format_to_fourcc(PixelFormat f);
 PixelFormat fourcc_str_to_pixel_format(const std::string& fourcc);
 std::string pixel_format_to_fourcc_str(PixelFormat f);
 
+PixelFormat find_pixel_format_by_name(const std::string& name);
+
 enum class PixelColorType {
 	Undefined,
 	RGB,

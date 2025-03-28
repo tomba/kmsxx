@@ -351,7 +351,7 @@ static void parse_fb(Card& card, const string& fb_str, OutputInfo* output, Plane
 		// 400x400-NV12
 		const regex fb_re("(?:(\\d+)x(\\d+))?" // 400x400
 				  "(?:-)?" // -
-				  "(\\w\\w\\w\\w)?"); // NV12
+				  "(\\w+)?"); // NV12
 
 		smatch sm;
 		if (!regex_match(fb_str, sm, fb_re))
@@ -361,8 +361,13 @@ static void parse_fb(Card& card, const string& fb_str, OutputInfo* output, Plane
 			w = stoul(sm[1]);
 		if (sm[2].matched)
 			h = stoul(sm[2]);
-		if (sm[3].matched)
-			format = fourcc_str_to_pixel_format(sm[3]);
+		if (sm[3].matched) {
+			try {
+				format = find_pixel_format_by_name(sm[3]);
+			} catch (const invalid_argument& e) {
+				format = fourcc_str_to_pixel_format(sm[3]);
+			}
+		}
 	}
 
 	vector<Framebuffer*> v;
@@ -400,7 +405,7 @@ static const char* usage_str =
 	"                            or\n"
 	"                            [<crtc>:]<pclk>,<hact>/<hfp>/<hsw>/<hbp>/<hsp>,<vact>/<vfp>/<vsw>/<vbp>/<vsp>[,i]\n"
 	"  -p, --plane=PLANE         PLANE is [<plane>:][<x>,<y>-]<w>x<h>\n"
-	"  -f, --fb=FB               FB is [<w>x<h>][-][<4cc>]\n"
+	"  -f, --fb=FB               FB is [<w>x<h>][-][<fmtname>|<4cc>]\n"
 	"  -v, --view=VIEW           VIEW is <x>,<y>-<w>x<h>\n"
 	"  -P, --property=PROP=VAL   Set PROP to VAL in the previous DRM object\n"
 	"      --dmt                 Search for the given mode from DMT tables\n"

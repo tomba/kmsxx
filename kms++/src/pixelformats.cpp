@@ -992,6 +992,16 @@ std::string pixel_format_to_fourcc_str(PixelFormat f)
 	return fourcc_to_str(format_info_array.at(f).drm_fourcc);
 }
 
+PixelFormat find_pixel_format_by_name(const std::string& name)
+{
+	for (const auto& [fmt, pfi] : format_info_array) {
+		if (pfi.name == name)
+			return fmt;
+	}
+
+	throw invalid_argument("Unsupported pixelformat");
+}
+
 static constexpr uint32_t _div_round_up(uint32_t a, uint32_t b)
 {
 	return (a + b - 1) / b;

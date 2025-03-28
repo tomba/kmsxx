@@ -361,6 +361,12 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 						    generate_line_yuv);                  \
 		break;
 
+#define CASE_YUV_PLANAR_PACKED(x)                                                        \
+	case PixelFormat::x:                                                             \
+		YUVPlanarPackedWriter<x##_Layout>::write_pattern(fb, start_y, end_y,     \
+								 generate_line_yuv);     \
+		break;
+
 	switch (fb.format()) {
 		CASE_YUV_SEMI(XV20);
 		CASE_YUV_SEMI(XV15);
@@ -413,6 +419,8 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 
 		CASE_Y_ONLY(Y8);
 		CASE_Y_ONLY(Y10_P32);
+
+		CASE_YUV_PLANAR_PACKED(X403);
 
 	default:
 		break;

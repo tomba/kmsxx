@@ -176,9 +176,9 @@ constexpr RGB16 YUV16::to_rgb(RecStandard rec, ColorRange range) const noexcept
 	const double b = y_norm + 2.0 * u_norm * (1.0 - coeff.kb);
 
 	// Clamp and convert back to 16-bit values
-	return RGB16(static_cast<uint16_t>(std::clamp(r, 0.0, 1.0) * max_value),
-		     static_cast<uint16_t>(std::clamp(g, 0.0, 1.0) * max_value),
-		     static_cast<uint16_t>(std::clamp(b, 0.0, 1.0) * max_value));
+	return RGB16(static_cast<uint16_t>(std::round(std::clamp(r, 0.0, 1.0) * max_value)),
+		     static_cast<uint16_t>(std::round(std::clamp(g, 0.0, 1.0) * max_value)),
+		     static_cast<uint16_t>(std::round(std::clamp(b, 0.0, 1.0) * max_value)));
 }
 
 } // namespace kms

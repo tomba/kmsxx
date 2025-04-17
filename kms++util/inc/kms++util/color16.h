@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <algorithm>
 
@@ -133,23 +134,24 @@ constexpr YUV16 RGB16::to_yuv(RecStandard rec, ColorRange range) const noexcept
 	const double g_norm = static_cast<double>(g) / max_value;
 	const double b_norm = static_cast<double>(b) / max_value;
 
-	// Calculate Y
-	double y = coeff.kr * r_norm + coeff.kg * g_norm + coeff.kb * b_norm;
+	// Calculate Y (unscaled)
+	double y_unscaled = coeff.kr * r_norm + coeff.kg * g_norm + coeff.kb * b_norm;
+
+	// Calculate U and V using unscaled Y
+	double u = (b_norm - y_unscaled) / (2.0 * (1.0 - coeff.kb));
+	double v = (r_norm - y_unscaled) / (2.0 * (1.0 - coeff.kr));
 
 	// Scale Y to target range
-	y = y * (scaling.y_max - scaling.y_min) + scaling.y_min;
-
-	// Calculate U and V
-	double u = (b_norm - y) / (2.0 * (1.0 - coeff.kb));
-	double v = (r_norm - y) / (2.0 * (1.0 - coeff.kr));
+	double y = y_unscaled * (scaling.y_max - scaling.y_min) + scaling.y_min;
 
 	// Scale U and V to target range
 	u = u * (scaling.c_max - scaling.c_min) + (scaling.c_max + scaling.c_min) / 2.0;
 	v = v * (scaling.c_max - scaling.c_min) + (scaling.c_max + scaling.c_min) / 2.0;
 
 	// Convert back to 16-bit values
-	return YUV16(static_cast<uint16_t>(y * max_value), static_cast<uint16_t>(u * max_value),
-		     static_cast<uint16_t>(v * max_value));
+	return YUV16(static_cast<uint16_t>(std::round(y * max_value)),
+		     static_cast<uint16_t>(std::round(u * max_value)),
+		     static_cast<uint16_t>(std::round(v * max_value)));
 }
 
 constexpr RGB16 YUV16::to_rgb(RecStandard rec, ColorRange range) const noexcept

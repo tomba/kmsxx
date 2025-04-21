@@ -68,8 +68,8 @@ EglState::EglState(void* native_display, EGLint native_visual_id)
 	FAIL_IF(!b, "failed to get number of configs");
 
 	if (s_verbose) {
-		EGLConfig configs[numConfigs];
-		b = eglGetConfigs(m_display, configs, numConfigs, &numConfigs);
+		vector<EGLConfig> configs(numConfigs);
+		b = eglGetConfigs(m_display, configs.data(), numConfigs, &numConfigs);
 		FAIL_IF(!b, "failed to get configs");
 
 		printf("Available configs:\n");

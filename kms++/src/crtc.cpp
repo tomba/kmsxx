@@ -181,9 +181,9 @@ int Crtc::legacy_gamma_size() const
 void Crtc::legacy_gamma_set(vector<tuple<uint16_t, uint16_t, uint16_t>> v)
 {
 	uint32_t len = v.size();
-	uint16_t red[len];
-	uint16_t green[len];
-	uint16_t blue[len];
+	vector<uint16_t> red(len);
+	vector<uint16_t> green(len);
+	vector<uint16_t> blue(len);
 
 	for (uint32_t i = 0; i < len; ++i) {
 		red[i] = get<0>(v[i]);
@@ -191,7 +191,7 @@ void Crtc::legacy_gamma_set(vector<tuple<uint16_t, uint16_t, uint16_t>> v)
 		blue[i] = get<2>(v[i]);
 	}
 
-	drmModeCrtcSetGamma(card().fd(), id(), len, red, green, blue);
+	drmModeCrtcSetGamma(card().fd(), id(), len, red.data(), green.data(), blue.data());
 }
 
 } // namespace kms

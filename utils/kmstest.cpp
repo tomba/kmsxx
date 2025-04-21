@@ -1118,7 +1118,7 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 	if (!s_flip_sync) {
 		for (const OutputInfo& o : outputs) {
 			auto fs = unique_ptr<FlipState>(new FlipState(card, to_string(o.connector->idx()), { &o }));
-			flipstates.push_back(move(fs));
+			flipstates.push_back(std::move(fs));
 		}
 	} else {
 		vector<const OutputInfo*> ois;
@@ -1130,7 +1130,7 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 		}
 
 		auto fs = unique_ptr<FlipState>(new FlipState(card, name, ois));
-		flipstates.push_back(move(fs));
+		flipstates.push_back(std::move(fs));
 	}
 
 	for (unique_ptr<FlipState>& fs : flipstates)

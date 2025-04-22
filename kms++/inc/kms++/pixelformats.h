@@ -151,7 +151,7 @@ struct PixelFormatInfo {
 	                          const std::string_view v4l2_4cc,
 				  PixelColorType color,
 				  std::tuple<uint8_t, uint8_t> pixel_align,
-				  std::vector<PixelFormatPlaneInfo> planes)
+				  std::initializer_list<PixelFormatPlaneInfo> planes)
 		: name(name), drm_fourcc(kms::str_to_fourcc(drm_fourcc)),
 		  v4l2_4cc(kms::str_to_fourcc(v4l2_4cc)), type(color),
 		  pixel_align(pixel_align), num_planes(planes.size()), planes(planes)

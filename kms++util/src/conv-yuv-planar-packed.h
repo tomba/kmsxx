@@ -38,9 +38,9 @@ struct X403_Layout : FormatLayout <
 template<typename Format>
 class YUVPlanarPackedWriter
 {
-	using YLayout = Format::template plane<Format::y_plane>;
-	using CbLayout = Format::template plane<Format::cb_plane>;
-	using CrLayout = Format::template plane<Format::cr_plane>;
+	using YLayout = typename Format::template plane<Format::y_plane>;
+	using CbLayout = typename Format::template plane<Format::cb_plane>;
+	using CrLayout = typename Format::template plane<Format::cr_plane>;
 
 	using TY = typename YLayout::storage_type;
 	using TCb = typename CbLayout::storage_type;

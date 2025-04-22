@@ -173,8 +173,8 @@ using BGRA1010102_Layout = RGB_32_Layout<
 template<typename Layout>
 class ARGB_Writer
 {
-	using Plane = Layout::template plane<0>;
-	using TStorage = Plane::storage_type;
+	using Plane = typename Layout::template plane<0>;
+	using TStorage = typename Plane::storage_type;
 
 	static_assert(Layout::num_planes == 1);
 	static_assert(Plane::num_components == 3 || Plane::num_components == 4);

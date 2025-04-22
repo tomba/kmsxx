@@ -85,11 +85,11 @@ class YUVSemiPlanarWriter
 	static constexpr size_t h_sub = Layout::h_sub;
 	static constexpr size_t v_sub = Layout::v_sub;
 
-	using YLayout = Layout::template plane<0>;
-	using UVLayout = Layout::template plane<1>;
+	using YLayout = typename Layout::template plane<0>;
+	using UVLayout = typename Layout::template plane<1>;
 
-	using TY = YLayout::storage_type;
-	using TCrCb = UVLayout::storage_type;
+	using TY = typename YLayout::storage_type;
+	using TCrCb = typename UVLayout::storage_type;
 
 	static constexpr size_t pixels_in_group = YLayout::template component_count<ComponentType::Y>();
 	static_assert(pixels_in_group == UVLayout::template component_count<ComponentType::Cb>());

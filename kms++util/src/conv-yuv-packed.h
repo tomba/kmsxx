@@ -41,8 +41,8 @@ using VYUY_Layout = YUV_Packed_Format<ComponentType::Cr, ComponentType::Y0,
 template<typename Layout>
 class YUVPackedWriter
 {
-	using Plane = Layout::template plane<0>;
-	using TStorage = Plane::storage_type;
+	using Plane = typename Layout::template plane<0>;
+	using TStorage = typename Plane::storage_type;
 
 	static constexpr size_t y0_pos = Plane::template find_pos<ComponentType::Y0>();
 	static constexpr size_t y1_pos = Plane::template find_pos<ComponentType::Y1>();

@@ -37,8 +37,8 @@ using Y10_P32_Layout = FormatLayout<PlaneLayout<uint32_t,
 
 template<typename Layout> class Y_Writer
 {
-	using Plane = Layout::template plane<0>;
-	using TStorage = Plane::storage_type;
+	using Plane = typename Layout::template plane<0>;
+	using TStorage = typename Plane::storage_type;
 
 	static_assert(Layout::num_planes == 1);
 	static_assert(Plane::template component_count<ComponentType::Y>() >= 1);

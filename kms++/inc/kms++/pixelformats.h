@@ -7,7 +7,7 @@
 
 namespace kms
 {
-constexpr uint32_t str_to_fourcc(const std::string& fourcc)
+constexpr uint32_t str_to_fourcc(const std::string_view fourcc)
 {
 	if (fourcc.empty())
 		return 0;
@@ -146,8 +146,10 @@ struct PixelFormatPlaneInfo {
 };
 
 struct PixelFormatInfo {
-	constexpr PixelFormatInfo(const std::string& name, const std::string& drm_fourcc,
-				  const std::string& v4l2_4cc, PixelColorType color,
+	constexpr PixelFormatInfo(const std::string_view name,
+	                          const std::string_view drm_fourcc,
+	                          const std::string_view v4l2_4cc,
+				  PixelColorType color,
 				  std::tuple<uint8_t, uint8_t> pixel_align,
 				  std::vector<PixelFormatPlaneInfo> planes)
 		: name(name), drm_fourcc(kms::str_to_fourcc(drm_fourcc)),

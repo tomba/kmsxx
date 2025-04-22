@@ -22,6 +22,18 @@ if cpp.has_argument('-Wno-c99-designator')
     ]
 endif
 
+if cpp.compiles('#include <string>\n constexpr bool test(const std::string& x) { return x.empty(); }')
+    add_global_arguments('-DHAS_CONSTEXPR_STR', language : 'cpp')
+else
+    message('Compiler does not support constexpr strings')
+endif
+
+if cpp.compiles('#include <vector>\n constexpr bool test(const std::vector<int>& x) { return x.empty(); }')
+    add_global_arguments('-DHAS_CONSTEXPR_VEC', language : 'cpp')
+else
+    message('Compiler does not support constexpr vectors')
+endif
+
 add_project_arguments(cpp_arguments, language : 'cpp')
 
 libfmt_dep = dependency('fmt')
@@ -33,7 +45,7 @@ if libdrmomap_dep.found()
 endif
 
 if get_option('libutils')
-	add_global_arguments('-DHAS_KMSXXUTIL', language : 'cpp')
+    add_global_arguments('-DHAS_KMSXXUTIL', language : 'cpp')
 endif
 
 subdir('kms++')

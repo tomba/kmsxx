@@ -15,7 +15,12 @@ constexpr uint32_t str_to_fourcc(const std::string_view fourcc)
 	return fourcc[0] | (fourcc[1] << 8) | (fourcc[2] << 16) | (fourcc[3] << 24);
 }
 
-constexpr std::string fourcc_to_str(uint32_t fourcc)
+#if HAS_CONSTEXPR_STR
+constexpr
+#else
+static inline
+#endif
+std::string fourcc_to_str(uint32_t fourcc)
 {
 	char buf[4] = {
 		(char)((fourcc >> 0) & 0xff),
@@ -146,7 +151,10 @@ struct PixelFormatPlaneInfo {
 };
 
 struct PixelFormatInfo {
-	constexpr PixelFormatInfo(const std::string_view name,
+	#if HAS_CONSTEXPR_STR && HAS_CONSTEXPR_VEC
+	constexpr
+	#endif
+	PixelFormatInfo(const std::string_view name,
 	                          const std::string_view drm_fourcc,
 	                          const std::string_view v4l2_4cc,
 				  PixelColorType color,

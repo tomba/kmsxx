@@ -55,11 +55,11 @@ subdir('kmscube')
 subdir('py')
 
 summary({
-            'omapdrm extensions': omapdrm_enabled,
-            'kms++utils library': libutils_enabled,
-            'Python bindings': pybindings_enabled,
-            'kmscube': kmscube_enabled,
-            'Utilities': utils_enabled,
+            'omapdrm extensions (omap)': omapdrm_enabled,
+            'kms++utils library (libutils)': libutils_enabled,
+            'Python bindings (pykms)': pybindings_enabled,
+            'kmscube (kmscube)': kmscube_enabled,
+            'Utilities (utils)': utils_enabled,
         },
         section : 'Configuration',
         bool_yn : true)

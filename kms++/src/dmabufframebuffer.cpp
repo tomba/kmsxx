@@ -39,9 +39,9 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		FramebufferPlane& plane = m_planes.at(i);
 
-		plane.prime_fd = fds[i];
+		plane.prime_fd = dup(fds[i]);
 
-		r = drmPrimeFDToHandle(card.fd(), fds[i], &plane.handle);
+		r = drmPrimeFDToHandle(card.fd(), plane.prime_fd, &plane.handle);
 		if (r)
 			throw invalid_argument(string("drmPrimeFDToHandle: ") + strerror(errno));
 
@@ -76,6 +76,16 @@ DmabufFramebuffer::DmabufFramebuffer(Card& card, uint32_t width, uint32_t height
 DmabufFramebuffer::~DmabufFramebuffer()
 {
 	drmModeRmFB(card().fd(), id());
+
+	for (uint i = 0; i < m_num_planes; ++i) {
+		FramebufferPlane& plane = m_planes.at(i);
+
+		if (plane.map)
+			munmap(plane.map, plane.size);
+
+		if (plane.prime_fd >= 0)
+			::close(plane.prime_fd);
+	}
 }
 
 uint8_t* DmabufFramebuffer::map(unsigned plane)

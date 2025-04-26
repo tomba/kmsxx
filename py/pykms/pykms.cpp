@@ -23,6 +23,9 @@ PYBIND11_MODULE(pykms, m)
 
 #if HAS_KMSXXUTIL
 	init_pykmsutils(m);
+	m.def("has_pykmsutils", []() { return true; });
+#else
+	m.def("has_pykmsutils", []() { return false; });
 #endif
 
 #if HAS_LIBDRM_OMAP

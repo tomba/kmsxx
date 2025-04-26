@@ -3,17 +3,18 @@ from enum import Enum
 import os
 import struct
 
-#
-# Common RGB colours
-#
+if has_pykmsutils():
+    #
+    # Common RGB colours
+    #
 
-red = RGB(255, 0, 0)
-green = RGB(0, 255, 0)
-blue = RGB(0, 0, 255)
-yellow = RGB(255, 255, 0)
-purple = RGB(255, 0, 255)
-white = RGB(255, 255, 255)
-cyan = RGB(0, 255, 255)
+    red = RGB(255, 0, 0)
+    green = RGB(0, 255, 0)
+    blue = RGB(0, 0, 255)
+    yellow = RGB(255, 255, 0)
+    purple = RGB(255, 0, 255)
+    white = RGB(255, 255, 255)
+    cyan = RGB(0, 255, 255)
 
 #
 # Rotation enum

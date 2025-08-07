@@ -57,8 +57,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: update apt
+      run: sudo apt update -y
     - name: install compiler
-      run: sudo apt install ${{ matrix.config.deps }}
+      run: sudo apt install -y ${{ matrix.config.deps }}
     - name: install deps
       run: sudo apt install -y meson ninja-build libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
     - name: configure

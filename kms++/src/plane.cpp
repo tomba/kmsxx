@@ -90,6 +90,17 @@ vector<Crtc*> Plane::get_possible_crtcs() const
 	return v;
 }
 
+vector<uint32_t> Plane::get_fourccs() const
+{
+	auto p = m_priv->drm_plane;
+	vector<uint32_t> r;
+
+	for (unsigned i = 0; i < p->count_formats; ++i)
+		r.push_back(p->formats[i]);
+
+	return r;
+}
+
 vector<PixelFormat> Plane::get_formats() const
 {
 	auto p = m_priv->drm_plane;

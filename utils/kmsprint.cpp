@@ -111,7 +111,7 @@ static string format_plane(Plane& p)
 				   (uint32_t)p.get_prop_value("CRTC_H"));
 	}
 
-	string fmts = join<PixelFormat>(p.get_formats(), " ", [](PixelFormat fmt) { return pixel_format_to_fourcc_str(fmt); });
+	string fmts = join<uint32_t>(p.get_fourccs(), " ", [](uint32_t fourcc) { return fourcc_to_str(fourcc); });
 
 	str += fmt::format(" ({})", fmts);
 
@@ -122,7 +122,7 @@ static string format_fb(Framebuffer& fb)
 {
 	return fmt::format("FB {} {}x{} {}",
 			   fb.id(), fb.width(), fb.height(),
-			   pixel_format_to_fourcc_str(fb.format()));
+			   fourcc_to_str(fb.fourcc()));
 }
 
 static string format_property(const Property* prop, uint64_t val)

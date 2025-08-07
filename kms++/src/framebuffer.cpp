@@ -25,7 +25,12 @@ Framebuffer::Framebuffer(Card& card, uint32_t id)
 	if (fb) {
 		m_width = fb->width;
 		m_height = fb->height;
-		m_format = fourcc_to_pixel_format(fb->pixel_format);
+		m_fourcc = fb->pixel_format;
+		try {
+			m_format = fourcc_to_pixel_format(m_fourcc);
+		} catch (const invalid_argument& e) {
+			m_format = PixelFormat::Undefined;
+		}
 
 		drmModeFreeFB2(fb);
 	} else {

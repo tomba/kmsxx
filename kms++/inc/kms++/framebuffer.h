@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "drmobject.h"
 #include "pixelformats.h"
 
@@ -40,6 +42,7 @@ public:
 
 	uint32_t width() const override { return m_width; }
 	uint32_t height() const override { return m_height; }
+	uint32_t fourcc() const { return m_fourcc; }
 	PixelFormat format() const override { return m_format; }
 
 	void flush(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -51,6 +54,7 @@ protected:
 private:
 	uint32_t m_width;
 	uint32_t m_height;
+	uint32_t m_fourcc;
 	PixelFormat m_format;
 };
 

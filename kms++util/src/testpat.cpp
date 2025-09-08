@@ -367,6 +367,18 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 								 generate_line_yuv);     \
 		break;
 
+#define CASE_RAW(x)                                                                      \
+	case PixelFormat::x:                                                             \
+		Bayer_Writer<x##_Layout>::write_pattern(fb, start_y, end_y,              \
+							generate_line_rgb);              \
+		break;
+
+#define CASE_RAW_PACKED(x)                                                               \
+	case PixelFormat::x:                                                             \
+		BayerPacked_Writer<x##_Layout>::write_pattern(fb, start_y, end_y,        \
+							      generate_line_rgb);        \
+		break;
+
 	switch (fb.format()) {
 		CASE_YUV_SEMI(XV20);
 		CASE_YUV_SEMI(XV15);
@@ -421,6 +433,36 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 		CASE_Y_ONLY(Y10_P32);
 
 		CASE_YUV_PLANAR_PACKED(X403);
+
+		CASE_RAW(SRGGB8);
+		CASE_RAW(SGBRG8);
+		CASE_RAW(SGRBG8);
+		CASE_RAW(SBGGR8);
+
+		CASE_RAW(SRGGB10);
+		CASE_RAW(SGBRG10);
+		CASE_RAW(SGRBG10);
+		CASE_RAW(SBGGR10);
+
+		CASE_RAW(SRGGB12);
+		CASE_RAW(SGBRG12);
+		CASE_RAW(SGRBG12);
+		CASE_RAW(SBGGR12);
+
+		CASE_RAW(SRGGB16);
+		CASE_RAW(SGBRG16);
+		CASE_RAW(SGRBG16);
+		CASE_RAW(SBGGR16);
+
+		CASE_RAW_PACKED(SRGGB10P);
+		CASE_RAW_PACKED(SGBRG10P);
+		CASE_RAW_PACKED(SGRBG10P);
+		CASE_RAW_PACKED(SBGGR10P);
+
+		CASE_RAW_PACKED(SRGGB12P);
+		CASE_RAW_PACKED(SGBRG12P);
+		CASE_RAW_PACKED(SGRBG12P);
+		CASE_RAW_PACKED(SBGGR12P);
 
 	default:
 		break;

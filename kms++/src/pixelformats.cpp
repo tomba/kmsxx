@@ -934,6 +934,42 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::SBGGR16, {
+			PixelFormatInfo {
+				"SBGGR16",
+				"",
+				"BYR2",
+				PixelColorType::RAW,
+				{ 2, 2 },
+				{ { 4, 2, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::SGBRG16, {
+			PixelFormatInfo {
+				"SGBRG16",
+				"",
+				"GB16",
+				PixelColorType::RAW,
+				{ 2, 2 },
+				{ { 4, 2, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::SGRBG16, {
+			PixelFormatInfo {
+				"SGRBG16",
+				"",
+				"GR16",
+				PixelColorType::RAW,
+				{ 2, 2 },
+				{ { 4, 2, 1, 1 } },
+			}
+		}
+	},
+	{
 		PixelFormat::SRGGB16, {
 			PixelFormatInfo {
 				"SRGGB16",

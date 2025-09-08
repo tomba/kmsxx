@@ -110,6 +110,9 @@ enum class PixelFormat {
 	SGBRG12P,
 	SGRBG12P,
 	SRGGB12P,
+	SBGGR16,
+	SGBRG16,
+	SGRBG16,
 	SRGGB16,
 	MJPEG,
 };

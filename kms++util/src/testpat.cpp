@@ -500,7 +500,7 @@ int c_draw_test_pattern(struct CDrawTestPatternParameters* params)
 	using namespace kms;
 
 	try {
-		auto fmt = fourcc_to_pixel_format(params->fourcc);
+		auto fmt = find_pixel_format_by_name(params->format_name);
 
 		ExtCPUFramebuffer fb(params->width,
 		                     params->height,

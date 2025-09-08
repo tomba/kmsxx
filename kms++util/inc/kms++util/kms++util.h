@@ -90,7 +90,7 @@ extern "C" {
 struct CDrawTestPatternParameters {
 	uint32_t width;
 	uint32_t height;
-	uint32_t fourcc;;
+	const char* format_name;
 	uint8_t* buffers[4];
 	uint32_t sizes[4];
 	uint32_t pitches[4];

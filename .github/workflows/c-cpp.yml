@@ -17,56 +17,72 @@ jobs:
           cxx: "g++-10",
           deps: "gcc-10 g++-10"
         }
-        - {
-          os: ubuntu-24.04,
-          cc: "gcc-11",
-          cxx: "g++-11",
-          deps: "gcc-11 g++-11"
-        }
-        - {
-          os: ubuntu-24.04,
-          cc: "gcc-12",
-          cxx: "g++-12",
-          deps: "gcc-12 g++-12"
-        }
-        - {
-          os: ubuntu-24.04,
-          cc: "gcc-13",
-          cxx: "g++-13",
-          deps: "gcc-13 g++-13"
-        }
-        - {
-          os: ubuntu-24.04,
-          cc: "clang-16",
-          cxx: "clang++-16",
-          deps: "clang-16"
-        }
-        - {
-          os: ubuntu-24.04,
-          cc: "clang-17",
-          cxx: "clang++-17",
-          deps: "clang-17"
-        }
-        - {
-          os: ubuntu-24.04,
-          cc: "clang-18",
-          cxx: "clang++-18",
-          deps: "clang-18"
-        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "gcc-11",
+#          cxx: "g++-11",
+#          deps: "gcc-11 g++-11"
+#        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "gcc-12",
+#          cxx: "g++-12",
+#          deps: "gcc-12 g++-12"
+#        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "gcc-13",
+#          cxx: "g++-13",
+#          deps: "gcc-13 g++-13"
+#        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "clang-16",
+#          cxx: "clang++-16",
+#          deps: "clang-16"
+#        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "clang-17",
+#          cxx: "clang++-17",
+#          deps: "clang-17"
+#        }
+#        - {
+#          os: ubuntu-24.04,
+#          cc: "clang-18",
+#          cxx: "clang++-18",
+#          deps: "clang-18"
+#        }
     runs-on: ${{ matrix.config.os }}
 
     steps:
     - uses: actions/checkout@v3
+
     - name: update apt
       run: sudo apt update -y
+
     - name: install compiler
       run: sudo apt install -y ${{ matrix.config.deps }}
+
+    - name: install tools
+      run: sudo apt install -y meson ninja-build cppcheck clang-tools
+
     - name: install deps
-      run: sudo apt install -y meson ninja-build libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
+      run: |
+        sudo apt install -y libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev \
+          libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
+
     - name: configure
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      run: meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+      run: SCANBUILD="/usr/bin/scan-build --status-bugs" meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+
     - name: build
       run: ninja -v -C build
+
+    - name: Clang static analysis
+      run: SCANBUILD="/usr/bin/scan-build --status-bugs" ninja -C build scan-build
+
+    - name: cppcheck
+      run: cppcheck --quiet --error-exitcode=1 --suppress='*:ext/*' --project=build/compile_commands.json

@@ -99,6 +99,13 @@ static void drm_draw_color_bar_semiplanar_yuv(IFramebuffer& buf, int old_xpos, i
 
 void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width)
 {
+	// Skip if the bar is not fully drawable
+	if (xpos + width > (int)buf.width())
+		return;
+
+	if (old_xpos >= 0 && old_xpos + width > (int)buf.width())
+		old_xpos = -1;
+
 	switch (buf.format()) {
 	case PixelFormat::NV12:
 	case PixelFormat::NV21:

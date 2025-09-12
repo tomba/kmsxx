@@ -533,6 +533,10 @@ static bool get_char_pixel(char c, uint32_t x, uint32_t y)
 
 static void draw_char(IFramebuffer& buf, uint32_t xpos, uint32_t ypos, char c, RGB color)
 {
+	// Skip characters that are not fully drawable
+	if (xpos + 8 > buf.width() || ypos + 8 > buf.height())
+		return;
+
 	unsigned x, y;
 	YUV yuvcolor = color.yuv();
 

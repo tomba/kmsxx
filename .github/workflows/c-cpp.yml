@@ -57,16 +57,32 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: update apt
       run: sudo apt update -y
+
     - name: install compiler
       run: sudo apt install -y ${{ matrix.config.deps }}
+
+    - name: install tools
+      run: sudo apt install -y meson ninja-build cppcheck clang-tools
+
     - name: install deps
-      run: sudo apt install -y meson ninja-build libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
+      run: |
+        sudo apt install -y libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev \
+          libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
+
     - name: configure
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      run: meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+      run: SCANBUILD="/usr/bin/scan-build --status-bugs" meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+
     - name: build
       run: ninja -v -C build
+
+    - name: Clang static analysis
+      run: SCANBUILD="/usr/bin/scan-build --status-bugs" ninja -C build scan-build
+
+    - name: cppcheck
+      run: cppcheck --quiet --error-exitcode=1 --suppress=*:/usr/include/* --suppress='*:ext/*' --project=build/compile_commands.json

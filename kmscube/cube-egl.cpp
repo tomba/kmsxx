@@ -84,16 +84,16 @@ EglState::EglState(void* native_display, EGLint native_visual_id)
 
 	// elgChooseConfig does implement matching by EGL_NATIVE_VISUAL_ID, do a manual
 	// loop. Picks the first returned if native_visual_id is not set.
-	for (const auto& config : configs) {
+	for (const auto& cfg : configs) {
 		EGLint id;
-		b = eglGetConfigAttrib(m_display, config, EGL_NATIVE_VISUAL_ID, &id);
+		b = eglGetConfigAttrib(m_display, cfg, EGL_NATIVE_VISUAL_ID, &id);
 		if (!b) {
 			printf("failed to get native visual id\n");
 			continue;
 		}
 
 		if (id == native_visual_id || !native_visual_id) {
-			m_config = config;
+			m_config = cfg;
 			break;
 		}
 	}

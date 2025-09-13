@@ -129,8 +129,8 @@ public:
 		if (fb)
 			return fb;
 
-		uint32_t width = gbm_bo_get_width(bo);
-		uint32_t height = gbm_bo_get_height(bo);
+		uint32_t bo_width = gbm_bo_get_width(bo);
+		uint32_t bo_height = gbm_bo_get_height(bo);
 		uint32_t stride = gbm_bo_get_stride(bo);
 		uint32_t handle = gbm_bo_get_handle(bo).u32;
 		PixelFormat format = fourcc_to_pixel_format(gbm_bo_get_format(bo));
@@ -139,7 +139,7 @@ public:
 		vector<uint32_t> strides{ stride };
 		vector<uint32_t> offsets{ 0 };
 
-		fb = new ExtFramebuffer(card, width, height, format, handles, strides, offsets);
+		fb = new ExtFramebuffer(card, bo_width, bo_height, format, handles, strides, offsets);
 
 		gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
 

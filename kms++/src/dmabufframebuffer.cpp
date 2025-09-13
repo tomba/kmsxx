@@ -97,8 +97,8 @@ uint8_t* DmabufFramebuffer::map(unsigned plane)
 	if (p.map)
 		return p.map;
 
-	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
-			       p.prime_fd, 0);
+	p.map = static_cast<uint8_t*>(mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+			       p.prime_fd, 0));
 	if (p.map == MAP_FAILED)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 

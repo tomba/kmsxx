@@ -393,7 +393,7 @@ static void page_flip_handler(int fd, unsigned int frame,
 			      unsigned int sec, unsigned int usec,
 			      void* data)
 {
-	auto handler = (PageFlipHandlerBase*)data;
+	auto handler = static_cast<PageFlipHandlerBase*>(data);
 	double time = sec + usec / 1000000.0;
 	handler->handle_page_flip(frame, time);
 }

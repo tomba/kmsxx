@@ -38,7 +38,7 @@ vector<uint8_t> Blob::data()
 	if (!blob)
 		throw invalid_argument("Blob data not available");
 
-	uint8_t* data = (uint8_t*)blob->data;
+	uint8_t* data = static_cast<uint8_t*>(blob->data);
 
 	auto v = vector<uint8_t>(data, data + blob->length);
 

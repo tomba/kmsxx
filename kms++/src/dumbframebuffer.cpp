@@ -119,8 +119,8 @@ uint8_t* DumbFramebuffer::map(unsigned plane)
 		throw invalid_argument(string("DRM_IOCTL_MODE_MAP_DUMB failed: ") + strerror(errno));
 
 	/* perform actual memory mapping */
-	p.map = (uint8_t*)mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
-			       card().fd(), mreq.offset);
+	p.map = static_cast<uint8_t*>(mmap(0, p.size, PROT_READ | PROT_WRITE, MAP_SHARED,
+			       card().fd(), mreq.offset));
 	if (p.map == MAP_FAILED)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 

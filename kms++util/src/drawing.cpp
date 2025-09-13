@@ -17,49 +17,49 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 	switch (buf.format()) {
 	case PixelFormat::XRGB8888:
 	case PixelFormat::ARGB8888: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.argb8888();
 		break;
 	}
 	case PixelFormat::XBGR8888:
 	case PixelFormat::ABGR8888: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.abgr8888();
 		break;
 	}
 	case PixelFormat::RGBX8888:
 	case PixelFormat::RGBA8888: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.rgba8888();
 		break;
 	}
 	case PixelFormat::BGRX8888:
 	case PixelFormat::BGRA8888: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.bgra8888();
 		break;
 	}
 	case PixelFormat::XRGB2101010:
 	case PixelFormat::ARGB2101010: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.argb2101010();
 		break;
 	}
 	case PixelFormat::XBGR2101010:
 	case PixelFormat::ABGR2101010: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.abgr2101010();
 		break;
 	}
 	case PixelFormat::RGBX1010102:
 	case PixelFormat::RGBA1010102: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.rgba1010102();
 		break;
 	}
 	case PixelFormat::BGRX1010102:
 	case PixelFormat::BGRA1010102: {
-		uint32_t* p = (uint32_t*)(buf.map(0) + buf.stride(0) * y + x * 4);
+		uint32_t* p = reinterpret_cast<uint32_t*>(buf.map(0) + buf.stride(0) * y + x * 4);
 		*p = color.bgra1010102();
 		break;
 	}
@@ -78,29 +78,29 @@ void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color)
 		break;
 	}
 	case PixelFormat::RGB332: {
-		uint8_t* p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
+		uint8_t* p = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * y + x);
 		*p = color.rgb332();
 		break;
 	}
 	case PixelFormat::RGB565: {
-		uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+		uint16_t* p = reinterpret_cast<uint16_t*>(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.rgb565();
 		break;
 	}
 	case PixelFormat::BGR565: {
-		uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+		uint16_t* p = reinterpret_cast<uint16_t*>(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.bgr565();
 		break;
 	}
 	case PixelFormat::XRGB4444:
 	case PixelFormat::ARGB4444: {
-		uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+		uint16_t* p = reinterpret_cast<uint16_t*>(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.argb4444();
 		break;
 	}
 	case PixelFormat::XRGB1555:
 	case PixelFormat::ARGB1555: {
-		uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+		uint16_t* p = reinterpret_cast<uint16_t*>(buf.map(0) + buf.stride(0) * y + x * 2);
 		*p = color.argb1555();
 		break;
 	}
@@ -114,9 +114,9 @@ void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv)
 	if (x >= buf.width() || y >= buf.height())
 		throw runtime_error("attempt to draw outside the buffer");
 
-	uint8_t* py = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
-	uint8_t* pu = (uint8_t*)(buf.map(1) + buf.stride(1) * y + x);
-	uint8_t* pv = (uint8_t*)(buf.map(2) + buf.stride(2) * y + x);
+	uint8_t* py = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * y + x);
+	uint8_t* pu = reinterpret_cast<uint8_t*>(buf.map(1) + buf.stride(1) * y + x);
+	uint8_t* pv = reinterpret_cast<uint8_t*>(buf.map(2) + buf.stride(2) * y + x);
 
 	switch (buf.format()) {
 	case PixelFormat::YUV444:
@@ -139,7 +139,7 @@ void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv)
 static void draw_yuv422_packed_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					  YUV yuv1, YUV yuv2)
 {
-	uint8_t* p = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x * 2);
+	uint8_t* p = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * y + x * 2);
 
 	uint8_t y0 = yuv1.y;
 	uint8_t y1 = yuv2.y;
@@ -184,7 +184,7 @@ static void draw_y2xx_packed_macropixel(IFramebuffer& buf, unsigned x, unsigned 
 					YUV yuv1, YUV yuv2)
 {
 	const uint32_t macro_size = 4;
-	uint16_t* p = (uint16_t*)(buf.map(0) + buf.stride(0) * y + x * macro_size);
+	uint16_t* p = reinterpret_cast<uint16_t*>(buf.map(0) + buf.stride(0) * y + x * macro_size);
 
 	switch (buf.format()) {
 	case PixelFormat::Y210: {
@@ -239,8 +239,8 @@ static void draw_y2xx_packed_macropixel(IFramebuffer& buf, unsigned x, unsigned 
 static void draw_yuv422_semiplanar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					      YUV yuv1, YUV yuv2)
 {
-	uint8_t* py = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
-	uint8_t* puv = (uint8_t*)(buf.map(1) + buf.stride(1) * y + x);
+	uint8_t* py = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * y + x);
+	uint8_t* puv = reinterpret_cast<uint8_t*>(buf.map(1) + buf.stride(1) * y + x);
 
 	uint8_t y0 = yuv1.y;
 	uint8_t y1 = yuv2.y;
@@ -270,9 +270,9 @@ static void draw_yuv422_semiplanar_macropixel(IFramebuffer& buf, unsigned x, uns
 static void draw_yuv422_planar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					  YUV yuv1, YUV yuv2)
 {
-	uint8_t* py = (uint8_t*)(buf.map(0) + buf.stride(0) * y + x);
-	uint8_t* pu = (uint8_t*)(buf.map(1) + buf.stride(1) * y + x / 2);
-	uint8_t* pv = (uint8_t*)(buf.map(2) + buf.stride(2) * y + x / 2);
+	uint8_t* py = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * y + x);
+	uint8_t* pu = reinterpret_cast<uint8_t*>(buf.map(1) + buf.stride(1) * y + x / 2);
+	uint8_t* pv = reinterpret_cast<uint8_t*>(buf.map(2) + buf.stride(2) * y + x / 2);
 
 	uint8_t y0 = yuv1.y;
 	uint8_t y1 = yuv2.y;
@@ -338,10 +338,10 @@ void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1,
 static void draw_yuv420_semiplanar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					      YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
-	uint8_t* py1 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 0) + x);
-	uint8_t* py2 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 1) + x);
+	uint8_t* py1 = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * (y + 0) + x);
+	uint8_t* py2 = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * (y + 1) + x);
 
-	uint8_t* puv = (uint8_t*)(buf.map(1) + buf.stride(1) * (y / 2) + x);
+	uint8_t* puv = reinterpret_cast<uint8_t*>(buf.map(1) + buf.stride(1) * (y / 2) + x);
 
 	uint8_t y0 = yuv1.y;
 	uint8_t y1 = yuv2.y;
@@ -377,11 +377,11 @@ static void draw_yuv420_semiplanar_macropixel(IFramebuffer& buf, unsigned x, uns
 static void draw_yuv420_planar_macropixel(IFramebuffer& buf, unsigned x, unsigned y,
 					  YUV yuv1, YUV yuv2, YUV yuv3, YUV yuv4)
 {
-	uint8_t* py1 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 0) + x);
-	uint8_t* py2 = (uint8_t*)(buf.map(0) + buf.stride(0) * (y + 1) + x);
+	uint8_t* py1 = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * (y + 0) + x);
+	uint8_t* py2 = reinterpret_cast<uint8_t*>(buf.map(0) + buf.stride(0) * (y + 1) + x);
 
-	uint8_t* pu = (uint8_t*)(buf.map(1) + buf.stride(1) * (y / 2) + x / 2);
-	uint8_t* pv = (uint8_t*)(buf.map(2) + buf.stride(2) * (y / 2) + x / 2);
+	uint8_t* pu = reinterpret_cast<uint8_t*>(buf.map(1) + buf.stride(1) * (y / 2) + x / 2);
+	uint8_t* pv = reinterpret_cast<uint8_t*>(buf.map(2) + buf.stride(2) * (y / 2) + x / 2);
 
 	uint8_t y0 = yuv1.y;
 	uint8_t y1 = yuv2.y;

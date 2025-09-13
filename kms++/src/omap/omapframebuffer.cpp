@@ -167,7 +167,7 @@ uint8_t* OmapFramebuffer::map(unsigned plane)
 	if (p.map)
 		return p.map;
 
-	p.map = (uint8_t*)omap_bo_map(p.omap_bo);
+	p.map = static_cast<uint8_t*>(omap_bo_map(p.omap_bo));
 	if (p.map == MAP_FAILED)
 		throw invalid_argument(string("mmap failed: ") + strerror(errno));
 

@@ -572,7 +572,7 @@ static vector<OutputInfo> setups_to_outputs(Card& card, ResourceManager& resman,
 	OutputInfo* current_output = 0;
 	PlaneInfo* current_plane = 0;
 
-	for (auto& arg : output_args) {
+	for (const auto& arg : output_args) {
 		switch (arg.type) {
 		case ArgType::Connector: {
 			outputs.push_back(OutputInfo{});

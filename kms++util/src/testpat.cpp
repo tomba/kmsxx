@@ -471,7 +471,7 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 
 void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options)
 {
-	auto& info = get_pixel_format_info(fb.format());
+	const auto& info = get_pixel_format_info(fb.format());
 	uint8_t v_sub = 0;
 	for (size_t p = 0; p < info.num_planes; ++p)
 		v_sub = max(v_sub, info.planes[p].vsub);
@@ -514,7 +514,7 @@ void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options
 		t.join();
 
 	auto i = std::find_if(errors.begin(), errors.end(),
-			      [](auto& e) { return e != nullptr; });
+			      [](const auto& e) { return e != nullptr; });
 	if (i != errors.end())
 		std::rethrow_exception(*i);
 }

@@ -26,7 +26,7 @@ CPUFramebuffer::CPUFramebuffer(uint32_t width, uint32_t height, PixelFormat form
 CPUFramebuffer::~CPUFramebuffer()
 {
 	for (unsigned i = 0; i < m_num_planes; ++i) {
-		FramebufferPlane& plane = m_planes[i];
+		const FramebufferPlane& plane = m_planes[i];
 
 		delete[] plane.map;
 	}

@@ -26,7 +26,7 @@ static bool s_support_planes;
 class GbmDevice
 {
 public:
-	GbmDevice(Card& card)
+	explicit GbmDevice(Card& card)
 	{
 		m_dev = gbm_create_device(card.fd());
 		FAIL_IF(!m_dev, "failed to create gbm device");

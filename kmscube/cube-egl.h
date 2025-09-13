@@ -5,7 +5,7 @@
 class EglState
 {
 public:
-	EglState(void* native_display);
+	explicit EglState(void* native_display);
 	EglState(void* native_display, EGLint native_visual_id);
 	~EglState();
 

@@ -969,7 +969,7 @@ class FlipState : private PageFlipHandlerBase
 {
 public:
 	FlipState(Card& card, const string& name, const vector<const OutputInfo*>& outputs)
-		: m_card(card), m_name(name), m_outputs(outputs)
+		: m_card(card), m_name(name), m_outputs(outputs), m_frame_num(0), m_flip_count(0)
 	{
 	}
 

@@ -7,6 +7,7 @@
 using namespace std;
 
 GlScene::GlScene()
+	: m_width(0), m_height(0)
 {
 	GLuint vertex_shader, fragment_shader;
 	GLint ret;

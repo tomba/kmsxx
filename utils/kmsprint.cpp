@@ -330,9 +330,9 @@ static void print_entry(const Entry& e, const string& prefix, bool is_child, boo
 	}
 
 	for (const Entry& child : e.children) {
-		bool is_last = &child == &e.children.back();
+		bool child_is_last = &child == &e.children.back();
 
-		print_entry(child, prefix2, true, is_last);
+		print_entry(child, prefix2, true, child_is_last);
 	}
 }
 

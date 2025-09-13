@@ -269,9 +269,9 @@ void Card::setup()
 			uint32_t prop_id = props->props[i];
 
 			if (m_obmap.find(prop_id) == m_obmap.end()) {
-				auto ob = new Property(*this, prop_id);
-				m_obmap[prop_id] = ob;
-				m_properties.push_back(ob);
+				auto prop = new Property(*this, prop_id);
+				m_obmap[prop_id] = prop;
+				m_properties.push_back(prop);
 			}
 		}
 

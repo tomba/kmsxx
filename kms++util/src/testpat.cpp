@@ -201,8 +201,8 @@ static YUV16 get_smpte_pixel(size_t w, size_t h, size_t x, size_t y)
 		const size_t ramp_width = a - 2 * d;
 		const size_t ramp_x = x - d;
 
-		uint16_t y = 256 + (3760 - 256) * ramp_x / ramp_width;
-		return YUV16::from_12(y, 2048, 2048);
+		uint16_t y_val = 256 + (3760 - 256) * ramp_x / ramp_width;
+		return YUV16::from_12(y_val, 2048, 2048);
 	}
 
 	// Pattern 4 (PLUGE)

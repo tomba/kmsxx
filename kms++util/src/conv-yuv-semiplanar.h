@@ -121,10 +121,10 @@ public:
 
 			if (y_offset == 0) {
 				// Fill line buffers
-				for (size_t y_offset = 0; y_offset < v_sub; y_offset++) {
-					auto line = md::submdspan(linebuf, y_offset, md::full_extent);
+				for (size_t y_off = 0; y_off < v_sub; y_off++) {
+					auto line = md::submdspan(linebuf, y_off, md::full_extent);
 					std::span<YUV16> span(line.data_handle(), line.size());
-					generate_line(y_src + y_offset, span);
+					generate_line(y_src + y_off, span);
 				}
 			}
 

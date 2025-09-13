@@ -23,9 +23,9 @@ struct window {
 static void registry_add_object(void* data, struct wl_registry* registry, uint32_t name, const char* interface, uint32_t version)
 {
 	if (!strcmp(interface, "wl_compositor"))
-		s_compositor = (struct wl_compositor*)wl_registry_bind(registry, name, &wl_compositor_interface, 0);
+		s_compositor = static_cast<struct wl_compositor*>(wl_registry_bind(registry, name, &wl_compositor_interface, 0));
 	else if (!strcmp(interface, "wl_shell"))
-		s_shell = (struct wl_shell*)wl_registry_bind(registry, name, &wl_shell_interface, 0);
+		s_shell = static_cast<struct wl_shell*>(wl_registry_bind(registry, name, &wl_shell_interface, 0));
 }
 
 static void registry_remove_object(void* data, struct wl_registry* registry, uint32_t name)
@@ -41,7 +41,7 @@ static void shell_surface_ping(void* data, struct wl_shell_surface* shell_surfac
 
 static void shell_surface_configure(void* data, struct wl_shell_surface* shell_surface, uint32_t edges, int32_t width, int32_t height)
 {
-	struct window* window = (struct window*)data;
+	struct window* window = static_cast<struct window*>(data);
 
 	wl_egl_window_resize(window->egl_window, width, height, 0, 0);
 }

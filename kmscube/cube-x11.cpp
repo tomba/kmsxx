@@ -13,7 +13,7 @@ using namespace std;
 static void main_loop(Display* dpy, xcb_connection_t* c, xcb_window_t window, uint32_t width, uint32_t height)
 {
 	EglState egl(dpy);
-	EglSurface surface(egl, (void*)(uintptr_t)window);
+	EglSurface surface(egl, reinterpret_cast<void*>(static_cast<uintptr_t>(window)));
 	GlScene scene;
 
 	scene.set_viewport(width, height);

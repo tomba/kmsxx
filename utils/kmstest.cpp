@@ -748,7 +748,7 @@ static string fb_crc(IFramebuffer* fb)
 
 	for (unsigned y = 0; y < fb->height(); ++y) {
 		for (unsigned x = 0; x < fb->width(); ++x) {
-			uint32_t* p32 = (uint32_t*)(p + fb->stride(0) * y + x * 4);
+			uint32_t* p32 = reinterpret_cast<uint32_t*>(p + fb->stride(0) * y + x * 4);
 			RGB rgb(*p32);
 
 			r = crc16(r, rgb.r);

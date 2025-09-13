@@ -12,7 +12,7 @@ using namespace kms;
 static void read_frame(ifstream& is, DumbFramebuffer* fb, Crtc* crtc, Plane* plane)
 {
 	for (unsigned i = 0; i < fb->num_planes(); ++i)
-		is.read((char*)fb->map(i), fb->size(i));
+		is.read(reinterpret_cast<char*>(fb->map(i)), fb->size(i));
 
 	unsigned w = min(crtc->width(), fb->width());
 	unsigned h = min(crtc->height(), fb->height());

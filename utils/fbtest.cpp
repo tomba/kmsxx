@@ -33,10 +33,10 @@ int main(int argc, char** argv)
 	r = ioctl(fd, FBIOGET_FSCREENINFO, &fix);
 	FAIL_IF(r, "FBIOGET_FSCREENINFO failed");
 
-	uint8_t* ptr = (uint8_t*)mmap(NULL,
+	uint8_t* ptr = static_cast<uint8_t*>(mmap(NULL,
 				      var.yres_virtual * fix.line_length,
 				      PROT_WRITE | PROT_READ,
-				      MAP_SHARED, fd, 0);
+				      MAP_SHARED, fd, 0));
 
 	FAIL_IF(ptr == MAP_FAILED, "mmap failed");
 

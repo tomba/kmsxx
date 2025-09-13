@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 	printf("file size %u, frame size %u, frames %u\n", fsize, frame_size, num_frames);
 
 	for (unsigned i = 0; i < num_frames; ++i) {
-		printf("frame %d", i);
+		printf("frame %u", i);
 		fflush(stdout);
 		read_frame(is, fb, crtc, plane);
 		if (!time) {

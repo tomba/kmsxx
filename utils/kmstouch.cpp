@@ -64,7 +64,7 @@ static void print_code_bits(struct libevdev* dev, unsigned int type, unsigned in
 		if (!libevdev_has_event_code(dev, type, i))
 			continue;
 
-		printf("    Event code %i (%s)\n", i, libevdev_event_code_get_name(type, i));
+		printf("    Event code %u (%s)\n", i, libevdev_event_code_get_name(type, i));
 		if (type == EV_ABS)
 			print_abs_bits(dev, i);
 	}
@@ -78,7 +78,7 @@ static void print_bits(struct libevdev* dev)
 		if (!libevdev_has_event_type(dev, i))
 			continue;
 
-		printf("  Event type %d (%s)\n", i, libevdev_event_type_get_name(i));
+		printf("  Event type %u (%s)\n", i, libevdev_event_type_get_name(i));
 
 		switch (i) {
 		case EV_KEY:
@@ -120,7 +120,7 @@ static void print_props(struct libevdev* dev)
 		if (!libevdev_has_property(dev, i))
 			continue;
 
-		printf("  Property type %d (%s)\n", i, libevdev_property_get_name(i));
+		printf("  Property type %u (%s)\n", i, libevdev_property_get_name(i));
 	}
 }
 

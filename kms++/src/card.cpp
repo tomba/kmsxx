@@ -70,7 +70,7 @@ static int open_first_kms_device()
 	throw runtime_error("No modesetting DRM card found");
 }
 
-static int open_device_by_path(string path)
+static int open_device_by_path(const string& path)
 {
 	int fd = open(path.c_str(), O_RDWR | O_CLOEXEC);
 	if (fd < 0)

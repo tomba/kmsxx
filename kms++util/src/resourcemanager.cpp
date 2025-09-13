@@ -17,7 +17,7 @@ void ResourceManager::reset()
 	m_reserved_planes.clear();
 }
 
-static Connector* find_connector(Card& card, const set<Connector*> reserved)
+static Connector* find_connector(Card& card, const set<Connector*>& reserved)
 {
 	for (Connector* conn : card.get_connectors()) {
 		if (!conn->connected())
@@ -32,7 +32,7 @@ static Connector* find_connector(Card& card, const set<Connector*> reserved)
 	return nullptr;
 }
 
-static Connector* resolve_connector(Card& card, const string& name, const set<Connector*> reserved)
+static Connector* resolve_connector(Card& card, const string& name, const set<Connector*>& reserved)
 {
 	auto connectors = card.get_connectors();
 

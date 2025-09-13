@@ -333,7 +333,7 @@ int main(int argc, char** argv)
 
 	vector<int> camera_fds;
 
-	for (string vidpath : glob("/dev/video*")) {
+	for (const string& vidpath : glob("/dev/video*")) {
 		int fd = ::open(vidpath.c_str(), O_RDWR | O_NONBLOCK);
 
 		if (fd < 0)

@@ -968,7 +968,7 @@ static bool max_flips_reached;
 class FlipState : private PageFlipHandlerBase
 {
 public:
-	FlipState(Card& card, const string& name, vector<const OutputInfo*> outputs)
+	FlipState(Card& card, const string& name, const vector<const OutputInfo*>& outputs)
 		: m_card(card), m_name(name), m_outputs(outputs)
 	{
 	}

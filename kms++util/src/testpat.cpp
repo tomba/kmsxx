@@ -476,7 +476,7 @@ void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options
 	for (size_t p = 0; p < info.num_planes; ++p)
 		v_sub = max(v_sub, info.planes[p].vsub);
 
-	if (fb.height() % v_sub)
+	if (!v_sub || fb.height() % v_sub)
 		throw invalid_argument("FB height must be divisible with vsub");
 
 	// Create the mmaps before starting the threads

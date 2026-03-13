@@ -13,6 +13,7 @@ static const char* usage_str =
 	"Blank screen(s)\n\n"
 	"Options:\n"
 	"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
+	"  -C, --card=NUM            open /dev/dri/card<NUM>\n"
 	"  -c, --connector=CONN      CONN is <connector>\n"
 	"  -t, --time=TIME           blank/unblank in TIME intervals\n"
 	"\n"
@@ -34,6 +35,9 @@ int main(int argc, char** argv)
 	OptionSet optionset = {
 		Option("|device=", [&dev_path](string s) {
 			dev_path = s;
+		}),
+		Option("C|card=", [&dev_path](string s) {
+			dev_path = "/dev/dri/card" + s;
 		}),
 		Option("c|connector=", [&conn_strs](string str) {
 			conn_strs.push_back(str);

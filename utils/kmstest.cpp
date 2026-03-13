@@ -400,6 +400,7 @@ static const char* usage_str =
 	"Show a test pattern on a display or plane\n\n"
 	"Options:\n"
 	"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
+	"  -C, --card=NUM            open /dev/dri/card<NUM>\n"
 	"  -c, --connector=CONN      CONN is <connector>\n"
 	"  -r, --crtc=CRTC           CRTC is [<crtc>:]<w>x<h>[@<Hz>]\n"
 	"                            or\n"
@@ -470,6 +471,10 @@ static vector<Arg> parse_cmdline(int argc, char** argv)
 		Option("|device=",
 		       [&](string s) {
 			       s_device_path = s;
+		       }),
+		Option("C|card=",
+		       [&](string s) {
+			       s_device_path = "/dev/dri/card" + s;
 		       }),
 		Option("c|connector=",
 		       [&](string s) {

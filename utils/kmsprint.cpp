@@ -464,6 +464,7 @@ static const char* usage_str =
 	"Usage: kmsprint [OPTIONS]\n\n"
 	"Options:\n"
 	"      --device=DEVICE     DEVICE is the path to DRM card to open\n"
+	"  -C, --card=NUM          open /dev/dri/card<NUM>\n"
 	"  -l, --list              Print list instead of tree\n"
 	"  -m, --modes             Print modes\n"
 	"      --xmode             Print modes using X modeline\n"
@@ -481,6 +482,9 @@ int main(int argc, char** argv)
 	OptionSet optionset = {
 		Option("|device=", [&dev_path](string s) {
 			dev_path = s;
+		}),
+		Option("C|card=", [&dev_path](string s) {
+			dev_path = "/dev/dri/card" + s;
 		}),
 		Option("l|list", []() {
 			s_opts.print_list = true;

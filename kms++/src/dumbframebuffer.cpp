@@ -36,7 +36,7 @@ DumbFramebuffer::DumbFramebuffer(Card& card, uint32_t width, uint32_t height, Pi
 	for (int i = 0; i < format_info.num_planes; ++i) {
 		FramebufferPlane& plane = m_planes.at(i);
 
-		auto [w, h, bpp] = format_info.dumb_size(width, height);
+		auto [w, h, bpp] = format_info.dumb_size(width, height, i);
 
 		/* create dumb buffer */
 		struct drm_mode_create_dumb creq = drm_mode_create_dumb();

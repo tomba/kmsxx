@@ -2,7 +2,7 @@
 #include <xf86drmMode.h>
 #include <cmath>
 #include <sstream>
-#include <fmt/format.h>
+#include <kms++/format.h>
 
 #include <kms++/kms++.h>
 #include "helpers.h"

@@ -1,6 +1,5 @@
 
 #include <cstring>
-#include <fmt/format.h>
 #include <functional>
 #include <optional>
 #include <span>

@@ -9,7 +9,7 @@
 
 #include <sys/select.h>
 
-#include <fmt/format.h>
+#include <kms++/format.h>
 
 #include <kms++/kms++.h>
 #include <kms++/modedb.h>

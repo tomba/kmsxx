@@ -68,7 +68,7 @@ else
     omapdrm_enabled = false
 endif
 
-libkmsxx_deps = [ libdrm_dep, libfmt_dep, libdrmomap_dep ]
+libkmsxx_deps = [ libdrm_dep, libdrmomap_dep ]
 
 libkmsxx = library('kms++',
                    libkmsxx_sources,

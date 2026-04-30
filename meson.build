@@ -36,8 +36,6 @@ endif
 
 add_project_arguments(cpp_arguments, language : 'cpp')
 
-libfmt_dep = dependency('fmt')
-
 libdrmomap_dep = dependency('libdrm_omap', required : get_option('omap'))
 
 if libdrmomap_dep.found()

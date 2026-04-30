@@ -52,7 +52,7 @@ jobs:
     - name: install deps
       run: |
         sudo apt install -y libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libwayland-dev \
-          libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev libfmt-dev
+          libx11-xcb-dev libx11-dev libgbm-dev libevdev-dev
 
     - name: configure
       env:

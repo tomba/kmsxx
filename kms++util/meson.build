@@ -40,7 +40,7 @@ if thread_dep.found()
     libkmsxxutil_args += [ '-DHAS_PTHREAD' ]
 endif
 
-libkmsxxutil_deps = [ libkmsxx_dep, libfmt_dep, thread_dep ]
+libkmsxxutil_deps = [ libkmsxx_dep, thread_dep ]
 
 libkmsxxutil = library('kms++util',
                        libkmsxxutil_sources,

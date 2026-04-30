@@ -21,7 +21,7 @@ kmscube_sources = files([
 ])
 
 kmscube_deps = [
-    libdrm_dep, libkmsxx_dep, libkmsxxutil_dep, libfmt_dep,
+    libdrm_dep, libkmsxx_dep, libkmsxxutil_dep,
     dependency('x11'),
     dependency('xcb'),
     dependency('x11-xcb'),

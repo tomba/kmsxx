@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
-#include <fmt/format.h>
+#include <kms++/format.h>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>

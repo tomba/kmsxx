@@ -10,7 +10,7 @@ endif
 
 utils_enabled = true
 
-common_deps = [ libkmsxx_dep, libkmsxxutil_dep, libfmt_dep ]
+common_deps = [ libkmsxx_dep, libkmsxxutil_dep ]
 
 libevdev_dep = dependency('libevdev', required : false)
 

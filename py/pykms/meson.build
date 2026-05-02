@@ -1,15 +1,22 @@
+python_mod = import('python')
+py3 = python_mod.find_installation('python3', required : get_option('pykms'))
 
-py3_dep = dependency('python3', required : get_option('pykms'))
+if py3.found() == false
+    pybindings_enabled = false
+    subdir_done()
+endif
+
+py3_dep = py3.dependency(required : get_option('pykms'))
 
 if py3_dep.found() == false
     pybindings_enabled = false
     subdir_done()
 endif
 
-pybind11_dep = dependency('pybind11', fallback : ['pybind11', 'pybind11_dep'],
+nanobind_dep = dependency('nanobind', fallback : ['nanobind', 'nanobind_dep'],
                           required : get_option('pykms'))
 
-if pybind11_dep.found() == false
+if nanobind_dep.found() == false
     pybindings_enabled = false
     subdir_done()
 endif
@@ -36,7 +43,7 @@ endif
 pykms_deps = [
     libkmsxx_dep,
     py3_dep,
-    pybind11_dep,
+    nanobind_dep,
 ]
 
 if get_option('libutils')
@@ -55,6 +62,29 @@ pykms = shared_module('pykms',
                       dependencies : pykms_deps,
                       cpp_args : pykms_args)
 
-# Copy __init__.py to build dir so that we can run without installing
+# Copy Python package files to the build dir so that we can run without installing
 configure_file(input: '__init__.py', output: '__init__.py', copy: true,
                install : true, install_dir : destdir)
+configure_file(input: '__init__.pyi', output: '__init__.pyi', copy: true,
+               install : true, install_dir : destdir)
+
+nanobind_stubgen = nanobind_dep.get_variable('stubgen', default_value : '')
+if nanobind_stubgen == ''
+    stubgen_cmd = [ py3, '-m', 'nanobind.stubgen' ]
+else
+    stubgen_cmd = [ py3, nanobind_stubgen ]
+endif
+
+custom_target('pykms-stubs',
+              output : [ 'pykms.pyi', 'py.typed' ],
+              depends : [ pykms ],
+              command : stubgen_cmd + [
+                  '-m', 'pykms.pykms',
+                  '-o', '@OUTPUT0@',
+                  '-M', '@OUTPUT1@',
+                  '-i', meson.project_build_root() / 'py',
+                  '-q',
+              ],
+              build_by_default : true,
+              install : true,
+              install_dir : destdir)

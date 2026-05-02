@@ -1,21 +1,25 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
 #include <kms++/kms++.h>
 #include <kms++/omap/omapkms++.h>
 
-namespace py = pybind11;
+namespace py = nanobind;
 
 using namespace kms;
 using namespace std;
 
-void init_pykmsomap(py::module& m)
+void init_pykmsomap(py::module_& m)
 {
-	py::class_<OmapCard, Card>(m, "OmapCard")
+	py::class_<OmapCard, Card>(m, "OmapCard", R"doc(
+OMAP DRM/KMS card handle.
+)doc")
 		.def(py::init<>());
 
-	py::class_<OmapFramebuffer, Framebuffer> omapfb(m, "OmapFramebuffer");
+	py::class_<OmapFramebuffer, Framebuffer> omapfb(m, "OmapFramebuffer", R"doc(
+Framebuffer backed by OMAP-specific buffer allocation.
+)doc");
 
-	// XXX we should use py::arithmetic() here to support or and and operators, but it's not supported in the pybind11 we use
+	// XXX we should support or and and operators for the flag enum.
 	py::enum_<OmapFramebuffer::Flags>(omapfb, "Flags")
 		.value("None", OmapFramebuffer::Flags::None)
 		.value("Tiled", OmapFramebuffer::Flags::Tiled)
@@ -31,9 +35,9 @@ void init_pykmsomap(py::module& m)
 		.def(py::init<OmapCard&, uint32_t, uint32_t, PixelFormat, OmapFramebuffer::Flags>(),
 		     py::keep_alive<1, 2>(), // Keep OmapCard alive until this is destructed
 		     py::arg("card"), py::arg("width"), py::arg("height"), py::arg("pixfmt"), py::arg("flags") = OmapFramebuffer::None)
-		.def_property_readonly("format", &OmapFramebuffer::format)
-		.def_property_readonly("num_planes", &OmapFramebuffer::num_planes)
-		.def("fd", &OmapFramebuffer::prime_fd)
-		.def("stride", &OmapFramebuffer::stride)
-		.def("offset", &OmapFramebuffer::offset);
+		.def_prop_ro("format", &OmapFramebuffer::format)
+		.def_prop_ro("num_planes", &OmapFramebuffer::num_planes)
+		.def("fd", &OmapFramebuffer::prime_fd, py::arg("plane"))
+		.def("stride", &OmapFramebuffer::stride, py::arg("plane"))
+		.def("offset", &OmapFramebuffer::offset, py::arg("plane"));
 }

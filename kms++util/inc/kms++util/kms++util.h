@@ -3,7 +3,6 @@
 #include <kms++/kms++.h>
 
 #include <kms++util/color.h>
-#include <kms++util/color16.h>
 #include <kms++util/strhelpers.h>
 #include <kms++util/cpuframebuffer.h>
 #include <kms++util/extcpuframebuffer.h>
@@ -18,6 +17,9 @@ namespace kms
 {
 class IFramebuffer;
 
+enum class ColorRange { Limited, Full };
+enum class RecStandard { BT601, BT709, BT2020 };
+
 void draw_rgb_pixel(IFramebuffer& buf, unsigned x, unsigned y, RGB color);
 void draw_yuv444_pixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv);
 void draw_yuv422_macropixel(IFramebuffer& buf, unsigned x, unsigned y, YUV yuv1, YUV yuv2);
@@ -29,10 +31,6 @@ void draw_text(IFramebuffer& buf, uint32_t x, uint32_t y, const std::string& str
 
 void draw_color_bar(IFramebuffer& buf, int old_xpos, int xpos, int width);
 
-void draw_test_pattern_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
-void draw_test_pattern_single_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
-void draw_test_pattern_multi_old(IFramebuffer& fb, YUVType yuvt = YUVType::BT601_Lim);
-
 struct TestPatternOptions {
 	std::string pattern;
 	RecStandard rec = RecStandard::BT709;
@@ -40,8 +38,6 @@ struct TestPatternOptions {
 };
 
 void draw_test_pattern(IFramebuffer& fb, const TestPatternOptions& options = {});
-void draw_test_pattern_single(IFramebuffer& fb, const TestPatternOptions& options = {});
-void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options = {});
 } // namespace kms
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
@@ -84,23 +80,3 @@ void draw_test_pattern_multi(IFramebuffer& fb, const TestPatternOptions& options
 		fprintf(stderr, fmt "\n", ##__VA_ARGS__); \
 		exit(-1);                                 \
 	}
-
-extern "C" {
-
-struct CDrawTestPatternParameters {
-	uint32_t width;
-	uint32_t height;
-	const char* format_name;
-	uint8_t* buffers[4];
-	uint32_t sizes[4];
-	uint32_t pitches[4];
-	uint32_t offsets[4];
-
-	const char* pattern;
-	uint32_t rec_standard;
-	bool full_range;
-};
-
-int c_draw_test_pattern(struct CDrawTestPatternParameters* params);
-
-}

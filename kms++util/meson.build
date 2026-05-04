@@ -19,7 +19,6 @@ libkmsxxutil_sources = files([
 
 public_headers = [
     'inc/kms++util/color.h',
-    'inc/kms++util/color16.h',
     'inc/kms++util/kms++util.h',
     'inc/kms++util/stopwatch.h',
     'inc/kms++util/cpuframebuffer.h',
@@ -29,7 +28,7 @@ public_headers = [
     'inc/kms++util/resourcemanager.h',
 ]
 
-private_includes = include_directories('src', 'inc', '../ext/mdspan/include')
+private_includes = include_directories('src', 'inc')
 public_includes = include_directories('inc')
 
 thread_dep = dependency('threads', required : false)
@@ -40,7 +39,11 @@ if thread_dep.found()
     libkmsxxutil_args += [ '-DHAS_PTHREAD' ]
 endif
 
-libkmsxxutil_deps = [ libkmsxx_dep, thread_dep ]
+pixpat_proj = subproject('pixpat',
+    default_options : ['config=pixpat-native/profiles/pattern_only.toml'])
+libpixpat_dep = pixpat_proj.get_variable('libpixpat_static_dep')
+
+libkmsxxutil_deps = [ libkmsxx_dep, thread_dep, libpixpat_dep ]
 
 libkmsxxutil = library('kms++util',
                        libkmsxxutil_sources,

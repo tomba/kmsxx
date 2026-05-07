@@ -379,8 +379,8 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 		break;
 
 	switch (fb.format()) {
-		CASE_YUV_SEMI(XV20);
-		CASE_YUV_SEMI(XV15);
+		CASE_YUV_SEMI(P230);
+		CASE_YUV_SEMI(P030);
 		CASE_YUV_SEMI(NV12);
 		CASE_YUV_SEMI(NV21);
 		CASE_YUV_SEMI(NV16);
@@ -429,9 +429,9 @@ static void draw_test_pattern_part(IFramebuffer& fb, size_t start_y, size_t end_
 		CASE_YUV_PLANAR(YVU420);
 
 		CASE_Y_ONLY(Y8);
-		CASE_Y_ONLY(Y10_P32);
+		CASE_Y_ONLY(XYYY2101010);
 
-		CASE_YUV_PLANAR_PACKED(X403);
+		CASE_YUV_PLANAR_PACKED(T430);
 
 		CASE_RAW(SRGGB8);
 		CASE_RAW(SGBRG8);

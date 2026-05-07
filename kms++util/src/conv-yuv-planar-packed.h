@@ -9,9 +9,9 @@
 
 namespace kms
 {
-/* YUV Planar Packed (only X403 for now) */
+/* YUV Planar Packed (only T430 for now) */
 
-struct X403_Layout : FormatLayout <
+struct T430_Layout : FormatLayout <
 	PlaneLayout<uint32_t,
 		ComponentLayout<ComponentType::Y, 10, 0>,
 		ComponentLayout<ComponentType::Y, 10, 10>,

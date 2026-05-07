@@ -28,7 +28,7 @@ using Y12_Layout = FormatLayout<PlaneLayout<uint16_t,
 using Y16_Layout = FormatLayout<PlaneLayout<uint16_t,
 	ComponentLayout<ComponentType::Y, 16, 0>>>;
 
-using Y10_P32_Layout = FormatLayout<PlaneLayout<uint32_t,
+using XYYY2101010_Layout = FormatLayout<PlaneLayout<uint32_t,
 	ComponentLayout<ComponentType::Y, 10, 0>,   // Y0
 	ComponentLayout<ComponentType::Y, 10, 10>,  // Y1
 	ComponentLayout<ComponentType::Y, 10, 20>,  // Y2

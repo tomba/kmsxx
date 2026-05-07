@@ -502,10 +502,10 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
-		PixelFormat::XV15, {
+		PixelFormat::P030, {
 			PixelFormatInfo {
-				"XV15",
-				"XV15",
+				"P030",
+				"P030",
 				"",
 				PixelColorType::YUV,
 				{ 6, 2 },
@@ -514,10 +514,10 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
-		PixelFormat::XV20, {
+		PixelFormat::P230, {
 			PixelFormatInfo {
-				"XV20",
-				"XV20",
+				"P230",
+				"P230",
 				"",
 				PixelColorType::YUV,
 				{ 6, 2 },
@@ -610,10 +610,10 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
-		PixelFormat::X403, {
+		PixelFormat::T430, {
 			PixelFormatInfo {
-				"X403",
-				"X403",
+				"T430",
+				"T430",
 				"",
 				PixelColorType::YUV,
 				{ 1, 1 },
@@ -682,9 +682,9 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
-		PixelFormat::Y10_P32, {
+		PixelFormat::XYYY2101010, {
 			PixelFormatInfo {
-				"Y10_P32",
+				"XYYY2101010",
 				"YPA4",
 				"",
 				PixelColorType::YUV,
@@ -987,7 +987,7 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 				"MJPEG",
 				"MJPG",
 				"MJPG",
-				PixelColorType::YUV,
+				PixelColorType::Undefined,
 				{ 1, 1 },
 				{ { 1, 1, 1, 1 } },
 			}
@@ -1087,8 +1087,7 @@ uint32_t PixelFormatInfo::planesize(uint32_t stride, uint32_t height,
 	return stride * (height / pi.vsub);
 }
 
-uint32_t PixelFormatInfo::framesize(uint32_t width, uint32_t height,
-				    uint32_t align) const
+uint32_t PixelFormatInfo::framesize(uint32_t width, uint32_t height, uint32_t align) const
 {
 	uint32_t size = 0;
 
@@ -1113,7 +1112,7 @@ std::tuple<uint32_t, uint32_t, uint32_t> PixelFormatInfo::dumb_size(uint32_t wid
         DRM_IOCTL_MODE_CREATE_DUMB takes a 'bpp' (bits-per-pixel) argument,
         which is then used with the width and height to allocate the buffer.
         This doesn't work for pixel formats where the average bits-per-pixel
-        is not an integer (e.g. XV15)
+        is not an integer (e.g. P030)
 
         So, we instead use the bytes_per_block (in bits) as
         the 'bpp' argument, and adjust the width accordingly.

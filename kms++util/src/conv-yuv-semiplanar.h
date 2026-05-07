@@ -35,7 +35,7 @@ using NV16_Layout = NV12_Family_Layout<ComponentType::Cb, ComponentType::Cr, 2, 
 using NV61_Layout = NV12_Family_Layout<ComponentType::Cr, ComponentType::Cb, 2, 1>;
 
 template<size_t HSub, size_t VSub>
-struct XV15_Family_Layout
+struct P030_Family_Layout
 	: public FormatLayout<
 		PlaneLayout<uint32_t,
 		    ComponentLayout<ComponentType::Y, 10, 0>,
@@ -56,8 +56,8 @@ struct XV15_Family_Layout
 	static constexpr size_t v_sub = VSub;
 };
 
-using XV15_Layout = XV15_Family_Layout<2, 2>;
-using XV20_Layout = XV15_Family_Layout<2, 1>;
+using P030_Layout = P030_Family_Layout<2, 2>;
+using P230_Layout = P030_Family_Layout<2, 1>;
 
 template<size_t HSub, size_t VSub>
 struct SubsampleHelper {

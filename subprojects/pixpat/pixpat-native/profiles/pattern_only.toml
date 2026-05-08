@@ -1,0 +1,11 @@
+# kms++ profile: pattern drawing only, all formats targetable.
+
+hot_pivots = []
+patterns = ["kmstest", "smpte", "plain", "checker", "hramp", "vramp", "hbar", "vbar", "dramp", "zoneplate"]
+
+[features]
+pattern = true
+convert = false
+default_format_caps = "rw"
+
+[formats]

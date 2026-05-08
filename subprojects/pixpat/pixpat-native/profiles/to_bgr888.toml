@@ -1,0 +1,17 @@
+# "Decode many formats into BGR888" profile.
+#
+# - convert is on, pattern is off
+# - BGR888 is the only writable format (so all conversions land there)
+# - every other format is readable only — no per-format Sink instantiations
+# - BGR888 hot pivot fuses every (read-only-source → BGR888) loop
+
+hot_pivots = ["BGR888"]
+patterns = []
+
+[features]
+pattern = false
+convert = true
+default_format_caps = "r"
+
+[formats]
+BGR888 = "w"

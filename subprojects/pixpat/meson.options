@@ -1,0 +1,4 @@
+option('config',
+       type        : 'string',
+       value       : 'pixpat-native/profiles/pixpat.toml',
+       description : 'Path (relative to project source root) to the pixpat codegen TOML config.')

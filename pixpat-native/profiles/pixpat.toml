@@ -1,0 +1,31 @@
+# pixpat user config (consumed by gen_pixpat.py).
+#
+# This file expresses *selection*: which top-level features, which
+# hot pivots, which patterns, and per-format capability overrides.
+# The fixed catalog of formats (each one's Source/Sink/Layout) lives
+# in gen_pixpat.py and is the same across all profiles.
+
+# Hot pivots. Each named format gets fully-fused
+# Converter<Src, all-write-sinks> and Converter<all-read-sources, Snk>
+# instantiations. Empty list = every conversion takes the normalized
+# (cold) path.
+hot_pivots = ["BGR888"]
+
+# Patterns to compile in. The first entry is the default for
+# unrecognized pattern names. Empty list disables the pattern feature.
+patterns = ["kmstest", "smpte", "plain", "checker", "hramp", "vramp", "hbar", "vbar", "dramp", "zoneplate"]
+
+[features]
+# Top-level toggles. False stubs the matching C entry point to -1.
+pattern = true
+convert = true
+
+# Default capability ("rw", "r", "w", "off") applied to every format
+# in the catalog. Per-format overrides go in the [formats] table.
+default_format_caps = "rw"
+
+# Per-format capability overrides. Anything not listed uses
+# default_format_caps. Use "off" to drop a format entirely.
+[formats]
+# RGB888 = "r"      # readable only
+# YUV420 = "off"    # not in this build

@@ -1,0 +1,9 @@
+/build/
+/build-*/
+/pixpat-python/build/
+/pixpat-python/build-*/
+/dist/
+/wheelhouse/
+pixpat-python/pixpat/_lib/libpixpat.so*
+*.egg-info/
+__pycache__/

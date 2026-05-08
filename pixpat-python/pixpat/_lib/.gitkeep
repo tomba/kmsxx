@@ -1,0 +1,3 @@
+# Placeholder so the _lib/ directory exists in source control.
+# `pip install .` and `pip install -e .` populate libpixpat.so.0 here
+# (copy and symlink respectively); see setup.py.

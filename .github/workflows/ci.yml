@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master, test]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint (uncrustify + ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install uncrustify
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y uncrustify
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: uncrustify --check
+        run: |
+          files=$(git ls-files '*.cpp' '*.h')
+          uncrustify -c uncrustify.cfg -l CPP --check $files
+
+      - name: ruff check
+        run: ruff check .
+
+      - name: ruff format --check
+        run: ruff format --check .
+
+  build:
+    name: build (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            sudo apt-get install -y clang
+          fi
+
+      - name: Configure meson
+        run: |
+          if [ "${{ matrix.compiler }}" = "clang" ]; then
+            export CC=clang CXX=clang++
+          else
+            export CC=gcc CXX=g++
+          fi
+          meson setup build
+
+      - name: Compile
+        run: meson compile -C build
+
+      - name: Run native tests
+        run: meson test -C build --print-errorlogs
+
+      - name: Install pixpat wheel
+        run: pip install .
+
+      - name: Run pytest
+        run: |
+          pip install pytest
+          pytest pixpat-python/tests

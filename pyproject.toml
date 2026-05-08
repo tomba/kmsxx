@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=70.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixpat"
+# Keep version in sync with meson.build (single source of truth would be nice;
+# revisit if it ever drifts in practice).
+version = "1.0.0"
+description = "Pixel format conversion and test pattern generation"
+requires-python = ">=3.9"
+authors = [{name = "Tomi Valkeinen", email = "tomi.valkeinen@ideasonboard.com"}]
+
+[tool.setuptools]
+package-dir = {"" = "pixpat-python"}
+packages = ["pixpat"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
+multiline-quotes = 'single'
+
+[tool.ruff.format]
+quote-style = 'single'

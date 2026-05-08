@@ -70,6 +70,18 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::XBGR1555, {
+			PixelFormatInfo {
+				"XBGR1555",
+				"XB15",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 2, 1, 1, 1 } },
+			}
+		}
+	},
+	{
 		PixelFormat::RGBX4444, {
 			PixelFormatInfo {
 				"RGBX4444",
@@ -94,10 +106,34 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::XBGR4444, {
+			PixelFormatInfo {
+				"XBGR4444",
+				"XB12",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 2, 1, 1, 1 } },
+			}
+		}
+	},
+	{
 		PixelFormat::ARGB1555, {
 			PixelFormatInfo {
 				"ARGB1555",
 				"AR15",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 2, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ABGR1555, {
+			PixelFormatInfo {
+				"ABGR1555",
+				"AB15",
 				"",
 				PixelColorType::RGB,
 				{ 1, 1 },
@@ -122,6 +158,18 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 			PixelFormatInfo {
 				"ARGB4444",
 				"AR12",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 2, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ABGR4444, {
+			PixelFormatInfo {
+				"ABGR4444",
+				"AB12",
 				"",
 				PixelColorType::RGB,
 				{ 1, 1 },

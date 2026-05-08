@@ -58,7 +58,7 @@ jobs:
       env:
         CC: ${{ matrix.config.cc }}
         CXX: ${{ matrix.config.cxx }}
-      run: SCANBUILD="/usr/bin/scan-build --status-bugs" meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true -Db_lto=true build
+      run: SCANBUILD="/usr/bin/scan-build --status-bugs" meson setup -Dkmscube=true -Dpykms=enabled -Dwerror=true build
 
     - name: build
       run: ninja -v -C build

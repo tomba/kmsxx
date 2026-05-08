@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cinttypes>
+#include <thread>
 
 #include <sys/select.h>
 
@@ -70,6 +71,7 @@ static bool s_cvt_v2;
 static bool s_cvt_vid_opt;
 static unsigned s_max_flips;
 static bool s_print_crc;
+static unsigned s_run_time;
 static TestPatternOptions s_pattern_options;
 
 __attribute__((unused)) static void print_regex_match(smatch sm)
@@ -415,6 +417,7 @@ static const char* usage_str =
 	"      --flip[=max]          Do page flipping for each output with an optional maximum flips count\n"
 	"      --sync                Synchronize page flipping\n"
 	"      --crc                 Print CRC16 for framebuffer contents\n"
+	"  -t, --time=SECONDS        Run for SECONDS and exit (no stdin read)\n"
 	"  -T, --pattern=PAT         test, white, black, red, green, blue, smpte\n"
 	"      --rec=REC             bt601, bt709, bt2020\n"
 	"      --range=RANGE         limited, full\n"
@@ -524,6 +527,9 @@ static vector<Arg> parse_cmdline(int argc, char** argv)
 		}),
 		Option("|crc", []() {
 			s_print_crc = true;
+		}),
+		Option("t|time=", [&](string s) {
+			s_run_time = stoul(s);
 		}),
 		Option("T|pattern=", [&](string s) {
 			s_pattern_options.pattern = s;
@@ -1141,10 +1147,13 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 	for (unique_ptr<FlipState>& fs : flipstates)
 		fs->start_flipping();
 
+	auto deadline = chrono::steady_clock::now() + chrono::seconds(s_run_time);
+
 	while (!max_flips_reached) {
 		int r;
 
-		FD_SET(0, &fds);
+		if (s_run_time == 0)
+			FD_SET(0, &fds);
 		FD_SET(fd, &fds);
 
 		r = select(fd + 1, &fds, NULL, NULL, NULL);
@@ -1157,6 +1166,9 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 		} else if (FD_ISSET(fd, &fds)) {
 			card.call_page_flip_handlers();
 		}
+
+		if (s_run_time > 0 && chrono::steady_clock::now() >= deadline)
+			break;
 	}
 #endif
 }
@@ -1184,10 +1196,15 @@ int main(int argc, char** argv)
 
 	set_crtcs_n_planes(card, outputs);
 
-	fmt::print("press enter to exit\n");
+	if (s_run_time > 0)
+		fmt::print("running for {} seconds\n", s_run_time);
+	else
+		fmt::print("press enter to exit\n");
 
 	if (s_flip_mode)
 		main_flip(card, outputs);
+	else if (s_run_time > 0)
+		std::this_thread::sleep_for(std::chrono::seconds(s_run_time));
 	else
 		getchar();
 }

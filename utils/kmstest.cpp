@@ -1034,10 +1034,9 @@ private:
 
 	static void draw_bar(Framebuffer* fb, unsigned frame_num)
 	{
-		int old_xpos = frame_num < s_num_buffers ? -1 : get_bar_pos(fb, frame_num - s_num_buffers);
-		int new_xpos = get_bar_pos(fb, frame_num);
+		unsigned xpos = get_bar_pos(fb, frame_num);
 
-		draw_color_bar(*fb, old_xpos, new_xpos, bar_width);
+		draw_vbar_pattern(*fb, xpos, bar_width);
 		draw_text(*fb, fb->width() / 2, 0, to_string(frame_num), RGB(255, 255, 255));
 	}
 

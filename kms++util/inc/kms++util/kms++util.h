@@ -38,6 +38,8 @@ struct TestPatternOptions {
 };
 
 void draw_test_pattern(IFramebuffer& fb, const TestPatternOptions& options = {});
+void draw_vbar_pattern(IFramebuffer& fb, unsigned x, unsigned width,
+		       const TestPatternOptions& options = {});
 } // namespace kms
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

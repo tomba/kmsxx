@@ -22,6 +22,18 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::C8, {
+			PixelFormatInfo {
+				"C8",
+				"C8  ",
+				"",
+				PixelColorType::Undefined,
+				{ 1, 1 },
+				{ { 1, 1, 1, 1 } },
+			}
+		}
+	},
+	{
 		PixelFormat::RGB332, {
 			PixelFormatInfo {
 				"RGB332",
@@ -394,6 +406,102 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::XRGB16161616, {
+			PixelFormatInfo {
+				"XRGB16161616",
+				"XR48",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XBGR16161616, {
+			PixelFormatInfo {
+				"XBGR16161616",
+				"XB48",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ARGB16161616, {
+			PixelFormatInfo {
+				"ARGB16161616",
+				"AR48",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ABGR16161616, {
+			PixelFormatInfo {
+				"ABGR16161616",
+				"AB48",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XRGB16161616F, {
+			PixelFormatInfo {
+				"XRGB16161616F",
+				"XR4H",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XBGR16161616F, {
+			PixelFormatInfo {
+				"XBGR16161616F",
+				"XB4H",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ARGB16161616F, {
+			PixelFormatInfo {
+				"ARGB16161616F",
+				"AR4H",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::ABGR16161616F, {
+			PixelFormatInfo {
+				"ABGR16161616F",
+				"AB4H",
+				"",
+				PixelColorType::RGB,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
 		PixelFormat::YUYV, {
 			PixelFormatInfo {
 				"YUYV",
@@ -459,6 +567,18 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 				"XVUY8888",
 				"XVUY",
 				"YUVX",
+				PixelColorType::YUV,
+				{ 1, 1 },
+				{ { 4, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XYUV8888, {
+			PixelFormatInfo {
+				"XYUV8888",
+				"XYUV",
+				"",
 				PixelColorType::YUV,
 				{ 1, 1 },
 				{ { 4, 1, 1, 1 } },
@@ -550,6 +670,42 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 		}
 	},
 	{
+		PixelFormat::P010, {
+			PixelFormatInfo {
+				"P010",
+				"P010",
+				"",
+				PixelColorType::YUV,
+				{ 2, 2 },
+				{ { 2, 1, 1, 1 }, { 4, 1, 2, 2 } },
+			}
+		}
+	},
+	{
+		PixelFormat::P012, {
+			PixelFormatInfo {
+				"P012",
+				"P012",
+				"",
+				PixelColorType::YUV,
+				{ 2, 2 },
+				{ { 2, 1, 1, 1 }, { 4, 1, 2, 2 } },
+			}
+		}
+	},
+	{
+		PixelFormat::P016, {
+			PixelFormatInfo {
+				"P016",
+				"P016",
+				"",
+				PixelColorType::YUV,
+				{ 2, 2 },
+				{ { 2, 1, 1, 1 }, { 4, 1, 2, 2 } },
+			}
+		}
+	},
+	{
 		PixelFormat::P030, {
 			PixelFormatInfo {
 				"P030",
@@ -582,6 +738,42 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 				PixelColorType::YUV,
 				{ 1, 1 },
 				{ { 4, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XVYU2101010, {
+			PixelFormatInfo {
+				"XVYU2101010",
+				"XV30",
+				"",
+				PixelColorType::YUV,
+				{ 1, 1 },
+				{ { 4, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XVYU12_16161616, {
+			PixelFormatInfo {
+				"XVYU12_16161616",
+				"XV36",
+				"",
+				PixelColorType::YUV,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::XVYU16161616, {
+			PixelFormatInfo {
+				"XVYU16161616",
+				"XV48",
+				"",
+				PixelColorType::YUV,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
 			}
 		}
 	},
@@ -666,6 +858,18 @@ static map<PixelFormat, PixelFormatInfo> format_info_array = {
 				PixelColorType::YUV,
 				{ 1, 1 },
 				{ { 4, 1, 1, 1 }, { 4, 1, 1, 1 }, { 4, 1, 1, 1 } },
+			}
+		}
+	},
+	{
+		PixelFormat::AVUY16161616, {
+			PixelFormatInfo {
+				"AVUY16161616",
+				"",
+				"",
+				PixelColorType::YUV,
+				{ 1, 1 },
+				{ { 8, 1, 1, 1 } },
 			}
 		}
 	},

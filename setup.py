@@ -37,7 +37,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from setuptools import setup
+from setuptools import Distribution, setup
 from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build import build
 from setuptools.command.build_py import build_py
@@ -61,6 +61,16 @@ def _wheel_build_root() -> Path:
     arch = os.environ.get('PIXPAT_TARGET_ARCH')
     suffix = f'-{arch}' if arch else ''
     return REPO_ROOT / 'pixpat-python' / f'build{suffix}'
+
+
+class BinaryDistribution(Distribution):
+    """Tells setuptools the package contains binaries even though we have no
+    ext_modules. Without this, bdist_wheel stages our .so into
+    `<pkg>.data/purelib/` instead of the wheel root, which auditwheel then
+    rejects as 'shared library in purelib folder'."""
+
+    def has_ext_modules(self):
+        return True
 
 
 class ImpureBdistWheel(bdist_wheel):
@@ -135,18 +145,17 @@ class DevEditableWheel(editable_wheel):
         for old in LIB_DIR.glob('libpixpat.so*'):
             old.unlink()
         # Relative path so the symlink survives moves of the source tree.
-        (LIB_DIR / 'libpixpat.so').symlink_to(
-            Path('..') / '..' / '..' / 'build' / 'libpixpat.so'
-        )
+        (LIB_DIR / 'libpixpat.so').symlink_to(Path('..') / '..' / '..' / 'build' / 'libpixpat.so')
 
         super().run()
 
 
 setup(
+    distclass=BinaryDistribution,
     cmdclass={
         'bdist_wheel': ImpureBdistWheel,
         'build': WheelBuild,
         'build_py': MesonBuildPy,
         'editable_wheel': DevEditableWheel,
-    }
+    },
 )

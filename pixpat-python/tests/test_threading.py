@@ -30,6 +30,9 @@ def _alloc(fmt, w, h):
         return [bytearray(w * h), bytearray(w * (h // 2))], [w, w]
     if fmt in ('NV16', 'NV61'):  # semi-planar 4:2:2
         return [bytearray(w * h), bytearray(w * h)], [w, w]
+    if fmt in ('P010', 'P012', 'P016'):  # semi-planar 4:2:0, 16-bit storage
+        s = w * 2
+        return [bytearray(s * h), bytearray(s * (h // 2))], [s, s]
     if fmt == 'P030':  # semi-planar 4:2:0, 10-bit packed 3-per-32
         ys, uvs = (w // 3) * 4, (w // 3 // 2) * 8
         return [bytearray(ys * h), bytearray(uvs * (h // 2))], [ys, uvs]
@@ -66,7 +69,15 @@ def _alloc(fmt, w, h):
         return [bytearray(w * h * 3)], [w * 3]
     if fmt in ('XVUY2101010', 'XVUY8888'):
         return [bytearray(w * h * 4)], [w * 4]
-    if fmt in ('AVUY16161616', 'ABGR16161616'):
+    if fmt in (
+        'AVUY16161616',
+        'ABGR16161616',
+        'XRGB16161616',
+        'XBGR16161616',
+        'ARGB16161616',
+        'XVYU12_16161616',
+        'XVYU16161616',
+    ):
         return [bytearray(w * h * 8)], [w * 8]
     # MIPI CSI-2 byte packing (Bayer SXXXX10P/12P and grayscale Y10P/Y12P).
     if fmt.endswith('10P'):
@@ -97,6 +108,7 @@ DRAW_FORMATS = [
     'YUYV',  # YUVPackedWriter
     'NV12',  # YUVSemiPlanarWriter v_sub=2
     'NV16',  # YUVSemiPlanarWriter v_sub=1
+    'P010',  # YUVSemiPlanarWriter v_sub=2, 16-bit storage MSB-aligned
     'P030',  # YUVSemiPlanarWriter v_sub=2, 10-bit packed
     'P230',  # YUVSemiPlanarWriter v_sub=1, 10-bit packed
     'YUV420',  # YUVPlanarWriter v_sub=2

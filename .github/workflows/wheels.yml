@@ -1,0 +1,60 @@
+name: wheels
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    container: quay.io/pypa/manylinux_2_28_${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install clang
+        run: dnf install -y clang
+
+      - name: Build and audit wheel
+        env:
+          PIXPAT_TARGET_ARCH: ${{ matrix.arch }}
+          CC: clang
+          CXX: clang++
+        run: |
+          PYBIN=/opt/python/cp312-cp312/bin
+          export PATH="$PYBIN:$PATH"
+          $PYBIN/python -m pip install --upgrade pip setuptools wheel build auditwheel meson ninja
+          $PYBIN/python -m build --wheel --no-isolation
+          $PYBIN/python -m auditwheel repair \
+            --plat manylinux_2_28_${{ matrix.arch }} \
+            -w wheelhouse/ dist/*.whl
+          ls -la wheelhouse/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: wheel-${{ matrix.arch }}
+          path: wheelhouse/*.whl
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: wheel-*
+          merge-multiple: true
+          path: wheelhouse
+      - uses: softprops/action-gh-release@v3
+        with:
+          files: wheelhouse/*.whl

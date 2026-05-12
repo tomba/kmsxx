@@ -58,11 +58,17 @@ namespace pixpat
 	X(RGBA1010102)        \
 	X(BGRX1010102)        \
 	X(BGRA1010102)        \
+	X(XRGB16161616)       \
+	X(XBGR16161616)       \
+	X(ARGB16161616)       \
 	X(ABGR16161616)       \
 	X(NV12)               \
 	X(NV21)               \
 	X(NV16)               \
 	X(NV61)               \
+	X(P010)               \
+	X(P012)               \
+	X(P016)               \
 	X(P030)               \
 	X(P230)               \
 	X(YUV420)             \
@@ -76,6 +82,10 @@ namespace pixpat
 	X(XVUY8888)           \
 	X(XVUY2101010)        \
 	X(AVUY16161616)       \
+	X(XYUV8888)           \
+	X(XVYU2101010)        \
+	X(XVYU12_16161616)    \
+	X(XVYU16161616)       \
 	X(YUYV)               \
 	X(YVYU)               \
 	X(UYVY)               \

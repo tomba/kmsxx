@@ -22,8 +22,12 @@ A --query mode prints 0/1 to stdout for use from meson.
 import argparse
 import re
 import sys
-import tomllib
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
 
 # === Catalog parsers =============================================================

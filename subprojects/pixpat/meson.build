@@ -8,9 +8,12 @@ project('pixpat', 'cpp',
         'b_ndebug=if-release',
     ],
     version : '1.0.0',
+    # 1.1 for meson.options support.
+    meson_version : '>= 1.1',
 )
 
 python3 = find_program('python3')
+threads_dep = dependency('threads')
 gen_pixpat = files('pixpat-native/codegen/gen_pixpat.py')
 format_catalog_h = files('pixpat-native/src/format_catalog.h')
 pattern_catalog_h = files('pixpat-native/src/pattern_catalog.h')
@@ -81,6 +84,7 @@ libpixpat = both_libraries('pixpat',
                            install : true,
                            include_directories : [private_includes, config_includes],
                            cpp_args : pixpat_args,
+                           dependencies : [threads_dep],
                            gnu_symbol_visibility : 'hidden',
                            version : meson.project_version())
 

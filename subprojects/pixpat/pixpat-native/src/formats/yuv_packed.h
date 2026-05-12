@@ -1,19 +1,24 @@
 #pragma once
 
 // Packed YUV layouts:
-//   VUY888        — 1 pixel / 24-bit, 8-bit Y/U/V (storage uint32_t,
-//                   bytes_per_pixel = 3; parallels BGR888 in the YUV
-//                   register order)
-//   XVUY8888      — 1 pixel / 32-bit word, 8-bit Y/U/V + 8-bit padding
-//   XVUY2101010   — 1 pixel / 32-bit word, 10-bit Y/U/V + 2-bit padding
-//   AVUY16161616  — 1 pixel / 64-bit word, 16-bit Y/U/V/A (normalized)
+//   VUY888           — 1 pixel / 24-bit, 8-bit Y/U/V (storage uint32_t,
+//                      bytes_per_pixel = 3; parallels BGR888 in the YUV
+//                      register order)
+//   XVUY8888         — 1 pixel / 32-bit word, 8-bit Y/U/V + 8-bit padding
+//   XVUY2101010      — 1 pixel / 32-bit word, 10-bit Y/U/V + 2-bit padding
+//   AVUY16161616     — 1 pixel / 64-bit word, 16-bit Y/U/V/A (normalized)
+//   XYUV8888         — 1 pixel / 32-bit word, MSB-first X:Y:U:V 8:8:8:8
+//   XVYU2101010      — 1 pixel / 32-bit word, MSB-first X:V:Y:U 2:10:10:10
+//   XVYU16161616     — 1 pixel / 64-bit word, MSB-first X:V:Y:U 16:16:16:16
+//   XVYU12_16161616  — 1 pixel / 64-bit word, MSB-first X:V:Y:U 12:12:12:12
+//                      with each component MSB-aligned in a 16-bit slot
 //   YUYV / YVYU / UYVY / VYUY — 4:2:2, 2 pixels / 32-bit word
 //   Y210 / Y212 / Y216        — 4:2:2, 2 pixels / 64-bit word, with
-//                   each component MSB-aligned in a 16-bit slot
+//                      each component MSB-aligned in a 16-bit slot
 //
-// XVUY/AVUY name is register MSB-first (X/A in the top bits). The
-// YUYV names follow V4L2 / pixpat memory-byte order (Y0 in byte 0),
-// so shifts ascend in name order — opposite of XRGB-style.
+// XVUY/AVUY/XYUV/XVYU names are register MSB-first (X/A in the top
+// bits). The YUYV names follow V4L2 / pixpat memory-byte order (Y0 in
+// byte 0), so shifts ascend in name order — opposite of XRGB-style.
 
 #include "../layout.h"
 #include "../io/packed.h"
@@ -61,6 +66,52 @@ struct AVUY16161616 : Layout<ColorKind::YUV, 1, 1,
 	                           Comp{ C::A, 16, 48 }> > {
 	using Source = PackedSource<AVUY16161616>;
 	using Sink   = PackedSink<AVUY16161616>;
+};
+
+struct XYUV8888 : Layout<ColorKind::YUV, 1, 1,
+	                 Plane<uint32_t,
+	                       Comp{ C::V, 8, 0 },
+	                       Comp{ C::U, 8, 8 },
+	                       Comp{ C::Y, 8, 16 },
+	                       Comp{ C::X, 8, 24 }> > {
+	using Source = PackedSource<XYUV8888>;
+	using Sink   = PackedSink<XYUV8888>;
+};
+
+struct XVYU2101010 : Layout<ColorKind::YUV, 1, 1,
+	                    Plane<uint32_t,
+	                          Comp{ C::U, 10, 0 },
+	                          Comp{ C::Y, 10, 10 },
+	                          Comp{ C::V, 10, 20 },
+	                          Comp{ C::X, 2,  30 }> > {
+	using Source = PackedSource<XVYU2101010>;
+	using Sink   = PackedSink<XVYU2101010>;
+};
+
+struct XVYU16161616 : Layout<ColorKind::YUV, 1, 1,
+	                     Plane<uint64_t,
+	                           Comp{ C::U, 16, 0 },
+	                           Comp{ C::Y, 16, 16 },
+	                           Comp{ C::V, 16, 32 },
+	                           Comp{ C::X, 16, 48 }> > {
+	using Source = PackedSource<XVYU16161616>;
+	using Sink   = PackedSink<XVYU16161616>;
+};
+
+// XVYU12_16161616: 12-bit components MSB-aligned in 16-bit slots. The
+// top slot is fully padding (X across all 16 bits) since only V/Y/U
+// carry data.
+struct XVYU12_16161616 : Layout<ColorKind::YUV, 1, 1,
+	                        Plane<uint64_t,
+	                              Comp{ C::X, 4,  0 },
+	                              Comp{ C::U, 12, 4 },
+	                              Comp{ C::X, 4,  16 },
+	                              Comp{ C::Y, 12, 20 },
+	                              Comp{ C::X, 4,  32 },
+	                              Comp{ C::V, 12, 36 },
+	                              Comp{ C::X, 16, 48 }> > {
+	using Source = PackedSource<XVYU12_16161616>;
+	using Sink   = PackedSink<XVYU12_16161616>;
 };
 
 // 2-pixel-per-word 4:2:2 (uses PackedYUVSource/Sink).

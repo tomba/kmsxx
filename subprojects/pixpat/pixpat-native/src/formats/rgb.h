@@ -255,6 +255,27 @@ PIXPAT_RGB_PACKED(BGRA1010102,
 // 64-bit normalized wide RGB (16 bits per component).
 // ---------------------------------------------------------------------
 
+PIXPAT_RGB_PACKED(XRGB16161616,
+                  Plane<uint64_t,
+                        Comp{ C::B, 16, 0 },
+                        Comp{ C::G, 16, 16 },
+                        Comp{ C::R, 16, 32 },
+                        Comp{ C::X, 16, 48 }>);
+
+PIXPAT_RGB_PACKED(XBGR16161616,
+                  Plane<uint64_t,
+                        Comp{ C::R, 16, 0 },
+                        Comp{ C::G, 16, 16 },
+                        Comp{ C::B, 16, 32 },
+                        Comp{ C::X, 16, 48 }>);
+
+PIXPAT_RGB_PACKED(ARGB16161616,
+                  Plane<uint64_t,
+                        Comp{ C::B, 16, 0 },
+                        Comp{ C::G, 16, 16 },
+                        Comp{ C::R, 16, 32 },
+                        Comp{ C::A, 16, 48 }>);
+
 PIXPAT_RGB_PACKED(ABGR16161616,
                   Plane<uint64_t,
                         Comp{ C::R, 16, 0 },

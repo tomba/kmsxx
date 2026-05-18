@@ -1034,9 +1034,12 @@ private:
 
 	static void draw_bar(Framebuffer* fb, unsigned frame_num)
 	{
-		unsigned xpos = get_bar_pos(fb, frame_num);
+		int old_xpos = frame_num < s_num_buffers
+			? -1
+			: int(get_bar_pos(fb, frame_num - s_num_buffers));
+		int new_xpos = int(get_bar_pos(fb, frame_num));
 
-		draw_vbar_pattern(*fb, xpos, bar_width);
+		draw_vbar_pattern(*fb, old_xpos, new_xpos, bar_width);
 		draw_text(*fb, fb->width() / 2, 0, to_string(frame_num), RGB(255, 255, 255));
 	}
 
@@ -1141,6 +1144,17 @@ static void main_flip(Card& card, const vector<OutputInfo>& outputs)
 
 		auto fs = unique_ptr<FlipState>(new FlipState(card, name, ois));
 		flipstates.push_back(std::move(fs));
+	}
+
+	// draw_bar() updates only the bar's column each flip, so the rest of
+	// each buffer keeps whatever it was initialized with. Paint every fb
+	// to black.
+	for (const OutputInfo& o : outputs) {
+		for (auto fb : o.legacy_fbs)
+			draw_test_pattern(*fb, { .pattern = "black" });
+		for (const PlaneInfo& p : o.planes)
+			for (auto fb : p.fbs)
+				draw_test_pattern(*fb, { .pattern = "black" });
 	}
 
 	for (unique_ptr<FlipState>& fs : flipstates)

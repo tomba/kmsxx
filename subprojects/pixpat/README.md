@@ -16,10 +16,11 @@ generation**, with a C API and Python bindings.
   and range) cost the same as same-color-kind ones, precision is
   preserved when both endpoints are 8-bit, and the work scales as N+M
   instead of N×M.
-- **Built to drop into pipelines.** Caller-owned buffers and a
-  freestanding C++ core (`-fno-exceptions -fno-rtti`, no libstdc++
-  runtime dep) mean pixpat fits inside the inner loop of a DRM/KMS,
-  V4L2, or GPU-upload path without copies or runtime baggage.
+- **Built to drop into pipelines.** Caller-owned buffers and a small
+  C ABI mean pixpat fits inside the inner loop of a DRM/KMS, V4L2, or
+  GPU-upload path without copies. Exceptions are used internally but
+  never cross the C ABI. Beyond libc, the only runtime dependency is
+  `libstdc++`.
 
 ## Why not pixpat
 
@@ -124,10 +125,9 @@ import pixpat
 
 w, h = 1920, 1080
 data = bytearray(w * h * 4)
-buf = pixpat.Buffer(planes=[data], fmt="XRGB8888",
-                    width=w, height=h, strides=[w * 4])
+buf = pixpat.Buffer(planes=[data], fmt='XRGB8888', width=w, height=h, strides=[w * 4])
 
-pixpat.draw_pattern(buf, "smpte")
+pixpat.draw_pattern(buf, 'smpte')
 ```
 
 The Python `Buffer` accepts anything that supports the buffer protocol
@@ -144,6 +144,11 @@ must be writable.
 - **`pixpat` (Python)** — thin `ctypes` bindings over the C ABI. No
   CPython extension, so a single wheel works on any CPython ≥ 3.9 for
   a given architecture.
+- **`pixbench`** — the measurement tooling in
+  [`pixpat-bench/`](pixpat-bench/README.md): builds the library from
+  any tree or commit, digests every output byte, records throughput
+  and size into JSON run files, and compares them across commits,
+  compilers and build options.
 
 ## Building
 
@@ -207,20 +212,37 @@ For a native install:
 pip install .
 ```
 
-`setup.py` invokes meson during the wheel build (into
-`pixpat-python/build/native/`), copies the resulting `.so` into the
-package, and stamps the wheel for the host architecture. Requires
-`meson`, `ninja`, and a C++ compiler on the host.
+`setup.py` invokes meson during the wheel build (into a temporary
+directory), copies the resulting `.so` into the package, and stamps the
+wheel for the host architecture. Requires `meson`, `ninja`, and a C++
+compiler on the host.
 
 To cross-compile a wheel for another architecture, use the helper:
 
 ```sh
-pixpat-python/scripts/build_wheel.sh x86_64    # or aarch64
+sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+pixpat-python/scripts/build_wheel.sh aarch64    # or x86_64
 ```
 
+Beyond the cross toolchain this needs only `python3` and its `venv`
+module: the script bootstraps a build environment in
+`pixpat-python/build-venv/` and lets PEP 517 build isolation provision
+`setuptools`, `meson` and `ninja` from `pyproject.toml`. No `pip
+install` into your own environment is required, and the distro's
+`setuptools` is not used (`setup.py` needs >= 70.1, which is newer than
+some distros ship).
+
 The resulting wheel lands in `dist/`, tagged for the chosen
-architecture; meson's per-arch build dir lands at
-`pixpat-python/build-<arch>/native/`.
+architecture. Wheel builds are always clean: meson runs in a temporary
+directory and nothing is cached between runs, so repeated builds are
+reproducible. Only the repo-root `build/` of the editable workflow below
+is persistent.
+
+The wheel is tagged `linux_<arch>`, not `manylinux`, so the `.so`
+carries whatever glibc symbol versions your cross toolchain emits. If
+the target's glibc is older, the wheel installs but fails to load —
+check with `readelf -V` before deploying. The `.so` also links
+`libstdc++.so.6`, which must be present on the target.
 
 ### Editable Python install for development
 
@@ -230,7 +252,7 @@ meson compile -C build
 pip install -e .
 ```
 
-The editable install symlinks `build/libpixpat.so.0.0.0` into the
+The editable install symlinks `build/libpixpat.so` into the
 package, so rebuilding the native side is picked up without
 re-installing.
 
@@ -242,9 +264,10 @@ From the repo root, after an editable install:
 pytest pixpat-python/tests
 ```
 
-For micro-benchmarking the `draw_pattern` and `convert` paths across
-formats, see `pixpat-python/scripts/perf_test.py`. This is a
-development tool, not part of the supported API surface.
+For throughput, library size and bit-exactness measurements across
+builds, compilers and commits, see [`pixpat-bench/`](pixpat-bench/README.md)
+(`scripts/pixbench`). This is a development tool, not part of the
+supported API surface.
 
 ## Architecture
 

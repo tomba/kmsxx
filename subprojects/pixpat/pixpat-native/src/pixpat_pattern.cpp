@@ -22,9 +22,9 @@
 namespace pixpat
 {
 
-// Generated: s_pattern_* enable flags + DefaultPattern alias. Included
-// inside namespace pixpat so the unqualified FormatId / s_format_catalog_count
-// references resolve.
+// Generated: s_pattern_caps[] enable flags (and the format tables, which
+// this TU also needs). Included inside namespace pixpat so the
+// unqualified FormatId / s_format_catalog_count references resolve.
 #include "pixpat_caps.inc"
 
 // Cold pattern path: fill a per-thread normalized line buffer with

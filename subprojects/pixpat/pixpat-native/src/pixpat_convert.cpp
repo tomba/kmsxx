@@ -77,7 +77,7 @@ static void run_norm(FormatId src_id, FormatId dst_id,
 }
 
 // Generated: FormatCaps + s_format_caps[] (per-format readable/writable
-// + hot_src/hot_dst), plus s_pattern_* / DefaultPattern.
+// + hot_src/hot_dst), plus s_pattern_caps[].
 #include "pixpat_caps.inc"
 
 // Per-Src dispatch: pick the right Sink for `dst_id` and call

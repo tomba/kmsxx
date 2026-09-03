@@ -15,7 +15,7 @@ unconditionally requires a writable buffer.
 import ctypes
 import os
 import pathlib
-from typing import Sequence
+from collections.abc import Sequence
 
 _PIXPAT_MAX_PLANES = 4
 
@@ -140,7 +140,9 @@ class _PinnedBuffers:
             view = self._views.pop()
             _PyBuffer_Release(ctypes.byref(view))
 
-    def __enter__(self) -> '_PinnedBuffers':
+    # typing.Self needs 3.11 and pixpat supports 3.10, so annotate with the
+    # class name. Private class, never subclassed, so this is accurate.
+    def __enter__(self) -> '_PinnedBuffers':  # noqa: PYI034
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -195,9 +197,9 @@ def _fill_buffer(
 
 __all__ = [
     '_Buffer',
-    '_PatternOpts',
     '_ConvertOpts',
+    '_PatternOpts',
     '_PinnedBuffers',
-    '_lib',
     '_fill_buffer',
+    '_lib',
 ]

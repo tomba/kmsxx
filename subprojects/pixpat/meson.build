@@ -7,7 +7,7 @@ project('pixpat', 'cpp',
         # invariant checks remain a debugging aid.
         'b_ndebug=if-release',
     ],
-    version : '1.0.0',
+    version : '1.1.0',
     # 1.1 for meson.options support.
     meson_version : '>= 1.1',
 )

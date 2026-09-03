@@ -20,7 +20,8 @@
 // Adding a pattern = a row here AND its class(es) in pattern.h. The
 // codegen (pixpat-native/codegen/gen_pixpat.py) parses this X-macro
 // to learn the pattern set; pixpat_pattern.cpp re-expands it to build
-// the dispatch arms and the default-pattern fallback.
+// the dispatch arms. There is no default-pattern fallback: a name that
+// is unknown or disabled in this build fails the call.
 
 #include <cstddef>
 #include <cstdint>

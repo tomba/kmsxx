@@ -277,13 +277,22 @@ struct BayerPackedSink {
 	static constexpr size_t block_h = 1;
 	static constexpr size_t block_w = ppg;
 
-	static void write_block(Buffer<1>& buf, size_t bx, size_t by,
-	                        const RGB16 (&block)[1][ppg]) noexcept
+	// Which colour a pixel carries flips between even and odd rows, and
+	// the pick has to be a compile-time constant for the group to
+	// compile down to plain byte moves. The row loops dispatch on the
+	// parity once per row (SplitsRowParity, pipeline.h); bx is a
+	// multiple of ppg, so pixel i's column parity is i & 1.
+	static constexpr bool split_row_parity = true;
+
+	template <bool y_even>
+	static void write_block_parity(Buffer<1>& buf, size_t bx, size_t by,
+	                               const RGB16 (&block)[1][ppg]) noexcept
 	{
+		static_assert(ppg % 2 == 0);
 		std::array<uint16_t, ppg> vals{};
 		for (size_t i = 0; i < ppg; ++i) {
 			const C pick = detail::bayer_pick(
-				Order, ((bx + i) & 1) == 0, (by & 1) == 0);
+				Order, (i & 1) == 0, y_even);
 			const uint16_t norm =
 				pick == C::R ? block[0][i].r
 				: pick == C::G ? block[0][i].g

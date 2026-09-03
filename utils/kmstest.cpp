@@ -829,6 +829,24 @@ static void draw_test_patterns(const vector<OutputInfo>& outputs)
 	}
 }
 
+// Flip mode draws the moving bar incrementally, so start from a known black
+// background: a freshly allocated dumb buffer is zero-filled, and zero is not
+// black in YUV formats.
+static void clear_framebuffers(const vector<OutputInfo>& outputs)
+{
+	TestPatternOptions opts = s_pattern_options;
+	opts.pattern = "black";
+
+	for (const OutputInfo& o : outputs) {
+		for (auto fb : o.legacy_fbs)
+			draw_test_pattern(*fb, opts);
+
+		for (const PlaneInfo& p : o.planes)
+			for (auto fb : p.fbs)
+				draw_test_pattern(*fb, opts);
+	}
+}
+
 static void set_crtcs_n_planes_legacy(Card& card, const vector<OutputInfo>& outputs)
 {
 	// Disable unused crtcs
@@ -1035,9 +1053,11 @@ private:
 
 	static void draw_bar(Framebuffer* fb, unsigned frame_num)
 	{
-		unsigned xpos = get_bar_pos(fb, frame_num);
+		// The bar drawn into this buffer s_num_buffers frames ago is the one to erase.
+		int old_xpos = frame_num < s_num_buffers ? -1 : get_bar_pos(fb, frame_num - s_num_buffers);
+		int new_xpos = get_bar_pos(fb, frame_num);
 
-		draw_vbar_pattern(*fb, xpos, bar_width);
+		draw_moving_vbar_pattern(*fb, old_xpos, new_xpos, bar_width);
 		draw_text(*fb, fb->width() / 2, 0, to_string(frame_num), RGB(255, 255, 255));
 	}
 
@@ -1191,6 +1211,8 @@ int main(int argc, char** argv)
 
 	if (!s_flip_mode)
 		draw_test_patterns(outputs);
+	else
+		clear_framebuffers(outputs);
 
 	print_outputs(outputs);
 

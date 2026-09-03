@@ -40,6 +40,15 @@ struct TestPatternOptions {
 void draw_test_pattern(IFramebuffer& fb, const TestPatternOptions& options = {});
 void draw_vbar_pattern(IFramebuffer& fb, unsigned x, unsigned width,
 		       const TestPatternOptions& options = {});
+/*
+ * Move a vertical bar: erase the bar previously drawn at old_x (skipped if
+ * old_x < 0) and draw a new one at new_x (skipped if new_x < 0). Only the
+ * two width-pixel-wide columns are touched, so the cost is independent of
+ * the framebuffer size. Positions are snapped down to the format's pixel
+ * alignment; width must be a multiple of it.
+ */
+void draw_moving_vbar_pattern(IFramebuffer& fb, int old_x, int new_x, unsigned width,
+			      const TestPatternOptions& options = {});
 } // namespace kms
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

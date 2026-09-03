@@ -8,10 +8,8 @@ These tests parametrize across one format per writer template so that
 every code path in the dispatcher is covered.
 """
 
-import pytest
-
 import pixpat
-
+import pytest
 
 # Width must be divisible by 3 (T430/XYYY2101010 pack 3-per-32-bit), 4
 # (Bayer 10P packs 4 pixels per group), and 2 (h_sub).
@@ -92,7 +90,7 @@ def _alloc(fmt, w, h):
     if fmt.startswith('S'):
         return [bytearray(w * h * 2)], [w * 2]
     # 16-bit RGB
-    if fmt.endswith('565') or fmt.endswith('1555') or fmt.endswith('4444'):
+    if fmt.endswith(('565', '1555', '4444')):
         return [bytearray(w * h * 2)], [w * 2]
     # 32-bit RGB (8888 / 2101010 / 1010102 / 888 in 32-bit storage)
     return [bytearray(w * h * 4)], [w * 4]

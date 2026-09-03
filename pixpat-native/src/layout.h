@@ -50,9 +50,12 @@ struct Plane {
 	static_assert(total_bits <= storage_bits, "components overflow storage word");
 
 	// Index of the n-th component matching Tag, or num_comps if absent.
+	// The multi-pixel sources and sinks call this with a runtime n, so
+	// the loop is unrolled the same way as pack/unpack below.
 	template <C Tag>
 	static constexpr size_t find_pos(size_t n = 0)
 	{
+#pragma GCC unroll 64
 		for (size_t i = 0; i < num_comps; ++i) {
 			if (comps[i].c == Tag) {
 				if (n == 0)
@@ -77,11 +80,21 @@ struct Plane {
 	}
 
 	// Mask each input value to its bit-width and OR-shift it into the
-	// storage word. The loop trip count and the comps[i] reads are
-	// compile-time constant, so the optimizer unrolls and folds.
+	// storage word. The trip count and the comps[i] reads are constant,
+	// but GCC at -O2 (meson's debugoptimized, the default buildtype)
+	// does not unroll the loop on its own: every pixel then loads
+	// bits/shift from the rodata table and round-trips the value array
+	// through the stack, 4x slower than -O3 on a Cortex-A53. The pragma
+	// forces complete unrolling at any level, after which the reads
+	// fold; 64 covers any plane since a component has at least one bit
+	// and a word at most 64. Expanding over an index_sequence instead
+	// would do the same at -O2 but changes what gcc-14 and clang inline
+	// and vectorize in the fused converters at -O3 (YUV -> BGR888 0.85x,
+	// BGR888 -> ABGR16161616 0.8x); this keeps -O3 codegen identical.
 	static constexpr Storage pack(const std::array<uint16_t, num_comps>& v) noexcept
 	{
 		Storage out{};
+#pragma GCC unroll 64
 		for (size_t i = 0; i < num_comps; ++i) {
 			const Storage mask = (Storage{ 1 } << comps[i].bits) - 1;
 			out |= Storage(v[i] & mask) << comps[i].shift;
@@ -93,6 +106,7 @@ struct Plane {
 	static constexpr std::array<uint16_t, num_comps> unpack(Storage word) noexcept
 	{
 		std::array<uint16_t, num_comps> out{};
+#pragma GCC unroll 64
 		for (size_t i = 0; i < num_comps; ++i) {
 			const Storage mask = (Storage{ 1 } << comps[i].bits) - 1;
 			out[i] = uint16_t((word >> comps[i].shift) & mask);

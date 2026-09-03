@@ -11,15 +11,19 @@ Layout (where things land for each workflow):
       Requires the user to have built `build/` themselves.
 
   pip install .                                     — MesonBuildPy invokes
-      meson into pixpat-python/build/native/, copies the .so straight into
+      meson into a temporary directory, copies the .so straight into
       setuptools' build_lib (pixpat-python/build/lib/pixpat/_lib/), and
       bdist_wheel zips that into the wheel. The source tree's _lib/ is
       never touched on this path, so wheel builds don't depend on (or
       pollute) it.
 
-  scripts/build_wheel.sh <arch>                     — sets PIXPAT_TARGET_ARCH
-      and runs `python -m build`; meson lands in pixpat-python/build-<arch>/
-      native/, setuptools alongside.
+  pixpat-python/scripts/build_wheel.sh <arch>       — sets PIXPAT_TARGET_ARCH
+      and runs `python -m build`; setuptools stages into
+      pixpat-python/build-<arch>/.
+
+Only the repo-root build/ of the first workflow is persistent, and only the
+editable install consumes it. Wheel builds never reuse a meson dir; they are
+always clean.
 
 bdist_wheel: setuptools' default produces a `py3-none-any` (pure-Python) wheel
 when there's no compiled extension. We bundle a `.so` as package data, so we
@@ -35,6 +39,7 @@ import os
 import platform
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 from setuptools import Distribution, setup
@@ -52,11 +57,11 @@ def _target_arch() -> str:
 
 
 def _wheel_build_root() -> Path:
-    """Top-level dir where setuptools and meson stage wheel-build output.
+    """Top-level dir where setuptools stages wheel-build output.
 
     Plain `pip install .` uses pixpat-python/build/. Cross-compile via
-    PIXPAT_TARGET_ARCH gets a per-arch sibling so meson can keep arches
-    incrementally compiled side by side.
+    PIXPAT_TARGET_ARCH gets a per-arch sibling, so staging one arch cannot
+    leave a foreign .so behind for the next.
     """
     arch = os.environ.get('PIXPAT_TARGET_ARCH')
     suffix = f'-{arch}' if arch else ''
@@ -102,7 +107,6 @@ class MesonBuildPy(build_py):
             self._build_native()
 
     def _build_native(self):
-        meson_dir = _wheel_build_root() / 'native'
         arch = _target_arch()
         cross_args = []
         if arch != platform.machine():
@@ -111,20 +115,27 @@ class MesonBuildPy(build_py):
                 raise SystemExit(f'no cross-file for {arch}: {cross_file}')
             cross_args = ['--cross-file', str(cross_file)]
 
-        if not (meson_dir / 'meson-info').exists():
-            meson_dir.parent.mkdir(parents=True, exist_ok=True)
+        # The meson dir is temporary, so a wheel is always built clean. Reusing one
+        # across runs is not worth it: a full cross build takes seconds, and meson.build
+        # resolves the codegen interpreter with find_program('python3'), baking its
+        # absolute path into the build graph. Under PEP 517 build isolation that
+        # interpreter lives in a throwaway env, so a reused dir would send the next
+        # run's ninja looking for an interpreter that no longer exists. C++ developers
+        # get their persistent dir from the repo-root build/ plus `pip install -e .`.
+        with tempfile.TemporaryDirectory(prefix='pixpat-meson-') as tmp:
+            meson_dir = Path(tmp)
             subprocess.check_call(
                 ['meson', 'setup', str(meson_dir), '--buildtype=release', *cross_args],
                 cwd=REPO_ROOT,
             )
-        subprocess.check_call(['meson', 'compile', '-C', str(meson_dir)], cwd=REPO_ROOT)
+            subprocess.check_call(['meson', 'compile', '-C', str(meson_dir)], cwd=REPO_ROOT)
 
-        out_dir = Path(self.build_lib) / 'pixpat' / '_lib'
-        out_dir.mkdir(parents=True, exist_ok=True)
-        # follow_symlinks resolves meson's libpixpat.so -> .so.<maj> -> .so.<maj>.<min>.<patch>
-        # chain into a regular file. The wheel ships only the unversioned name, so we
-        # don't have to track meson's project version here.
-        shutil.copy2(meson_dir / 'libpixpat.so', out_dir / 'libpixpat.so')
+            out_dir = Path(self.build_lib) / 'pixpat' / '_lib'
+            out_dir.mkdir(parents=True, exist_ok=True)
+            # follow_symlinks resolves meson's libpixpat.so -> .so.<maj> -> .so.<maj>.<min>.<patch>
+            # chain into a regular file. The wheel ships only the unversioned name, so we
+            # don't have to track meson's project version here.
+            shutil.copy2(meson_dir / 'libpixpat.so', out_dir / 'libpixpat.so')
 
 
 class DevEditableWheel(editable_wheel):

@@ -11,8 +11,11 @@
 # (cold) path.
 hot_pivots = ["BGR888"]
 
-# Patterns to compile in. The first entry is the default for
-# unrecognized pattern names. Empty list disables the pattern feature.
+# Patterns to compile in. Order does not matter; a pattern name left
+# out of this list fails pixpat_draw_pattern the same way an unknown
+# one does. Note that a NULL `pattern` argument means "kmstest" (see
+# pixpat.h), so dropping kmstest here also makes that call fail. Empty
+# list disables the pattern feature.
 patterns = ["kmstest", "smpte", "plain", "checker", "hramp", "vramp", "hbar", "vbar", "dramp", "zoneplate"]
 
 [features]

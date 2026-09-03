@@ -1,8 +1,7 @@
 """Smoke tests for the pixpat Python bindings."""
 
-import pytest
-
 import pixpat
+import pytest
 
 
 def test_supported_formats_nonempty():

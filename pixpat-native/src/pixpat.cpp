@@ -48,6 +48,7 @@
 #include "layout.h"
 #include "params.h"
 #include "pattern.h"
+#include "pipeline.h"
 #include "pixpat_internal.h"
 #include "threading.h"
 
@@ -84,10 +85,32 @@ static void unpack_to_norm(uint8_t* norm, const pixpat_buffer* src,
 			dst[dy * W + x] = Src::read(sb, x, by + dy, W, H);
 }
 
+// One row for a SplitsRowParity sink, parity as a constant (`db` by
+// value, see Converter::run_row).
+template <typename Snk, bool y_even>
+static void pack_row_from_norm(Buffer<Snk::Layout::num_planes> db,
+                               const typename Snk::Pixel* src,
+                               size_t by, size_t W) noexcept
+{
+	using P = typename Snk::Pixel;
+	constexpr size_t bh = Snk::block_h;
+	constexpr size_t bw = Snk::block_w;
+	for (size_t bx = 0; bx < W; bx += bw) {
+		P block[bh][bw];
+		for (size_t dy = 0; dy < bh; ++dy)
+			for (size_t dx = 0; dx < bw; ++dx)
+				block[dy][dx] = src[dy * W + bx + dx];
+		Snk::template write_block_parity<y_even>(db, bx, by, block);
+	}
+}
+
 // Per-sink: re-block `Snk::block_h × W` of normalized pixels and call
 // Sink::write_block. Snk's block_h dictates how many normalized rows
 // the caller has to have prepared. Used by the normalized pivot for
-// both convert (cold path) and pattern.
+// both convert (cold path) and pattern. A SplitsRowParity sink gets
+// the row parity as a constant instead (a per-block branch inside the
+// loop measured the same, but relies on the optimizer unswitching
+// it); every other sink keeps the loop as is (see Converter::run).
 template <typename Snk>
 static void pack_from_norm(const pixpat_buffer* dst,
                            const uint8_t* norm,
@@ -98,17 +121,24 @@ static void pack_from_norm(const pixpat_buffer* dst,
 	constexpr size_t bw = Snk::block_w;
 	auto db = make_buffer<typename Snk::Layout>(dst);
 	auto* src = reinterpret_cast<const P*>(norm);
-	for (size_t bx = 0; bx < W; bx += bw) {
-		P block[bh][bw];
-		for (size_t dy = 0; dy < bh; ++dy)
-			for (size_t dx = 0; dx < bw; ++dx)
-				block[dy][dx] = src[dy * W + bx + dx];
-		Snk::write_block(db, bx, by, block);
+	if constexpr (SplitsRowParity<Snk>) {
+		if ((by & 1) == 0)
+			pack_row_from_norm<Snk, true>(db, src, by, W);
+		else
+			pack_row_from_norm<Snk, false>(db, src, by, W);
+	} else {
+		for (size_t bx = 0; bx < W; bx += bw) {
+			P block[bh][bw];
+			for (size_t dy = 0; dy < bh; ++dy)
+				for (size_t dx = 0; dx < bw; ++dx)
+					block[dy][dx] = src[dy * W + bx + dx];
+			Snk::write_block(db, bx, by, block);
+		}
 	}
 }
 
-// Generated: s_format_caps[] indexed by FormatId, plus s_pattern_* /
-// DefaultPattern (used only by pixpat_pattern.cpp; harmless here).
+// Generated: s_format_caps[] indexed by FormatId, plus s_pattern_caps[]
+// (used only by pixpat_pattern.cpp; harmless here).
 #include "pixpat_caps.inc"
 
 static_assert(sizeof(s_format_caps) / sizeof(s_format_caps[0]) == s_format_catalog_count,

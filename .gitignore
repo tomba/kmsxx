@@ -1,5 +1,7 @@
 /build/
 /build-*/
+/measurements/
+/.pixbench-cache/
 /pixpat-python/build/
 /pixpat-python/build-*/
 /dist/

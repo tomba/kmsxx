@@ -65,17 +65,17 @@ destination side must always be writable.
 """
 
 import ctypes
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Mapping, Optional, Sequence, Union
 
 from ._native import (
     _Buffer,
     _ConvertOpts,
-    _PatternOpts,
-    _PinnedBuffers,
     _fill_buffer,
     _lib,
+    _PatternOpts,
+    _PinnedBuffers,
 )
 
 _VALID_PATTERNS = frozenset(
@@ -195,8 +195,8 @@ def is_supported(fmt: str) -> bool:
 
 
 def _serialize_pattern_params(
-    params: Optional[Union[str, Mapping[str, object]]],
-) -> Optional[bytes]:
+    params: str | Mapping[str, object] | None,
+) -> bytes | None:
     """Encode `params` for the C ABI.
 
     Accepts a ready-made string (passed through verbatim) or a mapping of
@@ -225,12 +225,12 @@ def _serialize_pattern_params(
 
 def draw_pattern(
     dst: Buffer,
-    pattern: Optional[str] = None,
+    pattern: str | None = None,
     *,
     rec: Rec = Rec.BT601,
     color_range: Range = Range.LIMITED,
     num_threads: int = 0,
-    params: Optional[Union[str, Mapping[str, object]]] = None,
+    params: str | Mapping[str, object] | None = None,
 ) -> None:
     """Draw a test pattern into ``dst``.
 
@@ -479,11 +479,11 @@ def convert(
 
 __all__ = [
     'Buffer',
-    'Rec',
-    'Range',
     'PixpatError',
-    'supported_formats',
-    'is_supported',
-    'draw_pattern',
+    'Range',
+    'Rec',
     'convert',
+    'draw_pattern',
+    'is_supported',
+    'supported_formats',
 ]

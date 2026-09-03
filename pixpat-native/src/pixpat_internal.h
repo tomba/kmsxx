@@ -64,10 +64,10 @@ struct FormatCaps {
 };
 
 // Per-pattern build capabilities. Generator emits s_pattern_caps[]
-// indexed by PatternId, plus a separate s_default_pattern_id singleton
-// (the fallback when pattern_name doesn't match any enabled arm).
-// Used only when PIXPAT_FEATURE_PATTERN — pixpat_pattern.cpp consumes
-// both.
+// indexed by PatternId. There is no default-pattern fallback: a NULL
+// pattern_name means "kmstest" (see pixpat.h), and any name that is
+// unknown or disabled in this build is an error. Used only when
+// PIXPAT_FEATURE_PATTERN — pixpat_pattern.cpp consumes it.
 struct PatternCaps {
 	bool enabled;
 };

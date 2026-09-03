@@ -1,4 +1,4 @@
-# kms++ profile: pattern drawing only, all formats targetable.
+# kms++ profile: pattern drawing only, KMS formats.
 
 hot_pivots = []
 patterns = ["kmstest", "smpte", "plain", "checker", "hramp", "vramp", "hbar", "vbar", "dramp", "zoneplate"]
@@ -6,6 +6,30 @@ patterns = ["kmstest", "smpte", "plain", "checker", "hramp", "vramp", "hbar", "v
 [features]
 pattern = true
 convert = false
-default_format_caps = "rw"
+default_format_caps = "w"
 
 [formats]
+SRGGB8 = "off"
+SBGGR8 = "off"
+SGRBG8 = "off"
+SGBRG8 = "off"
+SRGGB10 = "off"
+SBGGR10 = "off"
+SGRBG10 = "off"
+SGBRG10 = "off"
+SRGGB12 = "off"
+SBGGR12 = "off"
+SGRBG12 = "off"
+SGBRG12 = "off"
+SRGGB16 = "off"
+SBGGR16 = "off"
+SGRBG16 = "off"
+SGBRG16 = "off"
+SRGGB10P = "off"
+SBGGR10P = "off"
+SGRBG10P = "off"
+SGBRG10P = "off"
+SRGGB12P = "off"
+SBGGR12P = "off"
+SGRBG12P = "off"
+SGBRG12P = "off"

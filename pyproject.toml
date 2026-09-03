@@ -1,39 +1,49 @@
 [build-system]
 requires = [
-    "setuptools>=70.1",
-    "wheel",
-    "meson>=1.3",
-    "ninja",
-    "tomli; python_version < '3.11'",
+    'setuptools>=70.1',
+    'wheel',
+    'meson>=1.3',
+    'ninja',
+    'tomli; python_version < "3.11"',
 ]
-build-backend = "setuptools.build_meta"
+build-backend = 'setuptools.build_meta'
 
 [project]
-name = "pixpat"
+name = 'pixpat'
 # Keep version in sync with meson.build (single source of truth would be nice;
 # revisit if it ever drifts in practice).
-version = "1.0.0"
-description = "Pixel format conversion and test pattern generation"
-requires-python = ">=3.10"
-authors = [{name = "Tomi Valkeinen", email = "tomi.valkeinen@ideasonboard.com"}]
-# The pixpat module talks to libpixpat via ctypes and uses only the stdlib.
+version = '1.1.0'
+description = 'Pixel format conversion and test pattern generation'
+requires-python = '>=3.10'
+authors = [{name = 'Tomi Valkeinen', email = 'tomi.valkeinen@ideasonboard.com'}]
 dependencies = []
 
 [project.optional-dependencies]
-test = ["pytest", "numpy"]
-scripts = ["numpy", "pixutils @ git+https://github.com/tomba/pixutils"]
-dev = ["pixpat[test,scripts]", "ruff"]
+dev = ['pytest', 'numpy', 'pixutils @ git+https://github.com/tomba/pixutils.git']
+all = ['pixpat[dev]']
 
 [tool.setuptools]
-package-dir = {"" = "pixpat-python"}
-packages = ["pixpat"]
+package-dir = {'' = 'pixpat-python'}
+packages = ['pixpat']
 
 [tool.ruff]
 line-length = 100
 
+[tool.ruff.lint]
+extend-select = [
+  'E',   # pycodestyle errors
+  'W',   # pycodestyle warnings
+  'F',   # Pyflakes: undefined/unused names, bad imports, f-string mistakes
+  'FA',  # flake8-future-annotations: require `from __future__ import annotations`
+  'Q',   # flake8-quotes: quote style, configured under lint.flake8-quotes below
+  'UP',  # pyupgrade: rewrite idioms obsolete for our minimum Python
+  'PLE', # Pylint errors: things that are outright broken
+  'PLW', # Pylint warnings: suspicious but legal constructs
+]
+
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'single'
-multiline-quotes = 'single'
+multiline-quotes = 'double' # only 'double' is compatible with the formatter
 
 [tool.ruff.format]
 quote-style = 'single'

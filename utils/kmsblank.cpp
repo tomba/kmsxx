@@ -10,11 +10,12 @@ using namespace kms;
 
 static const char* usage_str =
 	"Usage: kmsblank [OPTION]...\n\n"
-	"Blank screen(s)\n\n"
+	"Blank or unblank screen(s)\n\n"
 	"Options:\n"
 	"      --device=DEVICE       DEVICE is the path to DRM card to open\n"
 	"  -C, --card=NUM            open /dev/dri/card<NUM>\n"
 	"  -c, --connector=CONN      CONN is <connector>\n"
+	"  -u, --unblank             unblank instead of blank\n"
 	"  -t, --time=TIME           blank/unblank in TIME intervals\n"
 	"\n"
 	"<connector> can be given by index (<idx>) or id (@<id>).\n"
@@ -25,12 +26,26 @@ static void usage()
 	puts(usage_str);
 }
 
+static void set_dpms(const vector<Connector*>& conns, bool blank)
+{
+	ConnectorDPMS dpms = blank ? ConnectorDPMS::Off : ConnectorDPMS::On;
+
+	for (Connector* conn : conns) {
+		printf("Connector %s: %sblank\n", conn->fullname().c_str(),
+		       blank ? "" : "un");
+		int r = conn->set_prop_value("DPMS", (uint64_t)dpms);
+		if (r)
+			EXIT("Failed to set DPMS: %d", r);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	string dev_path;
 
 	vector<string> conn_strs;
 	uint32_t time = 0;
+	bool unblank = false;
 
 	OptionSet optionset = {
 		Option("|device=", [&dev_path](string s) {
@@ -41,6 +56,9 @@ int main(int argc, char** argv)
 		}),
 		Option("c|connector=", [&conn_strs](string str) {
 			conn_strs.push_back(str);
+		}),
+		Option("u|unblank", [&unblank]() {
+			unblank = true;
 		}),
 		Option("t|time=", [&time](string str) {
 			time = stoul(str);
@@ -92,18 +110,10 @@ int main(int argc, char** argv)
 	if (conns.empty())
 		EXIT("No enabled connectors");
 
-	bool blank = true;
+	bool blank = !unblank;
 
 	while (true) {
-		ConnectorDPMS dpms = blank ? ConnectorDPMS::Off : ConnectorDPMS::On;
-
-		for (Connector* conn : conns) {
-			printf("Connector %s: %sblank\n", conn->fullname().c_str(),
-			       blank ? "" : "un");
-			int r = conn->set_prop_value("DPMS", (uint64_t)dpms);
-			if (r)
-				EXIT("Failed to set DPMS: %d", r);
-		}
+		set_dpms(conns, blank);
 
 		if (time == 0)
 			break;

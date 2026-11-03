@@ -74,18 +74,30 @@ int main(int argc, char** argv)
 		conns = card.get_connectors();
 	}
 
+	// DPMS on a connector without a CRTC has no visible effect
+	erase_if(conns, [](Connector* conn) {
+		if (!conn->connected()) {
+			printf("Connector %s not connected\n", conn->fullname().c_str());
+			return true;
+		}
+
+		if (!conn->get_current_crtc()) {
+			printf("Connector %s not enabled\n", conn->fullname().c_str());
+			return true;
+		}
+
+		return false;
+	});
+
+	if (conns.empty())
+		EXIT("No enabled connectors");
+
 	bool blank = true;
 
 	while (true) {
 		ConnectorDPMS dpms = blank ? ConnectorDPMS::Off : ConnectorDPMS::On;
 
 		for (Connector* conn : conns) {
-			if (!conn->connected()) {
-				printf("Connector %s not connected\n",
-				       conn->fullname().c_str());
-				continue;
-			}
-
 			printf("Connector %s: %sblank\n", conn->fullname().c_str(),
 			       blank ? "" : "un");
 			int r = conn->set_prop_value("DPMS", (uint64_t)dpms);

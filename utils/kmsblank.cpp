@@ -118,6 +118,10 @@ int main(int argc, char** argv)
 		EXIT("-n requires -i");
 
 	Card card(dev_path);
+
+	if (!card.is_master())
+		EXIT("Could not get DRM master permission. Card already in use?");
+
 	ResourceManager resman(card);
 
 	vector<Connector*> conns;

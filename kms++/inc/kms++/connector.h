@@ -15,6 +15,14 @@ enum class ConnectorStatus {
 	Disconnected,
 };
 
+// Values of the connector "DPMS" property
+enum class ConnectorDPMS : uint64_t {
+	On = 0,
+	Standby = 1,
+	Suspend = 2,
+	Off = 3,
+};
+
 class Connector : public DrmPropObject
 {
 	friend class Card;

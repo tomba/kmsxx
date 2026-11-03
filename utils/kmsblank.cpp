@@ -77,6 +77,8 @@ int main(int argc, char** argv)
 	bool blank = true;
 
 	while (true) {
+		ConnectorDPMS dpms = blank ? ConnectorDPMS::Off : ConnectorDPMS::On;
+
 		for (Connector* conn : conns) {
 			if (!conn->connected()) {
 				printf("Connector %u not connected\n", conn->idx());
@@ -84,7 +86,7 @@ int main(int argc, char** argv)
 			}
 
 			printf("Connector %u: %sblank\n", conn->idx(), blank ? "" : "un");
-			int r = conn->set_prop_value("DPMS", blank ? 3 : 0);
+			int r = conn->set_prop_value("DPMS", (uint64_t)dpms);
 			if (r)
 				EXIT("Failed to set DPMS: %d", r);
 		}

@@ -16,10 +16,14 @@ static const char* usage_str =
 	"  -C, --card=NUM            open /dev/dri/card<NUM>\n"
 	"  -c, --connector=CONN      CONN is <connector>\n"
 	"  -u, --unblank             unblank instead of blank\n"
+	"  -w, --wait                wait for enter before exiting\n"
 	"  -t, --time=TIME           blank/unblank in TIME intervals\n"
 	"\n"
 	"<connector> can be given by index (<idx>) or id (@<id>).\n"
-	"<connector> can also be given by name.\n";
+	"<connector> can also be given by name.\n"
+	"\n"
+	"The DPMS state persists after exit, unless the kernel's fbdev\n"
+	"emulation restores its own mode when the device is closed.\n";
 
 static void usage()
 {
@@ -46,6 +50,7 @@ int main(int argc, char** argv)
 	vector<string> conn_strs;
 	uint32_t time = 0;
 	bool unblank = false;
+	bool wait = false;
 
 	OptionSet optionset = {
 		Option("|device=", [&dev_path](string s) {
@@ -59,6 +64,9 @@ int main(int argc, char** argv)
 		}),
 		Option("u|unblank", [&unblank]() {
 			unblank = true;
+		}),
+		Option("w|wait", [&wait]() {
+			wait = true;
 		}),
 		Option("t|time=", [&time](string str) {
 			time = stoul(str);
@@ -123,7 +131,8 @@ int main(int argc, char** argv)
 		blank = !blank;
 	}
 
-	printf("press enter to exit\n");
-
-	getchar();
+	if (wait) {
+		printf("press enter to exit\n");
+		getchar();
+	}
 }

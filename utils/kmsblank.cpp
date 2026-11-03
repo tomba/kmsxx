@@ -2,6 +2,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <algorithm>
+#include <chrono>
 
 #include <kms++/kms++.h>
 #include <kms++util/kms++util.h>
@@ -51,11 +52,15 @@ static void set_dpms(const vector<Connector*>& conns, bool blank)
 	ConnectorDPMS dpms = blank ? ConnectorDPMS::Off : ConnectorDPMS::On;
 
 	for (Connector* conn : conns) {
-		printf("Connector %s: %sblank\n", conn->fullname().c_str(),
-		       blank ? "" : "un");
+		auto start = chrono::steady_clock::now();
 		int r = conn->set_prop_value("DPMS", (uint64_t)dpms);
+		auto end = chrono::steady_clock::now();
 		if (r)
 			EXIT("Failed to set DPMS: %d", r);
+
+		chrono::duration<double, milli> ms = end - start;
+		printf("Connector %s: %sblank (%.1f ms)\n", conn->fullname().c_str(),
+		       blank ? "" : "un", ms.count());
 	}
 }
 

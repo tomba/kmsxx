@@ -81,11 +81,13 @@ int main(int argc, char** argv)
 
 		for (Connector* conn : conns) {
 			if (!conn->connected()) {
-				printf("Connector %u not connected\n", conn->idx());
+				printf("Connector %s not connected\n",
+				       conn->fullname().c_str());
 				continue;
 			}
 
-			printf("Connector %u: %sblank\n", conn->idx(), blank ? "" : "un");
+			printf("Connector %s: %sblank\n", conn->fullname().c_str(),
+			       blank ? "" : "un");
 			int r = conn->set_prop_value("DPMS", (uint64_t)dpms);
 			if (r)
 				EXIT("Failed to set DPMS: %d", r);
